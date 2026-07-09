@@ -12,4 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5960cdee23eb24945aa9401e284be6b3, type: 3}
   m_Name: EnemyStats
   m_EditorClassIdentifier: Assembly-CSharp::CareerQuest.Enemy.EnemyStatHolder
-  _idStatList: []
+  _idStatList:
+  - ID: 0
+    Stat:
+      HP: 200
+      MoveSpd: 5

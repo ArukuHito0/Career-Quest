@@ -2,13 +2,13 @@ using UnityEngine;
 
 namespace CareerQuest.Enemy
 {
-    //  敵の能力値
+    //  敵のパラメーター
     [System.Serializable]
     public sealed class EnemyStat
     {
-        [Header("体力")]
+        [Header("パラメーター")]
         public int HP = 100;
-        [Header("移動速度")]
-        public float MoveSpd = 5;
+        public float MoveSpeed = 5;
+        public EnemyTarget Target = EnemyTarget.Treasure;
     }
 }

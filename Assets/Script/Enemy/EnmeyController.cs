@@ -5,7 +5,7 @@ namespace CareerQuest.Enemy
 {
     //  “G‚ğ§Œä‚·‚éƒNƒ‰ƒX
     [DisallowMultipleComponent]
-    public sealed class EnmeyContoroller : MonoBehaviour
+    public sealed class EnemyContoroller : MonoBehaviour
     {
         [SerializeField] EnemyID _enemyID = EnemyID.Golem;
 

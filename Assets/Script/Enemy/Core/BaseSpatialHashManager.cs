@@ -78,10 +78,6 @@ namespace CareerQuest.Enemy
         //  ƒZƒ‹ID‚©‚çüˆÍ‚Ìó‹µ‚ğæ“¾
         public void GetEntitiesInCell(int cellId, List<int> results)
         {
-            //Debug.Log(cellId);
-            Debug.Log(cellToEntityMap.TryGetFirstValue(cellId, out int entiti, out var iterator1));
-            Debug.Log(cellToEntityMap.TryGetFirstValue(0, out int en, out var it));
-
             if (cellToEntityMap.TryGetFirstValue(cellId, out int entityIndex, out var iterator))
             {
                 results.Add(entityIndex);

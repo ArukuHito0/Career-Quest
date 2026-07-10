@@ -37,7 +37,6 @@ public class Test_Treasuer: MonoBehaviour, ISpatialEntity
             for (int dx = -1; dx <= 1; dx++)
             {
                 int targetCellId = (myX + dx) + ((myZ + dz) * _hashManager.girdWidth);
-                //Debug.Log($"{targetCellId}");
 
                 _hashManager.GetEntitiesInCell(targetCellId, nearbyEntities);
             }

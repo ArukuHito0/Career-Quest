@@ -69,7 +69,7 @@ namespace CareerQuest.Enemy
                 
                 if (dist < _searchRadius)
                 {
-                    Debug.Log("Attack");
+                    MyLogger.Log("Attack");
                 }
             }
         }

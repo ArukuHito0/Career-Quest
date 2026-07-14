@@ -3,7 +3,7 @@ using CareerQuest.Core;
 
 namespace CareerQuest.Enemy
 {
-    //  お宝の位置をマップセルで把握するクラス
+    //  お宝の位置をグリッドマップで把握するクラス
     [DefaultExecutionOrder(-10)]
     public sealed class TreasureHashManager : SpatialHashManagerBase<Test_Treasuer>
     {

@@ -16,4 +16,6 @@ MonoBehaviour:
   - ID: 0
     Stat:
       HP: 200
-      MoveSpd: 5
+      MoveSpeed: 5
+      Target: 0
+      SearchRadius: 200

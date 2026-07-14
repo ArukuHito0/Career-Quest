@@ -1,7 +1,6 @@
 using CareerQuest.Core;
 using CareerQuest.Enemy;
 using System.Collections.Generic;
-using Unity.Mathematics;
 using UnityEngine;
 
 public class Test_Treasuer: MonoBehaviour, ISpatialEntity
@@ -16,12 +15,6 @@ public class Test_Treasuer: MonoBehaviour, ISpatialEntity
         _hashManager = ServiceLocator.Resolve<TreasureHashManager>();
         _hashManager.Register(this);
     }
-
-    void Start()
-    {
-
-
-    }
     void Update()
     {
         nearbyEntities.Clear();
@@ -29,8 +22,6 @@ public class Test_Treasuer: MonoBehaviour, ISpatialEntity
         int myX = Mathf.FloorToInt(transform.position.x / _hashManager.cellSize);
         int myZ = Mathf.FloorToInt(transform.position.z / _hashManager.cellSize);
         int myCellId = myX + (myZ * _hashManager.girdWidth);
-
-        Debug.Log(myCellId);
 
         for (int dz = -1; dz <= 1; dz++)
         {

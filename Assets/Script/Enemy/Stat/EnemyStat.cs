@@ -11,5 +11,6 @@ namespace CareerQuest.Enemy
         public float MoveSpeed = 5;
         public EnemyTarget Target = EnemyTarget.Treasure;
         public float SearchRadius = 20f;
+        public float AtackRange = 5f;
     }
 }

@@ -2,7 +2,6 @@ using CareerQuest.Core;
 using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
-using UnityEngine.Jobs;
 
 namespace CareerQuest.Enemy
 {

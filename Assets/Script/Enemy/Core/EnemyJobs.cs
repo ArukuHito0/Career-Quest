@@ -63,20 +63,30 @@ namespace CareerQuest.Enemy
     public struct MoveJob : IJobParallelFor
     {
         public NativeArray<EnemyData> Datas;  // 敵データ
-        public NativeArray<Vector3> TreasurePositions;
+        [ReadOnly] public NativeArray<Vector3> TreasurePositions;  // お宝座標
         public float DeltaTime;
 
         public void Execute(int index)
         {
             var data = Datas[index];
+            if (data.TargetIndex < 0) return;
 
-            if (data.TargetIndex != -1)
+            Vector3 targetPos = TreasurePositions[data.TargetIndex];
+            Vector3 dir = (targetPos - data.Position).normalized;
+            
+            Vector3 avoidance = Vector3.zero;
+            for (int i = 0; i < Datas.Length; i++)
             {
-                Vector3 targetPos = TreasurePositions[data.TargetIndex];
-                Vector3 dir = (targetPos - data.Position).normalized;
-                data.Position += dir * data.MoveSpeed * DeltaTime;
+                if (i == index) continue;
+
+                float dist = Vector3.Distance(data.Position, Datas[i].Position);
+                if (dist < 1.0f)
+                {
+                    avoidance += (data.Position - Datas[i].Position).normalized * (1.0f - dist);
+                }
             }
 
+            data.Position += (dir + avoidance * 10.0f) * data.MoveSpeed * DeltaTime;
             Datas[index] = data;
         }
     }

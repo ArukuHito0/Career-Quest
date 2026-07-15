@@ -1,70 +1,165 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using System.Collections.Generic;
 
 public class MapEditor : MonoBehaviour
 {
-    [System.Serializable]
-    public class BlockData { public string name; public GameObject surfacePrefab; public GameObject internalPrefab; public BlockType type; }
-    public enum BlockType { Soil, Grass, Sand, Rock, Snow, Water, Magma }
+    public enum EditorMode { Place, Remove, Move }
+    public EditorMode currentMode = EditorMode.Place;
 
-    public List<BlockData> blockLibrary;
-    public LayerMask buildableLayer;
-    public int currentBlockIndex = 0;
+    [Header("İ’è")]
+    public GameObject blockPrefab;
+    public GameObject arrowPrefab;
+    public LayerMask handleLayer;
+    public float reachDistance = 100f;
 
-    private Dictionary<int, Dictionary<Vector3Int, GameObject>> layers = new Dictionary<int, Dictionary<Vector3Int, GameObject>>();
-
-    void Start()
-    {
-        // é«˜ã•ã‚’1ã«è¨­å®šã—ã¦201x201ã®ç¯„å›²ã‚’ç”Ÿæˆ
-        int targetY = 1;
-        for (int x = -100; x <= 100; x++)
-        {
-            for (int z = -100; z <= 100; z++)
-            {
-                PlaceBlock(new Vector3Int(x, targetY, z));
-            }
-        }
-    }
-
-    public void PlaceBlock(Vector3Int pos)
-    {
-        int y = pos.y;
-        if (!layers.ContainsKey(y)) layers[y] = new Dictionary<Vector3Int, GameObject>();
-        if (layers[y].ContainsKey(pos)) return;
-
-        // æŒ‡å®šã•ã‚ŒãŸãƒ¬ã‚¤ãƒ¤ãƒ¼ï¼ˆé«˜ã•ï¼‰ã®ãƒ–ãƒ­ãƒƒã‚¯ã¯è¡¨é¢ç”¨ãƒ—ãƒ¬ãƒãƒ–ã‚’ä½¿ç”¨
-        GameObject prefab = blockLibrary[currentBlockIndex].surfacePrefab;
-
-        GameObject go = Instantiate(prefab, pos, Quaternion.identity);
-
-        // å®‰å…¨ãªãƒ¬ã‚¤ãƒ¤ãƒ¼è¨­å®š
-        go.layer = GetFirstLayer(buildableLayer);
-
-        layers[y].Add(pos, go);
-    }
-
-    private int GetFirstLayer(LayerMask mask)
-    {
-        for (int i = 0; i < 32; i++) if (((mask.value >> i) & 1) == 1) return i;
-        return 0; // Defaultãƒ¬ã‚¤ãƒ¤ãƒ¼
-    }
+    private GameObject selectedObject;
+    private GameObject activeArrows;
+    private Transform draggingHandle;
+    private Vector3 dragStartPoint;
+    private Vector3 initialObjPos;
 
     void Update()
     {
-        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
-        if (Mouse.current != null && Mouse.current.leftButton.isPressed) PerformAction();
+        HandleModeSwitching();
+
+        // –îˆó‚ªƒuƒƒbƒN‚ÉŠ®‘S‚É’Ç]‚·‚é‚æ‚¤‚ÉˆÊ’u‚ğ–ˆƒtƒŒ[ƒ€XV
+        if (activeArrows != null && selectedObject != null)
+        {
+            activeArrows.transform.position = selectedObject.transform.position;
+        }
+
+        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            TryExecuteAction();
+        }
+
+        if (Mouse.current != null && Mouse.current.leftButton.isPressed && draggingHandle != null)
+        {
+            PerformDrag();
+        }
+        else if (Mouse.current != null && Mouse.current.leftButton.wasReleasedThisFrame)
+        {
+            draggingHandle = null;
+        }
     }
 
-    void PerformAction()
+    void HandleModeSwitching()
+    {
+        if (Keyboard.current.digit1Key.wasPressedThisFrame) SetMode(EditorMode.Place);
+        if (Keyboard.current.digit2Key.wasPressedThisFrame) SetMode(EditorMode.Remove);
+        if (Keyboard.current.digit3Key.wasPressedThisFrame) SetMode(EditorMode.Move);
+    }
+
+    void SetMode(EditorMode mode)
+    {
+        currentMode = mode;
+        // ƒ‚[ƒhØ‘Ö‚É–îˆó‚Æ‘I‘ğ‚ğ‰ğœ
+        ClearSelection();
+    }
+
+    void ClearSelection()
+    {
+        if (activeArrows != null) Destroy(activeArrows);
+        selectedObject = null;
+        draggingHandle = null;
+    }
+
+    void TryExecuteAction()
     {
         Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-        if (Physics.Raycast(ray, out RaycastHit hit, 1000f, buildableLayer))
+
+        // 1. ƒnƒ“ƒhƒ‹”»’è
+        if (Physics.Raycast(ray, out RaycastHit hitHandle, reachDistance, handleLayer))
         {
-            // ãƒ’ãƒƒãƒˆã—ãŸåº§æ¨™ã®X, Zã¨ã€æŒ‡å®šã—ãŸé«˜ã•ã‚’çµ„ã¿åˆã‚ã›ã¦é…ç½®
-            Vector3Int pos = new Vector3Int(Mathf.RoundToInt(hit.point.x), 1, Mathf.RoundToInt(hit.point.z));
-            PlaceBlock(pos);
+            draggingHandle = hitHandle.collider.transform;
+            initialObjPos = selectedObject.transform.position; // ˆÚ“®ŠJnˆÊ’u‚ğ•Û‘¶
+
+            // ƒnƒ“ƒhƒ‹‚ğƒNƒŠƒbƒN‚µ‚½“_‚ÅƒRƒ“ƒgƒ[ƒ‰[‚É’Ê’m
+            var controller = activeArrows.GetComponent<ArrowHandleController>();
+            if (controller != null)
+            {
+                // ‘I‘ğó‘Ô‚Æƒhƒ‰ƒbƒOó‘Ô‚ğ“¯‚ÉƒZƒbƒg
+                controller.SetSelectedHandle(draggingHandle.name);
+                controller.SetActiveHandle(draggingHandle.name);
+            }
+
+            // •½–Ê‚Å‚Ì“Š‰eŒvZ
+            Plane dragPlane = new Plane(Camera.main.transform.forward, initialObjPos);
+            dragPlane.Raycast(ray, out float enter);
+            dragStartPoint = ray.GetPoint(enter);
+        }
+        // 2. ƒuƒƒbƒN/’n–Ê”»’è
+        else if (Physics.Raycast(ray, out RaycastHit hit, reachDistance))
+        {
+            // ”wŒii‰½‚à‚È‚¢‚Æ‚±‚ëj‚ğƒNƒŠƒbƒN‚µ‚½ê‡‚Í‰ğœ
+            if (currentMode == EditorMode.Move && !hit.collider.gameObject.CompareTag("Block"))
+            {
+                ClearSelection();
+                return;
+            }
+
+            switch (currentMode)
+            {
+                case EditorMode.Place:
+                    Vector3 pos = hit.point + (hit.normal * 0.5f);
+                    Vector3 grid = new Vector3(Mathf.Round(pos.x), Mathf.Round(pos.y), Mathf.Round(pos.z));
+                    if (Physics.OverlapSphere(grid, 0.1f).Length == 0)
+                        Instantiate(blockPrefab, grid, Quaternion.identity);
+                    break;
+                case EditorMode.Remove:
+                    Destroy(hit.collider.gameObject);
+                    break;
+                case EditorMode.Move:
+                    selectedObject = hit.collider.gameObject;
+                    if (activeArrows != null) Destroy(activeArrows);
+                    activeArrows = Instantiate(arrowPrefab, selectedObject.transform.position, Quaternion.identity);
+                    break;
+            }
+        }
+        else if (currentMode == EditorMode.Move)
+        {
+            // ‹ó‹•‚ğƒNƒŠƒbƒN‚µ‚½ê‡‚à‰ğœ
+            ClearSelection();
+        }
+    }
+
+    void PerformDrag()
+    {
+        if (selectedObject == null || draggingHandle == null) return;
+
+        Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+
+        // ƒhƒ‰ƒbƒO’†‚Ì•½–Ê‚ğƒJƒƒ‰‚ÌŒü‚«‚É‡‚í‚¹‚é
+        Plane dragPlane = new Plane(Camera.main.transform.forward, initialObjPos);
+
+        if (dragPlane.Raycast(ray, out float enter))
+        {
+            Vector3 currentPoint = ray.GetPoint(enter);
+            Vector3 delta = currentPoint - dragStartPoint;
+
+            Vector3 move = Vector3.zero;
+            string name = draggingHandle.name;
+
+            // 1. ²ˆÚ“® (Axis)
+            if (name.Contains("HandleX")) move = Vector3.Project(delta, Vector3.right);
+            else if (name.Contains("HandleY")) move = Vector3.Project(delta, Vector3.up);
+            else if (name.Contains("HandleZ")) move = Vector3.Project(delta, Vector3.forward);
+
+            // 2. •½–ÊˆÚ“® (Plane)
+            // YZ•½–Ê‚È‚ç X¬•ª‚ÍŒÅ’è(0)AY‚ÆZ‚ğ”½‰f
+            else if (name.Contains("PlaneYZ")) move = new Vector3(0, delta.y, delta.z);
+            // ZX•½–Ê‚È‚ç Y¬•ª‚ÍŒÅ’è(0)AZ‚ÆX‚ğ”½‰f
+            else if (name.Contains("PlaneZX")) move = new Vector3(delta.x, 0, delta.z);
+            // XY•½–Ê‚È‚ç Z¬•ª‚ÍŒÅ’è(0)AX‚ÆY‚ğ”½‰f
+            else if (name.Contains("PlaneXY")) move = new Vector3(delta.x, delta.y, 0);
+
+            // ˆÚ“®Œã‚ÌˆÊ’u‚ğŒvZ‚µ‚ÄƒOƒŠƒbƒhƒXƒiƒbƒv
+            Vector3 newPos = initialObjPos + move;
+            selectedObject.transform.position = new Vector3(
+                Mathf.Round(newPos.x),
+                Mathf.Round(newPos.y),
+                Mathf.Round(newPos.z)
+            );
         }
     }
 }

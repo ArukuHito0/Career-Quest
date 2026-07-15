@@ -1,4 +1,3 @@
-using CareerQuest.Core;
 using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
@@ -13,21 +12,19 @@ namespace CareerQuest.Enemy
     {
         public List<T> Entities = new List<T>();
 
-        protected NativeArray<Vector3> enemyPositions;  // 敵座標配列
-        protected NativeParallelMultiHashMap<int, int> cellToEntityMap;  // <セルID, セル内のオブジェクトの数>のMap
+        protected NativeArray<Vector3> positions;  // 敵座標配列
+        public NativeParallelMultiHashMap<int, int> cellToEntityMap;  // <セルID, セル内のオブジェクトの数>のMap
 
         [Min(1)] public readonly int girdWidth = 1000;  // マップをいくつのセルで埋めるか
         [Min(1)] public readonly int cellSize = 10;  // 1つのセルの大きさ
         protected int enemyCount = 1000;  // 敵の数
 
-        //protected virtual void Awake()
-        //{
-        //    ServiceLocator.Register(this.GetType());  派生クラスのインスタンスを格納しないためコメントアウト中
-        //}
+        public NativeArray<Vector3> Positions { get => positions; }
+        public NativeParallelMultiHashMap<int, int> CellToEntityMap { get => cellToEntityMap; }
 
         protected virtual void Start()
         {
-            enemyPositions = new NativeArray<Vector3>(enemyCount, Allocator.Persistent);
+            positions = new NativeArray<Vector3>(enemyCount, Allocator.Persistent);
             cellToEntityMap = new NativeParallelMultiHashMap<int, int>(enemyCount, Allocator.Persistent);
         }
 
@@ -38,7 +35,7 @@ namespace CareerQuest.Enemy
                 if (Entities[i] != null)
                 {
                     //  ポジションとセルマップとエンティティの要素一致個所
-                    enemyPositions[i] = Entities[i].transform.position;
+                    positions[i] = Entities[i].transform.position;
                 }
             }
 
@@ -46,7 +43,7 @@ namespace CareerQuest.Enemy
 
             var job = new UpdateGridJob
             {
-                Positions = enemyPositions,
+                Positions = positions,
                 CellMap = cellToEntityMap.AsParallelWriter(),
                 CellSize = cellSize,
                 GridWidth = girdWidth,
@@ -57,10 +54,12 @@ namespace CareerQuest.Enemy
             handle.Complete();
         }
 
-        //protected virtual void OnDestroy()
-        //{
-        //    ServiceLocator.Unregister(this.GetType());  //  派生クラスのインスタンスを登録解除しないためコメントアウト中
-        //}
+        protected virtual void OnDestroy()
+        {
+            if (positions.IsCreated) positions.Dispose();
+            if (cellToEntityMap.IsCreated) cellToEntityMap.Dispose();
+            //ServiceLocator.Unregister(this.GetType());  //  派生クラスのインスタンスを登録解除しないためコメントアウト中
+        }
 
         //  辞書に登録
         public virtual void Register(T entity)
@@ -68,10 +67,10 @@ namespace CareerQuest.Enemy
             entity.Index = Entities.Count;
             Entities.Add(entity);
 
-            if (entity.Index >= enemyPositions.Length)
+            if (entity.Index >= positions.Length)
             {
-                enemyPositions.Dispose();
-                enemyPositions = new NativeArray<Vector3>(Entities.Count + 100, Allocator.Persistent);
+                positions.Dispose();
+                positions = new NativeArray<Vector3>(Entities.Count + 100, Allocator.Persistent);
             }
         }
 

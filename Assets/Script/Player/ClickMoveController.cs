@@ -4,46 +4,52 @@ using UnityEngine.InputSystem;
 
 public class ClickMoveController : MonoBehaviour
 {
-
     [SerializeField] private Camera mainCamera;
-
+    [SerializeField] private PlayerMove[] players;
+    [SerializeField] private CarryObject carryObject;
     [SerializeField] private Transform clickMarker;
 
-    [SerializeField] private PlayerMove[] players;
 
-    void Start()
+    private void Start()
     {
         if (mainCamera == null)
-        {
             mainCamera = Camera.main;
-        }
     }
 
-    void Update()
+
+    private void Update()
     {
         if (Mouse.current.leftButton.isPressed)
-        {
             ClickMove();
-        }
     }
+
 
     private void ClickMove()
     {
         Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
 
+
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
-            // NavMesh上の近い位置を取得
-            if (NavMesh.SamplePosition(hit.point, out NavMeshHit navHit, 2.0f, NavMesh.AllAreas))
+            if (NavMesh.SamplePosition(hit.point, out NavMeshHit navHit, 2f, NavMesh.AllAreas))
             {
+
+                // プレイヤー移動
                 foreach (var player in players)
                 {
-                    // 移動
                     player.MoveTo(navHit.position);
                 }
 
-                // マーカー移動
-                if (clickMarker)
+
+                // 箱移動
+                if (carryObject != null && carryObject.CanCarry())
+                {
+                    carryObject.MoveTo(navHit.position);
+                }
+
+
+                // クリック位置表示
+                if (clickMarker != null)
                 {
                     clickMarker.position = navHit.position;
                 }

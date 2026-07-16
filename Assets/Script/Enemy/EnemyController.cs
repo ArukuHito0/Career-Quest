@@ -22,6 +22,7 @@ namespace CareerQuest.Enemy
         float _searchRadius;  // 状況把握できる範囲の半径
 
         public int Index { get; set; }  // 敵番号
+        public int Tickness { get; set; }  // オブジェクトの厚さ
 
         void Awake()
         {

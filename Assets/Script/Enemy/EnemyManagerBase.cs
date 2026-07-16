@@ -27,6 +27,7 @@ namespace CareerQuest.Enemy
         protected float searchRadius;      // ó‹µ”cˆ¬‚Å‚«‚é”ÍˆÍ‚Ì”¼Œa
         protected float wallAvoidRadius;   // •Ç‚ğ”ğ‚¯n‚ß‚é‹——£
         protected float enemyAvoidRadius;  // “G‚ğ”ğ‚¯n‚ß‚é‹——£
+        protected float bodyTickness;      // ‘Ì‚ÌŒú‚³
 
         protected virtual void Awake()
         {
@@ -38,9 +39,11 @@ namespace CareerQuest.Enemy
             moveSpeed = enemyStat.MoveSpeed;
             attackRange = enemyStat.AtackRange;
             searchRadius = enemyStat.SearchRadius;
+            bodyTickness = enemyStat.BodyTickness;
             wallAvoidRadius = enemyStat.WallAvoidRadius;
             enemyAvoidRadius = enemyStat.EnmeyAvoidRadius;
         }
+
         protected virtual void Start()
         {
             treasureEntities = _treasureHashManager.Entities;

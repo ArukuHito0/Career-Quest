@@ -17,5 +17,7 @@ namespace CareerQuest.Enemy
         public float WallAvoidRadius = 10f;
         [Tooltip("“G‚ğ‰ñ”ğ‚µn‚ß‚é‹——£")]
         public float EnmeyAvoidRadius = 2f;
+        [Tooltip("‘Ì‚ÌŒú‚İ(Õ“Ë”»’èŒvZ—p)")]
+        public float BodyTickness = 1f;
     }
 }

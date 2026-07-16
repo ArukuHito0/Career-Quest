@@ -1,3 +1,4 @@
+using CareerQuest.Core;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
@@ -62,6 +63,7 @@ namespace CareerQuest.Enemy
     {
         public NativeArray<EnemyData> Datas;  // 敵データ
         [ReadOnly] public NativeArray<Vector3> TreasurePositions;  // お宝座標
+        [ReadOnly] public NativeArray<float> TreasureTickness;  // お宝の厚さ
         [ReadOnly] public NativeArray<Vector3> WallPositions; // 壁の座標
 
         public float WallAvoidRadius;  // 壁を避け始める距離
@@ -78,27 +80,33 @@ namespace CareerQuest.Enemy
             Vector3 toTarget = TreasurePositions[data.TargetIndex] - data.Position;
             float distSqToTarget = toTarget.sqrMagnitude;
 
-            if (distSqToTarget < AttackRange)
+            float targetRadius = TreasureTickness[data.TargetIndex];
+            float effectiveAttackRange = AttackRange + data.BodyTickness + targetRadius;
+
+            if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
             {
                 data.State = (byte)EnemyState.Attack;
                 Datas[index] = data;
-                
+
                 return;
             }
 
-
             Vector3 dir = toTarget / Mathf.Sqrt(distSqToTarget);
+            dir.y = 0;
             Vector3 avoidance = Vector3.zero;
-            float enemyAvoidRadSq = EnemyAvoidRadius * EnemyAvoidRadius;
 
             for (int i = 0; i < Datas.Length; i++)
             {
                 if (i == index) continue;
-                
+
+                float combinedRadius = data.BodyTickness + Datas[i].BodyTickness;
+                float effectiveAvoidRadius = EnemyAvoidRadius + combinedRadius;
+                float sqrEffectiveAvoidRadius = effectiveAvoidRadius * effectiveAvoidRadius;
+
                 Vector3 diff = data.Position - Datas[i].Position;
                 float sqrDist = diff.sqrMagnitude;
 
-                if (sqrDist < enemyAvoidRadSq)
+                if (sqrDist < sqrEffectiveAvoidRadius)
                 {
                     avoidance += (data.Position - Datas[i].Position).normalized * (EnemyAvoidRadius - sqrDist);
                 }
@@ -118,6 +126,8 @@ namespace CareerQuest.Enemy
                     avoidance += diff / dist * (WallAvoidRadius - dist) * 2;
                 }
             }
+
+            avoidance.y = 0;
 
             data.Position += (dir + avoidance) * data.MoveSpeed * DeltaTime;
             data.State = (byte)EnemyState.Move;

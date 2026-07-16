@@ -29,7 +29,7 @@ namespace CareerQuest.Enemy
                     MoveSpeed = moveSpeed,
                     SearchRadius = searchRadius,
                     Position = enemyEntities[i].transform.position,
-                    Velocity = new Vector3(1, 0, 0)
+                    BodyTickness = bodyTickness,
                 };
             }
 
@@ -49,6 +49,7 @@ namespace CareerQuest.Enemy
             {
                 Datas = enemyDatas,
                 TreasurePositions = _treasureHashManager.Positions,
+                TreasureTickness = _treasureHashManager.Ticknesses,
                 AttackRange = attackRange,
                 WallPositions = wallPositions,
                 WallAvoidRadius = wallAvoidRadius,

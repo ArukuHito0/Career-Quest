@@ -1,6 +1,6 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UAssert = UnityEngine.Assertions.Assert;
+using System.Collections.Generic;
 using CareerQuest.Core;
 
 namespace CareerQuest.Enemy

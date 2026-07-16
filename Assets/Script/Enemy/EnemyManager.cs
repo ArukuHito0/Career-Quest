@@ -49,6 +49,9 @@ namespace CareerQuest.Enemy
             {
                 Datas = enemyDatas,
                 TreasurePositions = _treasureHashManager.Positions,
+                WallPositions = wallPositions,
+                WallAvoidRadius = wallAvoidRadius,
+                EnemyAvoidRadius = enemyAvoidRadius,
                 DeltaTime = Time.deltaTime
             };
 

@@ -1,4 +1,3 @@
-using CareerQuest.Core;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
@@ -67,6 +66,7 @@ namespace CareerQuest.Enemy
 
         public float WallAvoidRadius;  // •Ç‚ğ”ğ‚¯n‚ß‚é‹——£
         public float EnemyAvoidRadius;  // “G“¯m‚Å”ğ‚¯n‚ß‚é‹——£
+        public float AttackRange;  // UŒ‚‰Â”\‹——£
 
         public float DeltaTime;
 
@@ -75,34 +75,52 @@ namespace CareerQuest.Enemy
             var data = Datas[index];
             if (data.TargetIndex < 0) return;
 
-            Vector3 targetPos = TreasurePositions[data.TargetIndex];
-            Vector3 dir = (targetPos - data.Position).normalized;
+            Vector3 toTarget = TreasurePositions[data.TargetIndex] - data.Position;
+            float distSqToTarget = toTarget.sqrMagnitude;
 
+            if (distSqToTarget < AttackRange)
+            {
+                data.State = (byte)EnemyState.Attack;
+                Datas[index] = data;
+                
+                return;
+            }
+
+
+            Vector3 dir = toTarget / Mathf.Sqrt(distSqToTarget);
             Vector3 avoidance = Vector3.zero;
+            float enemyAvoidRadSq = EnemyAvoidRadius * EnemyAvoidRadius;
+
             for (int i = 0; i < Datas.Length; i++)
             {
                 if (i == index) continue;
+                
+                Vector3 diff = data.Position - Datas[i].Position;
+                float sqrDist = diff.sqrMagnitude;
 
-                float dist = Vector3.Distance(data.Position, Datas[i].Position);
-                if (dist < EnemyAvoidRadius)
+                if (sqrDist < enemyAvoidRadSq)
                 {
-                    avoidance += (data.Position - Datas[i].Position).normalized * (EnemyAvoidRadius - dist);
+                    avoidance += (data.Position - Datas[i].Position).normalized * (EnemyAvoidRadius - sqrDist);
                 }
             }
 
+            float wallAvoidRadSq = WallAvoidRadius * WallAvoidRadius;
             for (int i = 0; i < WallPositions.Length; i++)
             {
                 Vector3 diff = data.Position - WallPositions[i];
                 diff.y = 0;
-                float dist = diff.magnitude;
+                float sqrDist = diff.sqrMagnitude;
 
-                if (dist < WallAvoidRadius)
+                if (sqrDist < wallAvoidRadSq)
                 {
-                    avoidance += diff.normalized * (WallAvoidRadius - dist);
+
+                    float dist = Mathf.Sqrt(sqrDist);
+                    avoidance += diff / dist * (WallAvoidRadius - dist) * 2;
                 }
             }
 
             data.Position += (dir + avoidance) * data.MoveSpeed * DeltaTime;
+            data.State = (byte)EnemyState.Move;
             Datas[index] = data;
         }
     }

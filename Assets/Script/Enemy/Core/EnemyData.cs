@@ -13,7 +13,7 @@ namespace CareerQuest.Enemy
         public Vector3 Velocity;           // ˆÚ“®‘¬“x
         public Vector3 AvoidanceVelocity;  // ‰ñ”ð‘¬“x
 
-        public EnemyState State;
+        public byte State;
         public float StateTimer;
     }
 }

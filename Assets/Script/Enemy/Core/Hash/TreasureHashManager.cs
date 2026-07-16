@@ -3,7 +3,7 @@ using CareerQuest.Core;
 
 namespace CareerQuest.Enemy
 {
-    //  お宝の位置をマップセルで把握するクラス
+    //  お宝の位置をグリッドマップで把握するクラス
     [DefaultExecutionOrder(-10)]
     public sealed class TreasureHashManager : SpatialHashManagerBase<Test_Treasuer>
     {
@@ -12,14 +12,21 @@ namespace CareerQuest.Enemy
             // ServiceLocatorに登録(必須)
             ServiceLocator.Register(this);
         }
-
+        
+        protected override void Start()
+        {
+            base.Start();
+        }
+        
         protected override void Update()
         {
             base.Update();
         }
 
-        void OnDestroy()
+        protected override void OnDestroy()
         {
+            base.OnDestroy();
+
             // // ServiceLocatorから登録解除(必須)
             ServiceLocator.Unregister(this);
         }

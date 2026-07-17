@@ -1,4 +1,4 @@
-using CareerQuest.Enemy;
+using CareerQuest.Core;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
@@ -6,6 +6,7 @@ using UnityEngine;
 
 namespace CareerQuest.Enemy
 {
+    //  周囲探索
     [BurstCompile]
     public struct SearchJob : IJobParallelFor
     {
@@ -40,7 +41,7 @@ namespace CareerQuest.Enemy
                         do
                         {
                             float dist = Vector3.Distance(data.Position, TreasurePositions[entityIndex]);
-                            
+
                             if (dist < data.SearchRadius && dist < minDistance)
                             {
                                 minDistance = dist;
@@ -55,15 +56,18 @@ namespace CareerQuest.Enemy
             Datas[index] = data;
         }
     }
-}
 
-namespace CareerQuest.Enemy
-{
+    //  移動
     [BurstCompile]
     public struct MoveJob : IJobParallelFor
     {
         public NativeArray<EnemyData> Datas;  // 敵データ
         [ReadOnly] public NativeArray<Vector3> TreasurePositions;  // お宝座標
+        [ReadOnly] public NativeArray<Vector3> WallPositions; // 壁の座標
+
+        public float WallAvoidRadius;  // 壁を避け始める距離
+        public float EnemyAvoidRadius;  // 敵同士で避け始める距離
+
         public float DeltaTime;
 
         public void Execute(int index)
@@ -73,33 +77,33 @@ namespace CareerQuest.Enemy
 
             Vector3 targetPos = TreasurePositions[data.TargetIndex];
             Vector3 dir = (targetPos - data.Position).normalized;
-            
+
             Vector3 avoidance = Vector3.zero;
             for (int i = 0; i < Datas.Length; i++)
             {
                 if (i == index) continue;
 
                 float dist = Vector3.Distance(data.Position, Datas[i].Position);
-                if (dist < 1.0f)
+                if (dist < EnemyAvoidRadius)
                 {
-                    avoidance += (data.Position - Datas[i].Position).normalized * (1.0f - dist);
+                    avoidance += (data.Position - Datas[i].Position).normalized * (EnemyAvoidRadius - dist);
                 }
             }
 
-            data.Position += (dir + avoidance * 10.0f) * data.MoveSpeed * DeltaTime;
+            for (int i = 0; i < WallPositions.Length; i++)
+            {
+                Vector3 diff = data.Position - WallPositions[i];
+                diff.y = 0;
+                float dist = diff.magnitude;
+
+                if (dist < WallAvoidRadius)
+                {
+                    avoidance += diff.normalized * (WallAvoidRadius - dist);
+                }
+            }
+
+            data.Position += (dir + avoidance) * data.MoveSpeed * DeltaTime;
             Datas[index] = data;
         }
-    }
-}
-
-[BurstCompile]
-public struct AvoidanceJob : IJobParallelFor
-{
-    public NativeArray<EnemyData> Datas;  // 敵データ
-
-    public void Execute(int index)
-    {
-        var data = Datas[index];
-        Datas[index] = data;
     }
 }

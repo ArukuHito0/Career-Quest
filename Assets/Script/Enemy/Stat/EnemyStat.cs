@@ -12,5 +12,10 @@ namespace CareerQuest.Enemy
         public EnemyTarget Target = EnemyTarget.Treasure;
         public float SearchRadius = 20f;
         public float AtackRange = 5f;
+        [Header("衝突回避パラメーター")]
+        [Tooltip("壁を回避し始める距離")]
+        public float WallAvoidRadius = 10f;
+        [Tooltip("敵を回避し始める距離")]
+        public float EnmeyAvoidRadius = 2f;
     }
 }

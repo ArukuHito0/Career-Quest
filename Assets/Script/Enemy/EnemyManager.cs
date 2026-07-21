@@ -26,10 +26,12 @@ namespace CareerQuest.Enemy
             {
                 enemyDatas[i] = new EnemyData
                 {
+                    AttackPower = attackPower,
                     MoveSpeed = moveSpeed,
                     SearchRadius = searchRadius,
                     Position = enemyEntities[i].transform.position,
-                    Velocity = new Vector3(1, 0, 0)
+                    BodyTickness = bodyTickness,
+                    State = (byte)EnemyState.Attack
                 };
             }
 
@@ -49,6 +51,8 @@ namespace CareerQuest.Enemy
             {
                 Datas = enemyDatas,
                 TreasurePositions = _treasureHashManager.Positions,
+                TreasureTickness = _treasureHashManager.Ticknesses,
+                AttackRange = attackRange,
                 WallPositions = wallPositions,
                 WallAvoidRadius = wallAvoidRadius,
                 EnemyAvoidRadius = enemyAvoidRadius,
@@ -61,6 +65,7 @@ namespace CareerQuest.Enemy
             for (int i = 0; i < enemyEntities.Count; i++)
             {
                 enemyEntities[i].transform.position = enemyDatas[i].Position;
+                enemyEntities[i].EnemyData.State = (byte)EnemyState.Attack;
             }
         }
 

@@ -19,3 +19,6 @@ MonoBehaviour:
       MoveSpeed: 5
       Target: 0
       SearchRadius: 200
+      AtackRange: 1
+      WallAvoidRadius: 2
+      EnmeyAvoidRadius: 2

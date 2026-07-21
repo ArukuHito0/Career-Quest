@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class EditorViewCamera : MonoBehaviour
+public class SceneViewCamera : MonoBehaviour
 {
     [Header("感度・ブレ対策")]
     public float lookSpeed = 0.2f;

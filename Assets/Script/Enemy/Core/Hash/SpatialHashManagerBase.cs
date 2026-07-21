@@ -13,7 +13,8 @@ namespace CareerQuest.Enemy
         public List<T> Entities = new List<T>();
 
         protected NativeArray<Vector3> positions;  // 敵座標配列
-        public NativeParallelMultiHashMap<int, int> cellToEntityMap;  // <セルID, セル内のオブジェクトの数>のMap
+        protected NativeParallelMultiHashMap<int, int> cellToEntityMap;  // <セルID, セル内のオブジェクトの数>のMap
+        protected NativeArray<float> ticknesses;  // <セルID, セル内のオブジェクトの数>のMap
 
         [Min(1)] public readonly int girdWidth = 1000;  // マップをいくつのセルで埋めるか
         [Min(1)] public readonly int cellSize = 10;  // 1つのセルの大きさ
@@ -21,11 +22,13 @@ namespace CareerQuest.Enemy
 
         public NativeArray<Vector3> Positions { get => positions; }
         public NativeParallelMultiHashMap<int, int> CellToEntityMap { get => cellToEntityMap; }
+        public NativeArray<float> Ticknesses { get => ticknesses; }
 
         protected virtual void Start()
         {
             positions = new NativeArray<Vector3>(enemyCount, Allocator.Persistent);
             cellToEntityMap = new NativeParallelMultiHashMap<int, int>(enemyCount, Allocator.Persistent);
+            ticknesses = new NativeArray<float>(enemyCount, Allocator.Persistent);
         }
 
         protected virtual void Update()
@@ -36,6 +39,7 @@ namespace CareerQuest.Enemy
                 {
                     //  ポジションとセルマップとエンティティの要素一致個所
                     positions[i] = Entities[i].transform.position;
+                    ticknesses[i] = Entities[i].Tickness;
                 }
             }
 
@@ -58,7 +62,7 @@ namespace CareerQuest.Enemy
         {
             if (positions.IsCreated) positions.Dispose();
             if (cellToEntityMap.IsCreated) cellToEntityMap.Dispose();
-            //ServiceLocator.Unregister(this.GetType());  //  派生クラスのインスタンスを登録解除しないためコメントアウト中
+            if (ticknesses.IsCreated) ticknesses.Dispose();
         }
 
         //  辞書に登録

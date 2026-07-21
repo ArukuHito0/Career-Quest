@@ -17,6 +17,7 @@ namespace SpreadSheetLoader
     {
         public string sheetName;
         public List<SheetFieldInfo> fields;
+        public List<SheetEnumInfo> enums;
         public JArray data;
     }
 
@@ -24,6 +25,12 @@ namespace SpreadSheetLoader
     {
         public string name;
         public string type;
+    }
+
+    public class SheetEnumInfo
+    {
+        public string name;
+        public List<string> items;
     }
 
     public class SpreadSheetLoader : EditorWindow
@@ -135,6 +142,7 @@ namespace SpreadSheetLoader
                         Directory.CreateDirectory(outputFilePath);
                     }
 
+                    GenerateEnumCS(sheetData);
                     GenerateDataCS(sheetData);
                     GenerateScriptableObjectCS(sheetData);
 
@@ -203,13 +211,8 @@ namespace SpreadSheetLoader
                 sb.AppendLine("[System.Serializable]");
                 sb.AppendLine($"public class {dataName}");
                 sb.AppendLine("{");
-                foreach (SheetFieldInfo field in data.fields)
+                foreach (var field in data.fields)
                 {
-                    if (field.type.Contains("enum:"))
-                    {
-                        field.type = field.type.Replace("enum:", "");
-                    }
-
                     sb.AppendLine($"    public {field.type} {field.name};");
                 }
                 sb.AppendLine("}");
@@ -234,6 +237,33 @@ namespace SpreadSheetLoader
                 sb.AppendLine("{");
                 sb.AppendLine($"    [SerializeField] public List<{dataName}> {dataName.ToLowerFirst()}List;");
                 sb.AppendLine("}");
+
+                sw.WriteLine(sb.ToString());
+            }
+        }
+
+        private void GenerateEnumCS(SheetLoadData data)
+        {
+            if (data.enums == null || data.enums.Count <= 0) return;
+
+            string path = Path.Combine(outputFilePath, $"SpreadSheetEnums.cs");
+
+            using (StreamWriter sw = new StreamWriter(path))
+            {
+                StringBuilder sb = new StringBuilder();
+
+                foreach (var enumInfo in data.enums)
+                {
+                    sb.AppendLine($"public enum {enumInfo.name}");
+                    sb.AppendLine("{");
+
+                    foreach (var item in enumInfo.items)
+                    {
+                        sb.AppendLine($"    {item},");
+                    }
+
+                    sb.AppendLine("}");
+                }
 
                 sw.WriteLine(sb.ToString());
             }

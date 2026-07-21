@@ -26,12 +26,17 @@ namespace CareerQuest.Enemy
             {
                 enemyDatas[i] = new EnemyData
                 {
-                    AttackPower = attackPower,
-                    MoveSpeed = moveSpeed,
-                    SearchRadius = searchRadius,
                     Position = enemyEntities[i].transform.position,
-                    BodyTickness = bodyTickness,
-                    State = (byte)EnemyState.Attack
+                    ID = enemyEntities[i].EnemyID,
+
+                    GolemAttackPower = golemAttackPower,
+                    GolemMoveSpeed = golemMoveSpeed,
+                    GolemSearchRadius = golemSearchRadius,
+                    GolemBodyTickness = golemBodyTickness,
+
+                    GhostMoveSpeed = ghostMoveSpeed,
+                    GhostSearchRadius = golemSearchRadius,
+                    GhostBodyTickness = ghostBodyTickness,
                 };
             }
 
@@ -52,10 +57,9 @@ namespace CareerQuest.Enemy
                 Datas = enemyDatas,
                 TreasurePositions = _treasureHashManager.Positions,
                 TreasureTickness = _treasureHashManager.Ticknesses,
-                AttackRange = attackRange,
                 WallPositions = wallPositions,
-                WallAvoidRadius = wallAvoidRadius,
-                EnemyAvoidRadius = enemyAvoidRadius,
+                WallAvoidRadius = golemWallAvoidRadius,
+                EnemyAvoidRadius = golemEnemyAvoidRadius,
                 DeltaTime = Time.deltaTime
             };
 
@@ -65,7 +69,8 @@ namespace CareerQuest.Enemy
             for (int i = 0; i < enemyEntities.Count; i++)
             {
                 enemyEntities[i].transform.position = enemyDatas[i].Position;
-                enemyEntities[i].EnemyData.State = (byte)EnemyState.Attack;
+                enemyEntities[i].EnemyData.State = enemyDatas[i].State;
+                enemyEntities[i].EnemyData.GolemAttackPower = golemAttackPower;
             }
         }
 

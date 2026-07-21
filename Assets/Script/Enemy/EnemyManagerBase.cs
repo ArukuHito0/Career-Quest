@@ -21,31 +21,50 @@ namespace CareerQuest.Enemy
 
         EnemyStat enemyStat;  // 敵のパラメーター(キャッシュ用)
         
-        protected int hp;                  // 体力
-        protected float moveSpeed;         // 移動速度
-        protected float attackRange;       // 移動速度
-        protected float searchRadius;      // 状況把握できる範囲の半径
-        protected float wallAvoidRadius;   // 壁を避け始める距離
-        protected float enemyAvoidRadius;  // 敵を避け始める距離
-        protected float bodyTickness;      // 体の厚さ
+        //  -- Golemステータス --  //
+        protected int golemHp;                  // 体力
+        protected float golemMoveSpeed;         // 移動速度
+        protected float golemAttackRange;       // 移動速度
+        protected float golemSearchRadius;      // 状況把握できる範囲の半径
+        protected int golemAttackPower;         // 攻撃力
+        protected float golemWallAvoidRadius;   // 壁を避け始める距離
+        protected float golemEnemyAvoidRadius;  // 敵を避け始める距離
+        protected float golemBodyTickness;      // 体の厚さ
 
-        //  -- Jobで使用しない変数 --  // 
-        protected int attackPower;         // 攻撃力
+        //  -- Ghostステータス --  //
+        protected int ghostHp;                  // 体力
+        protected float ghostMoveSpeed;         // 移動速度
+        protected float ghostAttackRange;       // 移動速度
+        protected float ghostSearchRadius;      // 状況把握できる範囲の半径
+        protected int ghostAttackPower;         // 攻撃力
+        protected float ghostWallAvoidRadius;   // 壁を避け始める距離
+        protected float ghostEnemyAvoidRadius;  // 敵を避け始める距離
+        protected float ghostBodyTickness;      // 体の厚さ
 
         protected virtual void Awake()
         {
             _treasureHashManager = ServiceLocator.Resolve<TreasureHashManager>();
             _enemyHashManager = ServiceLocator.Resolve<EnemyHashManager>();
 
-            enemyStat = _enemyStatHolder.GetStat(_enemyID);
-            hp = enemyStat.HP;
-            moveSpeed = enemyStat.MoveSpeed;
-            attackRange = enemyStat.AtackRange;
-            searchRadius = enemyStat.SearchRadius;
-            bodyTickness = enemyStat.BodyTickness;
-            wallAvoidRadius = enemyStat.WallAvoidRadius;
-            enemyAvoidRadius = enemyStat.EnmeyAvoidRadius;
-            attackPower = enemyStat.AttackPower;
+            enemyStat = _enemyStatHolder.GetStat(EnemyID.Golem);
+            golemHp = enemyStat.HP;
+            golemMoveSpeed = enemyStat.MoveSpeed;
+            golemAttackRange = enemyStat.AtackRange;
+            golemSearchRadius = enemyStat.SearchRadius;
+            golemBodyTickness = enemyStat.BodyTickness;
+            golemWallAvoidRadius = enemyStat.WallAvoidRadius;
+            golemEnemyAvoidRadius = enemyStat.EnmeyAvoidRadius;
+            golemAttackPower = enemyStat.AttackPower;
+
+            enemyStat = _enemyStatHolder.GetStat(EnemyID.Ghost);
+            ghostHp = enemyStat.HP;
+            ghostMoveSpeed = enemyStat.MoveSpeed;
+            ghostAttackRange = enemyStat.AtackRange;
+            ghostSearchRadius = enemyStat.SearchRadius;
+            ghostBodyTickness = enemyStat.BodyTickness;
+            ghostWallAvoidRadius = enemyStat.WallAvoidRadius;
+            ghostEnemyAvoidRadius = enemyStat.EnmeyAvoidRadius;
+            ghostAttackPower = enemyStat.AttackPower;
         }
 
         protected virtual void Start()

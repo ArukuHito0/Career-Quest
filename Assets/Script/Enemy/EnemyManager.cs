@@ -26,10 +26,12 @@ namespace CareerQuest.Enemy
             {
                 enemyDatas[i] = new EnemyData
                 {
+                    AttackPower = attackPower,
                     MoveSpeed = moveSpeed,
                     SearchRadius = searchRadius,
                     Position = enemyEntities[i].transform.position,
                     BodyTickness = bodyTickness,
+                    State = (byte)EnemyState.Attack
                 };
             }
 
@@ -63,6 +65,7 @@ namespace CareerQuest.Enemy
             for (int i = 0; i < enemyEntities.Count; i++)
             {
                 enemyEntities[i].transform.position = enemyDatas[i].Position;
+                enemyEntities[i].EnemyData.State = (byte)EnemyState.Attack;
             }
         }
 

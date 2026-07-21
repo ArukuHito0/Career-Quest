@@ -53,6 +53,7 @@ namespace CareerQuest.Enemy
                 }
             }
             data.TargetIndex = nearestIndex;
+            data.State = (byte)EnemyState.Search;
             Datas[index] = data;
         }
     }
@@ -108,7 +109,7 @@ namespace CareerQuest.Enemy
 
                 if (sqrDist < sqrEffectiveAvoidRadius)
                 {
-                    avoidance += (data.Position - Datas[i].Position).normalized * (EnemyAvoidRadius - sqrDist);
+                    avoidance += (data.Position - Datas[i].Position).normalized * (sqrEffectiveAvoidRadius - sqrDist);
                 }
             }
 
@@ -121,9 +122,8 @@ namespace CareerQuest.Enemy
 
                 if (sqrDist < wallAvoidRadSq)
                 {
-
                     float dist = Mathf.Sqrt(sqrDist);
-                    avoidance += diff / dist * (WallAvoidRadius - dist) * 2;
+                    avoidance += diff / dist * (wallAvoidRadSq - dist) * 2;
                 }
             }
 

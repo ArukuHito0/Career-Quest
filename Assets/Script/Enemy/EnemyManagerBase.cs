@@ -29,6 +29,9 @@ namespace CareerQuest.Enemy
         protected float enemyAvoidRadius;  // “G‚ğ”ğ‚¯n‚ß‚é‹——£
         protected float bodyTickness;      // ‘Ì‚ÌŒú‚³
 
+        //  -- Job‚Åg—p‚µ‚È‚¢•Ï” --  // 
+        protected int attackPower;         // UŒ‚—Í
+
         protected virtual void Awake()
         {
             _treasureHashManager = ServiceLocator.Resolve<TreasureHashManager>();
@@ -42,6 +45,7 @@ namespace CareerQuest.Enemy
             bodyTickness = enemyStat.BodyTickness;
             wallAvoidRadius = enemyStat.WallAvoidRadius;
             enemyAvoidRadius = enemyStat.EnmeyAvoidRadius;
+            attackPower = enemyStat.AttackPower;
         }
 
         protected virtual void Start()

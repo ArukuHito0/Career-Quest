@@ -1,3 +1,4 @@
+using CareerQuest.Core;
 using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
@@ -10,7 +11,7 @@ namespace CareerQuest.Enemy
     [DisallowMultipleComponent]
     public abstract class SpatialHashManagerBase<T> : MonoBehaviour where T : Component, ISpatialEntity
     {
-        public List<T> Entities = new List<T>();
+        public List<T> ActiveEntities = new List<T>();
 
         protected NativeArray<Vector3> positions;  // 敵座標配列
         protected NativeParallelMultiHashMap<int, int> cellToEntityMap;  // <セルID, セル内のオブジェクトの数>のMap
@@ -18,7 +19,7 @@ namespace CareerQuest.Enemy
 
         [Min(1)] public readonly int girdWidth = 1000;  // マップをいくつのセルで埋めるか
         [Min(1)] public readonly int cellSize = 10;  // 1つのセルの大きさ
-        protected int enemyCount = 1000;  // 敵の数
+        protected int maxEntitie = 50;  // 敵の数
 
         public NativeArray<Vector3> Positions { get => positions; }
         public NativeParallelMultiHashMap<int, int> CellToEntityMap { get => cellToEntityMap; }
@@ -26,20 +27,20 @@ namespace CareerQuest.Enemy
 
         protected virtual void Start()
         {
-            positions = new NativeArray<Vector3>(enemyCount, Allocator.Persistent);
-            cellToEntityMap = new NativeParallelMultiHashMap<int, int>(enemyCount, Allocator.Persistent);
-            ticknesses = new NativeArray<float>(enemyCount, Allocator.Persistent);
+            positions = new NativeArray<Vector3>(maxEntitie, Allocator.Persistent);
+            cellToEntityMap = new NativeParallelMultiHashMap<int, int>(maxEntitie, Allocator.Persistent);
+            ticknesses = new NativeArray<float>(maxEntitie, Allocator.Persistent);
         }
 
         protected virtual void Update()
         {
-            for (int i = 0; i < Entities.Count; i++)
+            for (int i = 0; i < ActiveEntities.Count; i++)
             {
-                if (Entities[i] != null)
+                if (ActiveEntities[i] != null)
                 {
                     //  ポジションとセルマップとエンティティの要素一致個所
-                    positions[i] = Entities[i].transform.position;
-                    ticknesses[i] = Entities[i].Tickness;
+                    positions[i] = ActiveEntities[i].transform.position;
+                    ticknesses[i] = ActiveEntities[i].Tickness;
                 }
             }
 
@@ -53,7 +54,7 @@ namespace CareerQuest.Enemy
                 GridWidth = girdWidth,
             };
 
-            JobHandle handle = job.Schedule(Entities.Count, 64);
+            JobHandle handle = job.Schedule(ActiveEntities.Count, 64);
 
             handle.Complete();
         }
@@ -68,13 +69,13 @@ namespace CareerQuest.Enemy
         //  辞書に登録
         public virtual void Register(T entity)
         {
-            entity.Index = Entities.Count;
-            Entities.Add(entity);
+            entity.Index = ActiveEntities.Count;
+            ActiveEntities.Add(entity);
 
             if (entity.Index >= positions.Length)
             {
                 positions.Dispose();
-                positions = new NativeArray<Vector3>(Entities.Count + 100, Allocator.Persistent);
+                positions = new NativeArray<Vector3>(ActiveEntities.Count + 100, Allocator.Persistent);
             }
         }
 

@@ -8,15 +8,15 @@ public class Test_Treasuer: MonoBehaviour, ISpatialEntity
     TreasureHashManager _hashManager;
     public List<int> nearbyEntities = new List<int>(64);
 
-    public float TickNess;
 
     public int Index { get; set; }  // この宝物の番号(一意)
-    public int Tickness { get; set; }  // オブジェクトの厚さ
+    public float Tickness { get; set; }  // オブジェクトの厚さ
 
     void Awake()
     {
         _hashManager = ServiceLocator.Resolve<TreasureHashManager>();
         _hashManager.Register(this);
+        Tickness = 0.2f;
     }
     void Update()
     {
@@ -38,11 +38,11 @@ public class Test_Treasuer: MonoBehaviour, ISpatialEntity
 
         foreach (int index in nearbyEntities)
         {
-            if (_hashManager.Entities[index] == this)
+            if (_hashManager.ActiveEntities[index] == this)
             {
                 continue;
             }
-            var otherEnemy = _hashManager.Entities[index];
+            var otherEnemy = _hashManager.ActiveEntities[index];
 
             float dist = Vector3.Distance(transform.position, otherEnemy.transform.position);
             if (dist < 20.0f)

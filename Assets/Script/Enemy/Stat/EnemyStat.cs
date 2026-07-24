@@ -6,6 +6,8 @@ namespace CareerQuest.Enemy
     [System.Serializable]
     public sealed class EnemyStat
     {
+        [Header("敵プレハブ")]
+        public GameObject EnemyPrefab;
         [Header("パラメーター")]
         public int HP = 100;
         public int AttackPower = 5;
@@ -19,5 +21,6 @@ namespace CareerQuest.Enemy
         public float EnmeyAvoidRadius = 2f;
         [Tooltip("体の厚み(衝突判定計算用)")]
         public float BodyTickness = 1f;
+
     }
 }

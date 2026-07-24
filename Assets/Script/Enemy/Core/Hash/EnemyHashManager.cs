@@ -5,7 +5,7 @@ namespace CareerQuest.Enemy
 {
     //  敵の位置をマップセルで把握するクラス
     [DefaultExecutionOrder(-10)]
-    public sealed class EnemyHashManager: SpatialHashManagerBase<EnemyContoroller>
+    public sealed class EnemyHashManager: SpatialHashManagerBase<EnemyController>
     {
         void Awake()
         {

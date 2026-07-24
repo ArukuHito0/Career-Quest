@@ -1,8 +1,8 @@
-using CareerQuest.Core;
 using Unity.Collections;
 using Unity.Burst;
 using Unity.Jobs;
 using UnityEngine;
+using CareerQuest.Core;
 
 namespace CareerQuest.Enemy
 {
@@ -10,8 +10,8 @@ namespace CareerQuest.Enemy
     [BurstCompile]
     public struct SearchJob : IJobParallelFor
     {
-        public NativeArray<EnemyData> Datas;  // 敵データ
-        public NativeArray<Vector3> TreasurePositions;  // お宝座標
+        public NativeArray<EnemyData> InputDatas; // 読み取り用
+        [ReadOnly] public NativeArray<Vector3> TreasurePositions;  // お宝座標
         [ReadOnly] public NativeParallelMultiHashMap<int, int> CellToEntityMap;  // <セルID, セル内の宝数>のMap
 
         public float SearchRadius;  // 探索半径
@@ -22,7 +22,7 @@ namespace CareerQuest.Enemy
 
         public void Execute(int index)
         {
-            var data = Datas[index];
+            var data = InputDatas[index];
             
             if(data.State == (byte)EnemyState.Attack)
                 return;
@@ -40,16 +40,20 @@ namespace CareerQuest.Enemy
                 {
                     int targetCellId = (myX + dx) + ((myZ + dz) * GridWidth);
 
+                    //MyLogger.Log(targetCellId);
                     if (CellToEntityMap.TryGetFirstValue(targetCellId, out int entityIndex, out var iterator))
                     {
                         do
                         {
+                            if (entityIndex < 0 || entityIndex >= TreasurePositions.Length)
+                                continue;
                             float dist = Vector3.Distance(data.Position, TreasurePositions[entityIndex]);
 
                             if (dist < data.GolemSearchRadius && dist < minDistance)
                             {
                                 minDistance = dist;
                                 nearestIndex = entityIndex;
+                                MyLogger.Log("Change");
                             }
 
                         } while (CellToEntityMap.TryGetNextValue(out entityIndex, ref iterator));
@@ -58,7 +62,7 @@ namespace CareerQuest.Enemy
             }
             data.TargetIndex = nearestIndex;
             data.State = (byte)EnemyState.Search;
-            Datas[index] = data;
+            InputDatas[index] = data;
         }
     }
 
@@ -66,7 +70,9 @@ namespace CareerQuest.Enemy
     [BurstCompile]
     public struct MoveJob : IJobParallelFor
     {
-        public NativeArray<EnemyData> Datas;  // 敵データ
+        [ReadOnly] public NativeArray<EnemyData> InputDatas; // 読み取り用
+        public NativeArray<EnemyData> OutputDatas;          // 書き込み用
+        public int ActiveEnmeyCount;
         [ReadOnly] public NativeArray<Vector3> TreasurePositions;  // お宝座標
         [ReadOnly] public NativeArray<float> TreasureTickness;  // お宝の厚さ
         [ReadOnly] public NativeArray<Vector3> WallPositions; // 壁の座標
@@ -75,12 +81,12 @@ namespace CareerQuest.Enemy
         public float EnemyAvoidRadius;  // 敵同士で避け始める距離
 
         public float DeltaTime;
-
         public void Execute(int index)
         {
-            var data = Datas[index];
+            var data = InputDatas[index];
             if (data.TargetIndex < 0) return;
             if (data.State == (byte)EnemyState.Attack) return;
+
 
             switch (data.ID)
             {
@@ -88,7 +94,9 @@ namespace CareerQuest.Enemy
                     HandleGolemMovement(
                         ref data,
                         index,
-                        Datas,
+                        InputDatas,
+                        OutputDatas,
+                        ActiveEnmeyCount,
                         TreasurePositions,
                         TreasureTickness,
                         WallPositions,
@@ -98,6 +106,7 @@ namespace CareerQuest.Enemy
                         );
                     break;
                 case EnemyID.Ghost:
+
                     break;
             }
 
@@ -106,7 +115,9 @@ namespace CareerQuest.Enemy
         static void HandleGolemMovement(
         ref EnemyData data,
         int index,
-        NativeArray<EnemyData> enemyDatas,
+        NativeArray<EnemyData> inputEnemyDatas,
+        NativeArray<EnemyData> outputEnemyDatas,
+        int ActiveEnemyCount,
         NativeArray<Vector3> treasurePositions,
         NativeArray<float> treasureTickness,
         NativeArray<Vector3> wallPositions,
@@ -125,7 +136,7 @@ namespace CareerQuest.Enemy
             if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
             {
                 data.State = (byte)EnemyState.Attack;
-                enemyDatas[index] = data;
+                outputEnemyDatas[index] = data;
 
                 return;
             }
@@ -134,20 +145,20 @@ namespace CareerQuest.Enemy
             dir.y = 0;
             Vector3 avoidance = Vector3.zero;
 
-            for (int i = 0; i < enemyDatas.Length; i++)
+            for (int i = 0; i < ActiveEnemyCount; i++)
             {
                 if (i == index) continue;
 
-                float combinedRadius = data.GolemBodyTickness + enemyDatas[i].GolemBodyTickness;
+                float combinedRadius = data.GolemBodyTickness + inputEnemyDatas[i].GolemBodyTickness;
                 float effectiveAvoidRadius = enemyAvoidRadius + combinedRadius;
                 float sqrEffectiveAvoidRadius = effectiveAvoidRadius * effectiveAvoidRadius;
 
-                Vector3 diff = data.Position - enemyDatas[i].Position;
+                Vector3 diff = data.Position - inputEnemyDatas[i].Position;
                 float sqrDist = diff.sqrMagnitude;
 
                 if (sqrDist < sqrEffectiveAvoidRadius)
                 {
-                    avoidance += (data.Position - enemyDatas[i].Position).normalized * (sqrEffectiveAvoidRadius - sqrDist);
+                    avoidance += (data.Position - inputEnemyDatas[i].Position).normalized * (sqrEffectiveAvoidRadius - sqrDist);
                 }
             }
 
@@ -169,7 +180,7 @@ namespace CareerQuest.Enemy
 
             data.Position += (dir + avoidance) * data.GolemMoveSpeed * deltaTime;
             data.State = (byte)EnemyState.Move;
-            enemyDatas[index] = data;
+            outputEnemyDatas[index] = data;
         }
     }
 }

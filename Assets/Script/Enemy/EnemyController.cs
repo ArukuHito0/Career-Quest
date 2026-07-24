@@ -5,13 +5,12 @@ namespace CareerQuest.Enemy
 {
     //  “G‚ð§Œä‚·‚éƒNƒ‰ƒX
     [DisallowMultipleComponent]
-    public sealed class EnemyContoroller : MonoBehaviour, ISpatialEntity
+    public sealed class EnemyController : MonoBehaviour, ISpatialEntity
     {
         EnemyHashManager _hashManager;
-
-        public EnemyData EnemyData;
-
+        
         [SerializeField] EnemyID _enemyID = EnemyID.Golem;
+        public EnemyData EnemyData;
 
         public EnemyID EnemyID { get => _enemyID; }
         
@@ -20,10 +19,11 @@ namespace CareerQuest.Enemy
 
         void Awake()
         {
+            MyLogger.Log("“o˜^");
             _hashManager = ServiceLocator.Resolve<EnemyHashManager>();
             _hashManager.Register(this);
         }
-        
+
         void Update()
         {
             if (EnemyData.State == (byte)EnemyState.Attack)

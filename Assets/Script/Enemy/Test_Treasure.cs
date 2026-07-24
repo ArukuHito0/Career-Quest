@@ -38,11 +38,11 @@ public class Test_Treasuer: MonoBehaviour, ISpatialEntity
 
         foreach (int index in nearbyEntities)
         {
-            if (_hashManager.Entities[index] == this)
+            if (_hashManager.ActiveEntities[index] == this)
             {
                 continue;
             }
-            var otherEnemy = _hashManager.Entities[index];
+            var otherEnemy = _hashManager.ActiveEntities[index];
 
             float dist = Vector3.Distance(transform.position, otherEnemy.transform.position);
             if (dist < 20.0f)

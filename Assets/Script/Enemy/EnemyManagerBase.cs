@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
+using UnityEngine.Pool;
 using CareerQuest.Core;
 
 namespace CareerQuest.Enemy
@@ -8,13 +9,20 @@ namespace CareerQuest.Enemy
     [DisallowMultipleComponent]
     public abstract class EnemyManagerBase<T> : MonoBehaviour where T : Component
     {
-        protected TreasureHashManager _treasureHashManager;  // 宝物のグリッドマップ管理クラス
-        protected EnemyHashManager _enemyHashManager; // 敵のグリッドマップ管理クラス
+        protected TreasureHashManager treasureHashManager;  // 宝物のグリッドマップ管理クラス
+        protected EnemyHashManager enemyHashManager; // 敵のグリッドマップ管理クラス
 
-        protected List<Test_Treasuer> treasureEntities = new List<Test_Treasuer>();
-        protected List<EnemyContoroller> enemyEntities = new List<EnemyContoroller>();
-        protected NativeArray<EnemyData> enemyDatas;
+        protected List<Test_Treasuer> activeTreasureEntities = new List<Test_Treasuer>();
+        protected List<EnemyController> activeEnemyEntities = new List<EnemyController>();
         protected NativeArray<Vector3> wallPositions;
+
+        [SerializeField] EnemyController _enemyPrefab;
+        [SerializeField] protected int maxEnemyCount = 10;
+        ObjectPool<EnemyController> _pool;
+
+        protected NativeArray<EnemyData> bufferA;
+        protected NativeArray<EnemyData> bufferB;
+        protected bool isUsingBufferA = true;
 
         [SerializeField] EnemyID _enemyID = EnemyID.Golem;
         [SerializeField] EnemyStatHolder _enemyStatHolder;  // ステータス保持SO
@@ -43,36 +51,27 @@ namespace CareerQuest.Enemy
 
         protected virtual void Awake()
         {
-            _treasureHashManager = ServiceLocator.Resolve<TreasureHashManager>();
-            _enemyHashManager = ServiceLocator.Resolve<EnemyHashManager>();
+            treasureHashManager = ServiceLocator.Resolve<TreasureHashManager>();
+            enemyHashManager = ServiceLocator.Resolve<EnemyHashManager>();
 
-            enemyStat = _enemyStatHolder.GetStat(EnemyID.Golem);
-            golemHp = enemyStat.HP;
-            golemMoveSpeed = enemyStat.MoveSpeed;
-            golemAttackRange = enemyStat.AtackRange;
-            golemSearchRadius = enemyStat.SearchRadius;
-            golemBodyTickness = enemyStat.BodyTickness;
-            golemWallAvoidRadius = enemyStat.WallAvoidRadius;
-            golemEnemyAvoidRadius = enemyStat.EnmeyAvoidRadius;
-            golemAttackPower = enemyStat.AttackPower;
+            bufferA = new NativeArray<EnemyData>(maxEnemyCount, Allocator.Persistent);
+            bufferB = new NativeArray<EnemyData>(maxEnemyCount, Allocator.Persistent);
 
-            enemyStat = _enemyStatHolder.GetStat(EnemyID.Ghost);
-            ghostHp = enemyStat.HP;
-            ghostMoveSpeed = enemyStat.MoveSpeed;
-            ghostAttackRange = enemyStat.AtackRange;
-            ghostSearchRadius = enemyStat.SearchRadius;
-            ghostBodyTickness = enemyStat.BodyTickness;
-            ghostWallAvoidRadius = enemyStat.WallAvoidRadius;
-            ghostEnemyAvoidRadius = enemyStat.EnmeyAvoidRadius;
-            ghostAttackPower = enemyStat.AttackPower;
+            _pool = new ObjectPool<EnemyController>(
+            createFunc: () => Instantiate(_enemyPrefab),
+            actionOnGet: e => e.gameObject.SetActive(true),
+            actionOnRelease: e => e.gameObject.SetActive(false),
+            actionOnDestroy: e => Destroy(e.gameObject),
+            defaultCapacity: 100
+        );
+
+            SetStat();
         }
 
         protected virtual void Start()
         {
-            treasureEntities = _treasureHashManager.Entities;
-            enemyEntities = _enemyHashManager.Entities;
-
-            enemyDatas = new NativeArray<EnemyData>(enemyEntities.Count, Allocator.Persistent);
+            activeTreasureEntities = treasureHashManager.ActiveEntities;
+            activeEnemyEntities = enemyHashManager.ActiveEntities;
 
             var wallObjects = GameObject.FindGameObjectsWithTag("Wall");
             wallPositions = new NativeArray<Vector3>(wallObjects.Length, Allocator.Persistent);
@@ -84,7 +83,75 @@ namespace CareerQuest.Enemy
 
         protected virtual void OnDestroy()
         {
-            if (enemyDatas.IsCreated) enemyDatas.Dispose();
+            if (bufferA.IsCreated) bufferA.Dispose();
+            if (bufferB.IsCreated) bufferB.Dispose();
+        }
+
+        //  生成
+        public void SpawnEnemy(Vector3 position)
+        {
+            EnsureBufferSize(activeEnemyEntities.Count + 1);
+
+            MyLogger.Log("敵生成");
+            var enemy = _pool.Get();
+            enemy.transform.position = position;
+        }
+
+        //  削除
+        //public void DespawnEnemy(EnemyController enemy)
+        //{
+        //    int indexToRemove = enemy.DataIndex;
+        //    int lastIndex = activeEnemyEntities.Count - 1;
+
+        //    if (indexToRemove < lastIndex)
+        //    {
+        //        var lastEnemy = activeEnemyEntities[lastIndex];
+        //        activeEnemyEntities[indexToRemove] = lastEnemy;
+        //        lastEnemy.DataIndex = indexToRemove;
+        //        bufferA[indexToRemove] = bufferA[lastIndex];
+        //        bufferB[indexToRemove] = bufferB[lastIndex];
+        //    }
+
+        //    activeEnemyEntities.RemoveAt(lastIndex);
+        //    _pool.Release(enemy);
+        //}
+
+        // バッファをリサイズするメソッドを追加
+        protected void EnsureBufferSize(int count)
+        {
+            if (bufferA.IsCreated && bufferA.Length >= count) return;
+
+            if (bufferA.IsCreated) bufferA.Dispose();
+            if (bufferB.IsCreated) bufferB.Dispose();
+
+            int newSize = Mathf.Max(count, maxEnemyCount);
+            bufferA = new NativeArray<EnemyData>(newSize, Allocator.Persistent);
+            bufferB = new NativeArray<EnemyData>(newSize, Allocator.Persistent);
+        }
+
+        void SetStat()
+        {
+            //  -- ゴーレムの能力値設定
+            enemyStat = _enemyStatHolder.GetStat(EnemyID.Golem);
+            golemHp = enemyStat.HP;
+            golemMoveSpeed = enemyStat.MoveSpeed;
+            golemAttackRange = enemyStat.AtackRange;
+            golemSearchRadius = enemyStat.SearchRadius;
+            golemBodyTickness = enemyStat.BodyTickness;
+            golemWallAvoidRadius = enemyStat.WallAvoidRadius;
+            golemEnemyAvoidRadius = enemyStat.EnmeyAvoidRadius;
+            golemAttackPower = enemyStat.AttackPower;
+
+            //  -- ゴーストの能力値設定
+            enemyStat = _enemyStatHolder.GetStat(EnemyID.Ghost);
+            ghostHp = enemyStat.HP;
+            ghostMoveSpeed = enemyStat.MoveSpeed;
+            ghostAttackRange = enemyStat.AtackRange;
+            ghostSearchRadius = enemyStat.SearchRadius;
+            ghostBodyTickness = enemyStat.BodyTickness;
+            ghostWallAvoidRadius = enemyStat.WallAvoidRadius;
+            ghostEnemyAvoidRadius = enemyStat.EnmeyAvoidRadius;
+            ghostAttackPower = enemyStat.AttackPower;
         }
     }
 }

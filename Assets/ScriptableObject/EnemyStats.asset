@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CareerQuest.Enemy.EnemyStatHolder
   _idStatList:
   - ID: 0
+    EnemyPrefab: {fileID: 2717969379764669028, guid: c84e547f044670042b8153b5907446c0, type: 3}
     Stat:
       HP: 200
       AttackPower: 5
@@ -24,6 +25,7 @@ MonoBehaviour:
       EnmeyAvoidRadius: 0.1
       BodyTickness: 0.5
   - ID: 1
+    EnemyPrefab: {fileID: 0}
     Stat:
       HP: 100
       AttackPower: 5

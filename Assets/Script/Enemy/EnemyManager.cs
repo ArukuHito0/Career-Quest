@@ -1,3 +1,5 @@
+using CareerQuest.Core;
+using System.Linq;
 using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Jobs;
@@ -15,19 +17,23 @@ namespace CareerQuest.Enemy
         protected override void Start()
         {
             base.Start();
+            SpawnEnemy(new Vector3(0, 0, 0));
         }
 
         void Update()
         {
-            if (treasureEntities.Count == 0) return;
-            if (enemyEntities.Count == 0) return;
+            if (activeTreasureEntities.Count == 0) return;
+            if (activeEnemyEntities.Count == 0) return;
 
-            for (int i = 0; i < enemyEntities.Count; i++)
+            var readBuffer = isUsingBufferA ? bufferA : bufferB;
+            var writeBuffer = isUsingBufferA ? bufferB : bufferA;
+
+            for (int i = 0; i < activeEnemyEntities.Count; i++)
             {
-                enemyDatas[i] = new EnemyData
+                readBuffer[i] = new EnemyData
                 {
-                    Position = enemyEntities[i].transform.position,
-                    ID = enemyEntities[i].EnemyID,
+                    Position = activeEnemyEntities[i].transform.position,
+                    ID = activeEnemyEntities[i].EnemyID,
 
                     GolemAttackPower = golemAttackPower,
                     GolemMoveSpeed = golemMoveSpeed,
@@ -42,36 +48,39 @@ namespace CareerQuest.Enemy
 
             var searchJob = new SearchJob
             {
-                Datas = enemyDatas,
-                TreasurePositions = _treasureHashManager.Positions,
-                CellToEntityMap = _treasureHashManager.CellToEntityMap,
-                CellSize =_treasureHashManager.cellSize,
-                GridWidth =_treasureHashManager.girdWidth,
+                InputDatas = readBuffer,
+                TreasurePositions = treasureHashManager.Positions,
+                CellToEntityMap = treasureHashManager.CellToEntityMap,
+                CellSize = treasureHashManager.cellSize,
+                GridWidth = treasureHashManager.girdWidth,
                 DeltaTime = Time.deltaTime
             };
-
-            JobHandle searchHandle = searchJob.Schedule(enemyEntities.Count, 64);
             
+            JobHandle searchHandle = searchJob.Schedule(activeEnemyEntities.Count, 64);
+
             var moveJob = new MoveJob
             {
-                Datas = enemyDatas,
-                TreasurePositions = _treasureHashManager.Positions,
-                TreasureTickness = _treasureHashManager.Ticknesses,
+                InputDatas = readBuffer,
+                OutputDatas = writeBuffer,
+                TreasurePositions = treasureHashManager.Positions,
+                TreasureTickness = treasureHashManager.Ticknesses,
                 WallPositions = wallPositions,
                 WallAvoidRadius = golemWallAvoidRadius,
                 EnemyAvoidRadius = golemEnemyAvoidRadius,
                 DeltaTime = Time.deltaTime
             };
 
-            var moveHandle = moveJob.Schedule(enemyEntities.Count, 64, searchHandle);
+            var moveHandle = moveJob.Schedule(activeEnemyEntities.Count, 64, searchHandle);
             moveHandle.Complete();
 
-            for (int i = 0; i < enemyEntities.Count; i++)
+            for (int i = 0; i < activeEnemyEntities.Count; i++)
             {
-                enemyEntities[i].transform.position = enemyDatas[i].Position;
-                enemyEntities[i].EnemyData.State = enemyDatas[i].State;
-                enemyEntities[i].EnemyData.GolemAttackPower = golemAttackPower;
+                activeEnemyEntities[i].transform.position = writeBuffer[i].Position;
+                activeEnemyEntities[i].EnemyData.State = writeBuffer[i].State;
+                activeEnemyEntities[i].EnemyData.GolemAttackPower = golemAttackPower;
             }
+
+            isUsingBufferA = !isUsingBufferA;
         }
 
         protected override void OnDestroy()

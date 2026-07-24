@@ -5,7 +5,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using Unity.EditorCoroutines.Editor;
 using UnityEditor;
 using UnityEngine;
@@ -17,6 +16,7 @@ namespace SpreadSheetLoader
     {
         public string sheetName;
         public List<SheetFieldInfo> fields;
+        public List<SheetEnumInfo> enums;
         public JArray data;
     }
 
@@ -24,6 +24,12 @@ namespace SpreadSheetLoader
     {
         public string name;
         public string type;
+    }
+
+    public class SheetEnumInfo
+    {
+        public string name;
+        public List<string> items;
     }
 
     public class SpreadSheetLoader : EditorWindow
@@ -37,6 +43,7 @@ namespace SpreadSheetLoader
 
         private SheetLoadData sheetData;
 
+        #region エディタ部分
         [MenuItem("Tool/SpreadSheetLoader")]
         public static void ShowWindow()
         {
@@ -114,7 +121,9 @@ namespace SpreadSheetLoader
                 EditorGUILayout.EndScrollView();
             }
         }
+        #endregion
 
+        #region GASを叩き、スプレッドシートのデータを読み込むコルーチン群
         // ScriptableObjectとデータ格納用のクラスのCSファイルを生成
         private IEnumerator GenerateScriptableObjectCSandDataClassCS()
         {
@@ -135,8 +144,8 @@ namespace SpreadSheetLoader
                         Directory.CreateDirectory(outputFilePath);
                     }
 
-                    GenerateDataCS(sheetData);
-                    GenerateScriptableObjectCS(sheetData);
+                    CSFileGenerator.GenerateDataCS(sheetData, dataName, outputFilePath);
+                    CSFileGenerator.GenerateScriptableObjectCS(sheetData, dataName, outputFilePath);
 
                     SetSessionStates();
 
@@ -179,6 +188,7 @@ namespace SpreadSheetLoader
                 }
             }
         }
+        #endregion
 
         private void SetSessionStates()
         {
@@ -187,56 +197,6 @@ namespace SpreadSheetLoader
             SessionState.SetString("SheetName", sheetData.sheetName);
             SessionState.SetString("DataName", dataName);
             SessionState.SetString("Json", sheetData.data.ToString(Formatting.None));
-        }
-
-        // データ格納用クラスのCSファイル作成
-        private void GenerateDataCS(SheetLoadData data)
-        {
-            string path = Path.Combine(outputFilePath, $"{dataName}.cs");
-
-            using (StreamWriter sw = new StreamWriter(path))
-            {
-                StringBuilder sb = new StringBuilder();
-
-                sb.AppendLine("using System.Collections;");
-                sb.AppendLine("using System.Collections.Generic;\n");
-                sb.AppendLine("[System.Serializable]");
-                sb.AppendLine($"public class {dataName}");
-                sb.AppendLine("{");
-                foreach (SheetFieldInfo field in data.fields)
-                {
-                    if (field.type.Contains("enum:"))
-                    {
-                        field.type = field.type.Replace("enum:", "");
-                    }
-
-                    sb.AppendLine($"    public {field.type} {field.name};");
-                }
-                sb.AppendLine("}");
-
-                sw.WriteLine(sb.ToString());
-            }
-        }
-
-        // SO用のCSファイル作成
-        private void GenerateScriptableObjectCS(SheetLoadData data)
-        {
-            string path = Path.Combine(outputFilePath, $"{data.sheetName}.cs");
-
-            using (StreamWriter sw = new StreamWriter(path))
-            {
-                StringBuilder sb = new StringBuilder();
-
-                sb.AppendLine("using UnityEngine;");
-                sb.AppendLine("using System.Collections;");
-                sb.AppendLine("using System.Collections.Generic;\n");
-                sb.AppendLine($"public class {data.sheetName} : SpreadSheetSO");
-                sb.AppendLine("{");
-                sb.AppendLine($"    [SerializeField] public List<{dataName}> {dataName.ToLowerFirst()}List;");
-                sb.AppendLine("}");
-
-                sw.WriteLine(sb.ToString());
-            }
         }
     }
 }

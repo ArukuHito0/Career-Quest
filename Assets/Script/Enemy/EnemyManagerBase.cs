@@ -23,9 +23,14 @@ namespace CareerQuest.Enemy
         
         protected int hp;                  // ‘Ì—Í
         protected float moveSpeed;         // ˆÚ“®‘¬“x
+        protected float attackRange;       // ˆÚ“®‘¬“x
         protected float searchRadius;      // ó‹µ”cˆ¬‚Å‚«‚é”ÍˆÍ‚Ì”¼Œa
         protected float wallAvoidRadius;   // •Ç‚ğ”ğ‚¯n‚ß‚é‹——£
         protected float enemyAvoidRadius;  // “G‚ğ”ğ‚¯n‚ß‚é‹——£
+        protected float bodyTickness;      // ‘Ì‚ÌŒú‚³
+
+        //  -- Job‚Åg—p‚µ‚È‚¢•Ï” --  // 
+        protected int attackPower;         // UŒ‚—Í
 
         protected virtual void Awake()
         {
@@ -35,10 +40,14 @@ namespace CareerQuest.Enemy
             enemyStat = _enemyStatHolder.GetStat(_enemyID);
             hp = enemyStat.HP;
             moveSpeed = enemyStat.MoveSpeed;
+            attackRange = enemyStat.AtackRange;
             searchRadius = enemyStat.SearchRadius;
+            bodyTickness = enemyStat.BodyTickness;
             wallAvoidRadius = enemyStat.WallAvoidRadius;
             enemyAvoidRadius = enemyStat.EnmeyAvoidRadius;
+            attackPower = enemyStat.AttackPower;
         }
+
         protected virtual void Start()
         {
             treasureEntities = _treasureHashManager.Entities;

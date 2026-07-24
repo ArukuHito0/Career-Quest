@@ -122,6 +122,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2076853657799489692}
   - component: {fileID: -2748850055078134579}
+  - component: {fileID: 3394363311089272907}
   m_Layer: 0
   m_Name: Snow_Surface
   m_TagString: Block
@@ -163,10 +164,32 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!64 &3394363311089272907
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4167175583183325161}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 4802109730626926023, guid: 34b418c1b7c2085459cb260464e13de8, type: 3}
 --- !u!1 &8399303270151732518
 GameObject:
   m_ObjectHideFlags: 0

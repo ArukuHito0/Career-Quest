@@ -5,30 +5,27 @@ namespace CareerQuest.Enemy
 {
     //  敵を制御するクラス
     [DisallowMultipleComponent]
-    public sealed class EnemyContoroller : MonoBehaviour, ISpatialEntity
+    public sealed class EnemyController : MonoBehaviour, ISpatialEntity
     {
         EnemyHashManager _hashManager;
-
+        
+        [SerializeField] EnemyID _enemyID = EnemyID.Golem;
         public EnemyData EnemyData;
 
-        [SerializeField] EnemyID _enemyID = EnemyID.Golem;
+        public EnemyID EnemyID { get => _enemyID; }
         
         public int Index { get; set; }  // 敵番号
-        public int Tickness { get; set; }  // オブジェクトの厚さ
+        public float Tickness { get; set; }  // オブジェクトの厚さ
 
         void Awake()
         {
+            MyLogger.Log("登録");
             _hashManager = ServiceLocator.Resolve<EnemyHashManager>();
             _hashManager.Register(this);
         }
 
-        void Start()
-        {
-        }
-        
         void Update()
         {
-
             if (EnemyData.State == (byte)EnemyState.Attack)
             {
                 PerformAttack();

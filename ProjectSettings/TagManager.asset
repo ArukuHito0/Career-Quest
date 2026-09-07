@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Wall
   - Block
+  - Enemy
   layers:
   - Default
   - TransparentFX
@@ -15,7 +16,7 @@ TagManager:
   - UI
   - Buildable Layer
   - Handle
-  - 
+  - Enemy
   - 
   - 
   - 

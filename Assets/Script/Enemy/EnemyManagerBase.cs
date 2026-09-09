@@ -63,7 +63,7 @@ namespace CareerQuest.Enemy
             actionOnRelease: e => e.gameObject.SetActive(false),
             actionOnDestroy: e => Destroy(e.gameObject),
             defaultCapacity: 100
-        );
+            );
 
             SetStat();
         }

@@ -6,6 +6,7 @@ namespace CareerQuest.Enemy
     public struct EnemyData
     {
         public EnemyID ID;          // 敵のID
+        public EnemyTarget Target;  // 目標ID
         public byte State;          // 敵の状態(EnemyState)
         public Vector3 Position;    // 座標
         public int TargetIndex;     // ターゲットのIndex

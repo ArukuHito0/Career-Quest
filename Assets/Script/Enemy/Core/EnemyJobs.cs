@@ -2,19 +2,16 @@ using Unity.Collections;
 using Unity.Burst;
 using Unity.Jobs;
 using UnityEngine;
-using CareerQuest.Core;
 
 namespace CareerQuest.Enemy
 {
     //  周囲探索
     [BurstCompile]
-    public struct SearchJob : IJobParallelFor
+    public struct SearchTreasureJob : IJobParallelFor
     {
         public NativeArray<EnemyData> InputDatas; // 読み取り用
         [ReadOnly] public NativeArray<Vector3> TreasurePositions;  // お宝座標
         [ReadOnly] public NativeParallelMultiHashMap<int, int> CellToEntityMap;  // <セルID, セル内の宝数>のMap
-
-        public float SearchRadius;  // 探索半径
 
         public int GridWidth;  // グリッド横幅
         public float CellSize;  // 1つのセルのサイズ
@@ -24,7 +21,10 @@ namespace CareerQuest.Enemy
         {
             var data = InputDatas[index];
             
-            if(data.State == (byte)EnemyState.Attack)
+            if(
+                data.ID != EnemyID.Golem ||
+                data.State == (byte)EnemyState.Attack
+                )
                 return;
 
             float minDistance = float.MaxValue;
@@ -40,7 +40,6 @@ namespace CareerQuest.Enemy
                 {
                     int targetCellId = (myX + dx) + ((myZ + dz) * GridWidth);
 
-                    //MyLogger.Log(targetCellId);
                     if (CellToEntityMap.TryGetFirstValue(targetCellId, out int entityIndex, out var iterator))
                     {
                         do
@@ -53,7 +52,66 @@ namespace CareerQuest.Enemy
                             {
                                 minDistance = dist;
                                 nearestIndex = entityIndex;
-                                MyLogger.Log("Change");
+                            }
+
+                        } while (CellToEntityMap.TryGetNextValue(out entityIndex, ref iterator));
+                    }
+                }
+            }
+            data.TargetIndex = nearestIndex;
+            data.State = (byte)EnemyState.Search;
+            InputDatas[index] = data;
+        }
+    }
+
+    //  プレイヤー探索
+    [BurstCompile]
+    public struct SearchPlayerJob : IJobParallelFor
+    {
+        public NativeArray<EnemyData> InputDatas; // 読み取り用
+        [ReadOnly] public NativeArray<Vector3> PlayerPositions;  // プレイヤー座標
+        [ReadOnly] public NativeParallelMultiHashMap<int, int> CellToEntityMap;  // <セルID, セル内のプレイヤー>のMap
+
+        public int GridWidth;  // グリッド横幅
+        public float CellSize;  // 1つのセルのサイズ
+        public float DeltaTime;
+
+        public void Execute(int index)
+        {
+            var data = InputDatas[index];
+
+            if (
+                data.ID != EnemyID.Ghost ||
+                data.State == (byte)EnemyState.Attack
+                )
+                return;
+
+            float minDistance = float.MaxValue;
+            int nearestIndex = -1;
+
+            int myX = Mathf.FloorToInt(data.Position.x / CellSize);
+            int myZ = Mathf.FloorToInt(data.Position.z / CellSize);
+            int myCellId = myX + (myZ * GridWidth);
+
+            for (int dz = -1; dz <= 1; dz++)
+            {
+                for (int dx = -1; dx <= 1; dx++)
+                {
+                    int targetCellId = (myX + dx) + ((myZ + dz) * GridWidth);
+
+                    if (CellToEntityMap.TryGetFirstValue(targetCellId, out int entityIndex, out var iterator))
+                    {
+                        do
+                        {
+                            if (entityIndex < 0 || entityIndex >= PlayerPositions.Length)
+                                continue;
+
+                            float dist = Vector3.Distance(data.Position, PlayerPositions[entityIndex]);
+
+                            if (dist < data.GolemSearchRadius && dist < minDistance)
+                            {
+                                minDistance = dist;
+                                nearestIndex = entityIndex;
                             }
 
                         } while (CellToEntityMap.TryGetNextValue(out entityIndex, ref iterator));
@@ -106,6 +164,7 @@ namespace CareerQuest.Enemy
                         );
                     break;
                 case EnemyID.Ghost:
+                    
 
                     break;
             }

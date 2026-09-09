@@ -1,7 +1,8 @@
 namespace CareerQuest
 {
-    public enum EnemyTarget
+    public enum EnemyTarget : byte
     {
-        Treasure,  // ‚¨•ó
+        Treasure = 0,  // ‚¨•ó
+        Players  = 1,   // ƒvƒŒƒCƒ„[
     }
 }

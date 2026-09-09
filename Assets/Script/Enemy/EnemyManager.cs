@@ -1,5 +1,3 @@
-using CareerQuest.Core;
-using System.Linq;
 using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Jobs;
@@ -46,7 +44,7 @@ namespace CareerQuest.Enemy
                 };
             }
 
-            var searchJob = new SearchJob
+            var searchTreasureJob = new SearchTreasureJob
             {
                 InputDatas = readBuffer,
                 TreasurePositions = treasureHashManager.Positions,
@@ -55,8 +53,20 @@ namespace CareerQuest.Enemy
                 GridWidth = treasureHashManager.girdWidth,
                 DeltaTime = Time.deltaTime
             };
-            
-            JobHandle searchHandle = searchJob.Schedule(activeEnemyEntities.Count, 64);
+
+            JobHandle searchTreasureHandle = searchTreasureJob.Schedule(activeEnemyEntities.Count, 64);
+
+            //var searchPlayerJob = new SearchPlayerJob
+            //{
+            //    InputDatas = readBuffer,
+            //    TreasurePositions = treasureHashManager.Positions,
+            //    CellToEntityMap = treasureHashManager.CellToEntityMap,
+            //    CellSize = treasureHashManager.cellSize,
+            //    GridWidth = treasureHashManager.girdWidth,
+            //    DeltaTime = Time.deltaTime
+            //};
+
+            //JobHandle searchPlayerHandle = searchPlayerJob.Schedule(activeEnemyEntities.Count, 64);
 
             var moveJob = new MoveJob
             {
@@ -70,7 +80,7 @@ namespace CareerQuest.Enemy
                 DeltaTime = Time.deltaTime
             };
 
-            var moveHandle = moveJob.Schedule(activeEnemyEntities.Count, 64, searchHandle);
+            var moveHandle = moveJob.Schedule(activeEnemyEntities.Count, 64, searchTreasureHandle);
             moveHandle.Complete();
 
             for (int i = 0; i < activeEnemyEntities.Count; i++)

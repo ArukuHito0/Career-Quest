@@ -132,7 +132,9 @@ namespace CareerQuest.Enemy
         public NativeArray<EnemyData> OutputDatas;          // 書き込み用
         public int ActiveEnmeyCount;
         [ReadOnly] public NativeArray<Vector3> TreasurePositions;  // お宝座標
-        [ReadOnly] public NativeArray<float> TreasureTickness;  // お宝の厚さ
+        [ReadOnly] public NativeArray<float> TreasureTickness;  // お宝の厚み
+        [ReadOnly] public NativeArray<Vector3> PlaeyrPositions;  // プレイヤー座標
+        [ReadOnly] public NativeArray<float> PlayerTickness;  // プレイヤーの厚み
         [ReadOnly] public NativeArray<Vector3> WallPositions; // 壁の座標
 
         public float WallAvoidRadius;  // 壁を避け始める距離
@@ -164,13 +166,25 @@ namespace CareerQuest.Enemy
                         );
                     break;
                 case EnemyID.Ghost:
-                    
-
+                    HandleGhostMovement(
+                        ref data,
+                        index,
+                        InputDatas,
+                        OutputDatas,
+                        ActiveEnmeyCount,
+                        PlaeyrPositions,
+                        PlayerTickness,
+                        WallPositions,
+                        WallAvoidRadius,
+                        EnemyAvoidRadius,
+                        DeltaTime
+                        );
                     break;
             }
 
         }
 
+        #region ゴーレム移動ロジック
         static void HandleGolemMovement(
         ref EnemyData data,
         int index,
@@ -241,6 +255,80 @@ namespace CareerQuest.Enemy
             data.State = (byte)EnemyState.Move;
             outputEnemyDatas[index] = data;
         }
+        #endregion
+
+        #region ゴースト移動ロジック
+        static void HandleGhostMovement(
+        ref EnemyData data,
+        int index,
+        NativeArray<EnemyData> inputEnemyDatas,
+        NativeArray<EnemyData> outputEnemyDatas,
+        int ActiveEnemyCount,
+        NativeArray<Vector3> playerPositions,
+        NativeArray<float> playerTickness,
+        NativeArray<Vector3> wallPositions,
+        float wallAvoidRadius,
+        float enemyAvoidRadius,
+        float deltaTime
+            )
+        {
+
+            Vector3 toTarget = playerPositions[data.TargetIndex] - data.Position;
+            float distSqToTarget = toTarget.sqrMagnitude;
+
+            float targetRadius = playerTickness[data.TargetIndex];
+            float effectiveAttackRange = data.GolemAttackRange + data.GhostBodyTickness + targetRadius;
+
+            if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
+            {
+                data.State = (byte)EnemyState.Attack;
+                outputEnemyDatas[index] = data;
+
+                return;
+            }
+
+            Vector3 dir = toTarget / Mathf.Sqrt(distSqToTarget);
+            dir.y = 0;
+            Vector3 avoidance = Vector3.zero;
+
+            for (int i = 0; i < ActiveEnemyCount; i++)
+            {
+                if (i == index) continue;
+
+                float combinedRadius = data.GolemBodyTickness + inputEnemyDatas[i].GolemBodyTickness;
+                float effectiveAvoidRadius = enemyAvoidRadius + combinedRadius;
+                float sqrEffectiveAvoidRadius = effectiveAvoidRadius * effectiveAvoidRadius;
+
+                Vector3 diff = data.Position - inputEnemyDatas[i].Position;
+                float sqrDist = diff.sqrMagnitude;
+
+                if (sqrDist < sqrEffectiveAvoidRadius)
+                {
+                    avoidance += (data.Position - inputEnemyDatas[i].Position).normalized * (sqrEffectiveAvoidRadius - sqrDist);
+                }
+            }
+
+            float wallAvoidRadSq = wallAvoidRadius * wallAvoidRadius;
+            for (int i = 0; i < wallPositions.Length; i++)
+            {
+                Vector3 diff = data.Position - wallPositions[i];
+                diff.y = 0;
+                float sqrDist = diff.sqrMagnitude;
+
+                if (sqrDist < wallAvoidRadSq)
+                {
+                    float dist = Mathf.Sqrt(sqrDist);
+                    avoidance += diff / dist * (wallAvoidRadSq - dist) * 2;
+                }
+            }
+
+            avoidance.y = 0;
+
+            data.Position += (dir + avoidance) * data.GolemMoveSpeed * deltaTime;
+            data.State = (byte)EnemyState.Move;
+            outputEnemyDatas[index] = data;
+        }
+#endregion
     }
 }
 

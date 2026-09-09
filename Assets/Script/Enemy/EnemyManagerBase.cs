@@ -10,9 +10,11 @@ namespace CareerQuest.Enemy
     public abstract class EnemyManagerBase<T> : MonoBehaviour where T : Component
     {
         protected TreasureHashManager treasureHashManager;  // 宝物のグリッドマップ管理クラス
+        protected PlayerHashManager playerHashManager; // プレイヤーのグリッドマップ管理クラス
         protected EnemyHashManager enemyHashManager; // 敵のグリッドマップ管理クラス
 
         protected List<Test_Treasuer> activeTreasureEntities = new List<Test_Treasuer>();
+        protected List<Test_Player> activePlayerEntities = new List<Test_Player>();
         protected List<EnemyController> activeEnemyEntities = new List<EnemyController>();
         protected NativeArray<Vector3> wallPositions;
 
@@ -52,6 +54,7 @@ namespace CareerQuest.Enemy
         protected virtual void Awake()
         {
             treasureHashManager = ServiceLocator.Resolve<TreasureHashManager>();
+            playerHashManager = ServiceLocator.Resolve<PlayerHashManager>();
             enemyHashManager = ServiceLocator.Resolve<EnemyHashManager>();
 
             bufferA = new NativeArray<EnemyData>(maxEnemyCount, Allocator.Persistent);
@@ -71,6 +74,7 @@ namespace CareerQuest.Enemy
         protected virtual void Start()
         {
             activeTreasureEntities = treasureHashManager.ActiveEntities;
+            activePlayerEntities = playerHashManager.ActiveEntities;
             activeEnemyEntities = enemyHashManager.ActiveEntities;
 
             var wallObjects = GameObject.FindGameObjectsWithTag("Wall");

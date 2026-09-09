@@ -1,3 +1,4 @@
+using CareerQuest.Core;
 using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Jobs;
@@ -56,17 +57,21 @@ namespace CareerQuest.Enemy
 
             JobHandle searchTreasureHandle = searchTreasureJob.Schedule(activeEnemyEntities.Count, 64);
 
-            //var searchPlayerJob = new SearchPlayerJob
-            //{
-            //    InputDatas = readBuffer,
-            //    TreasurePositions = treasureHashManager.Positions,
-            //    CellToEntityMap = treasureHashManager.CellToEntityMap,
-            //    CellSize = treasureHashManager.cellSize,
-            //    GridWidth = treasureHashManager.girdWidth,
-            //    DeltaTime = Time.deltaTime
-            //};
+            var searchPlayerJob = new SearchPlayerJob
+            {
+                InputDatas = readBuffer,
+                PlayerPositions = playerHashManager.Positions,
+                CellToEntityMap = playerHashManager.CellToEntityMap,
+                CellSize = treasureHashManager.cellSize,
+                GridWidth = treasureHashManager.girdWidth,
+                DeltaTime = Time.deltaTime
+            };
 
-            //JobHandle searchPlayerHandle = searchPlayerJob.Schedule(activeEnemyEntities.Count, 64);
+            JobHandle searchPlayerHandle = searchPlayerJob.Schedule(activeEnemyEntities.Count, 64, searchTreasureHandle);
+
+            JobHandle combinedSearchHandle = JobHandle.CombineDependencies(searchTreasureHandle, searchPlayerHandle);
+            combinedSearchHandle.Complete();
+            MyLogger.Log("é¸àÕíTçıäÆóπ");
 
             var moveJob = new MoveJob
             {
@@ -74,13 +79,15 @@ namespace CareerQuest.Enemy
                 OutputDatas = writeBuffer,
                 TreasurePositions = treasureHashManager.Positions,
                 TreasureTickness = treasureHashManager.Ticknesses,
+                PlaeyrPositions = playerHashManager.Positions,
+                PlayerTickness = playerHashManager.Ticknesses,
                 WallPositions = wallPositions,
                 WallAvoidRadius = golemWallAvoidRadius,
                 EnemyAvoidRadius = golemEnemyAvoidRadius,
                 DeltaTime = Time.deltaTime
             };
 
-            var moveHandle = moveJob.Schedule(activeEnemyEntities.Count, 64, searchTreasureHandle);
+            var moveHandle = moveJob.Schedule(activeEnemyEntities.Count, 64, combinedSearchHandle);
             moveHandle.Complete();
 
             for (int i = 0; i < activeEnemyEntities.Count; i++)

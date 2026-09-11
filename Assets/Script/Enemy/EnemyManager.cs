@@ -1,3 +1,4 @@
+using CareerQuest.Core;
 using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Jobs;
@@ -15,58 +16,88 @@ namespace CareerQuest.Enemy
         protected override void Start()
         {
             base.Start();
+            SpawnEnemy(new Vector3(0, 0, 0));
         }
 
         void Update()
         {
-            if (treasureEntities.Count == 0) return;
-            if (enemyEntities.Count == 0) return;
+            if (activeTreasureEntities.Count == 0) return;
+            if (activeEnemyEntities.Count == 0) return;
 
-            for (int i = 0; i < enemyEntities.Count; i++)
+            var readBuffer = isUsingBufferA ? bufferA : bufferB;
+            var writeBuffer = isUsingBufferA ? bufferB : bufferA;
+
+            for (int i = 0; i < activeEnemyEntities.Count; i++)
             {
-                enemyDatas[i] = new EnemyData
+                readBuffer[i] = new EnemyData
                 {
-                    AttackPower = attackPower,
-                    MoveSpeed = moveSpeed,
-                    SearchRadius = searchRadius,
-                    Position = enemyEntities[i].transform.position,
-                    BodyTickness = bodyTickness,
-                    State = (byte)EnemyState.Attack
+                    Position = activeEnemyEntities[i].transform.position,
+                    ID = activeEnemyEntities[i].EnemyID,
+
+                    GolemAttackPower = golemAttackPower,
+                    GolemMoveSpeed = golemMoveSpeed,
+                    GolemSearchRadius = golemSearchRadius,
+                    GolemBodyTickness = golemBodyTickness,
+
+                    GhostMoveSpeed = ghostMoveSpeed,
+                    GhostSearchRadius = golemSearchRadius,
+                    GhostBodyTickness = ghostBodyTickness,
                 };
             }
 
-            var searchJob = new SearchJob
+            var searchTreasureJob = new SearchTreasureJob
             {
-                Datas = enemyDatas,
-                TreasurePositions = _treasureHashManager.Positions,
-                CellToEntityMap = _treasureHashManager.CellToEntityMap,
-                CellSize =_treasureHashManager.cellSize,
-                GridWidth =_treasureHashManager.girdWidth,
+                InputDatas = readBuffer,
+                TreasurePositions = treasureHashManager.Positions,
+                CellToEntityMap = treasureHashManager.CellToEntityMap,
+                CellSize = treasureHashManager.cellSize,
+                GridWidth = treasureHashManager.girdWidth,
                 DeltaTime = Time.deltaTime
             };
 
-            JobHandle searchHandle = searchJob.Schedule(enemyEntities.Count, 64);
-            
+            JobHandle searchTreasureHandle = searchTreasureJob.Schedule(activeEnemyEntities.Count, 64);
+
+            var searchPlayerJob = new SearchPlayerJob
+            {
+                InputDatas = readBuffer,
+                PlayerPositions = playerHashManager.Positions,
+                CellToEntityMap = playerHashManager.CellToEntityMap,
+                CellSize = treasureHashManager.cellSize,
+                GridWidth = treasureHashManager.girdWidth,
+                DeltaTime = Time.deltaTime
+            };
+
+            JobHandle searchPlayerHandle = searchPlayerJob.Schedule(activeEnemyEntities.Count, 64, searchTreasureHandle);
+
+            JobHandle combinedSearchHandle = JobHandle.CombineDependencies(searchTreasureHandle, searchPlayerHandle);
+            combinedSearchHandle.Complete();
+            MyLogger.Log("ŽüˆÍ’TõŠ®—¹");
+
             var moveJob = new MoveJob
             {
-                Datas = enemyDatas,
-                TreasurePositions = _treasureHashManager.Positions,
-                TreasureTickness = _treasureHashManager.Ticknesses,
-                AttackRange = attackRange,
+                InputDatas = readBuffer,
+                OutputDatas = writeBuffer,
+                TreasurePositions = treasureHashManager.Positions,
+                TreasureTickness = treasureHashManager.Ticknesses,
+                PlaeyrPositions = playerHashManager.Positions,
+                PlayerTickness = playerHashManager.Ticknesses,
                 WallPositions = wallPositions,
-                WallAvoidRadius = wallAvoidRadius,
-                EnemyAvoidRadius = enemyAvoidRadius,
+                WallAvoidRadius = golemWallAvoidRadius,
+                EnemyAvoidRadius = golemEnemyAvoidRadius,
                 DeltaTime = Time.deltaTime
             };
 
-            var moveHandle = moveJob.Schedule(enemyEntities.Count, 64, searchHandle);
+            var moveHandle = moveJob.Schedule(activeEnemyEntities.Count, 64, combinedSearchHandle);
             moveHandle.Complete();
 
-            for (int i = 0; i < enemyEntities.Count; i++)
+            for (int i = 0; i < activeEnemyEntities.Count; i++)
             {
-                enemyEntities[i].transform.position = enemyDatas[i].Position;
-                enemyEntities[i].EnemyData.State = (byte)EnemyState.Attack;
+                activeEnemyEntities[i].transform.position = writeBuffer[i].Position;
+                activeEnemyEntities[i].EnemyData.State = writeBuffer[i].State;
+                activeEnemyEntities[i].EnemyData.GolemAttackPower = golemAttackPower;
             }
+
+            isUsingBufferA = !isUsingBufferA;
         }
 
         protected override void OnDestroy()

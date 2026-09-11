@@ -4,15 +4,14 @@ using UnityEngine.InputSystem;
 
 public class ClickMoveController : MonoBehaviour
 {
-    [SerializeField] private Camera mainCamera;       // g—p‚·‚éƒJƒƒ‰
-    [SerializeField] private PlayerMove[] players;    // ‘€ì‘ÎÛ‚ÌƒvƒŒƒCƒ„[ˆê——
-    [SerializeField] private CarryObject carryObject; // ‰^”À‘ÎÛ‚ÌƒIƒuƒWƒFƒNƒg
-    [SerializeField] private Transform clickMarker;   // ƒNƒŠƒbƒNˆÊ’u‚ğ•\¦‚·‚éƒ}[ƒJ[
-
+    [SerializeField] private Camera mainCamera;       // ä½¿ç”¨ã™ã‚‹ã‚«ãƒ¡ãƒ©
+    [SerializeField] private PlayerMove[] players;    // æ“ä½œå¯¾è±¡ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ä¸€è¦§
+    [SerializeField] private CarryObject carryObject; // é‹æ¬å¯¾è±¡ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
+    [SerializeField] private Transform clickMarker;   // ã‚¯ãƒªãƒƒã‚¯ä½ç½®ã‚’è¡¨ç¤ºã™ã‚‹ãƒãƒ¼ã‚«ãƒ¼
 
     private void Start()
     {
-        // ƒJƒƒ‰‚ª–¢İ’è‚È‚çMainCamera‚ğæ“¾
+        // ã‚«ãƒ¡ãƒ©ãŒæœªè¨­å®šãªã‚‰MainCameraã‚’å–å¾—
         if (mainCamera == null)
         {
             mainCamera = Camera.main;
@@ -21,40 +20,40 @@ public class ClickMoveController : MonoBehaviour
 
     private void Update()
     {
-        // ¶ƒNƒŠƒbƒN‚ÅˆÚ“®–½—ß‚ğo‚·
+        // å·¦ã‚¯ãƒªãƒƒã‚¯ã§ç§»å‹•å‘½ä»¤ã‚’å‡ºã™
         if (Mouse.current.leftButton.isPressed)
         {
             ClickMove();
         }
     }
 
-    // ƒNƒŠƒbƒN’n“_‚ÉˆÚ“®‚³‚¹‚é
+    // ã‚¯ãƒªãƒƒã‚¯åœ°ç‚¹ã«ç§»å‹•ã•ã›ã‚‹
     private void ClickMove()
     {
-        // ƒ}ƒEƒXˆÊ’u‚©‚çRay‚ğ”ò‚Î‚·
+        if (mainCamera == null) return;
+
+        // ãƒã‚¦ã‚¹ä½ç½®ã‹ã‚‰Rayã‚’é£›ã°ã™
         Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
 
-        // Ray‚ª‰½‚©‚É“–‚½‚Á‚½‚©
+        // RayãŒä½•ã‹ã«å½“ãŸã£ãŸã‹
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
-            // “–‚½‚Á‚½’n“_‚É‹ß‚¢NavMeshã‚ÌÀ•W‚ğæ“¾
+            // å½“ãŸã£ãŸåœ°ç‚¹ã«è¿‘ã„NavMeshä¸Šã®åº§æ¨™ã‚’å–å¾—
             if (NavMesh.SamplePosition(hit.point, out NavMeshHit navHit, 2f, NavMesh.AllAreas))
             {
-
-                // ƒvƒŒƒCƒ„[‚ÉˆÚ“®–½—ß‚ğo‚·
+                // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ç§»å‹•
                 foreach (var player in players)
                 {
                     player.MoveTo(navHit.position);
                 }
-
-                // ‰^”ÀƒIƒuƒWƒFƒNƒgˆÚ“®
+                
+                // é‹æ¬ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆç§»å‹•
                 if (carryObject != null && carryObject.CanCarry())
                 {
                     carryObject.MoveTo(navHit.position);
                 }
-
-
-                // ƒ}[ƒJ[‚ğƒNƒŠƒbƒN’n“_‚ÖˆÚ“®
+                
+                // ã‚¯ãƒªãƒƒã‚¯ä½ç½®è¡¨ç¤º
                 if (clickMarker != null)
                 {
                     clickMarker.position = navHit.position;

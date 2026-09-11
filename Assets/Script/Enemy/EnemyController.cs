@@ -17,6 +17,8 @@ namespace CareerQuest.Enemy
         public int Index { get; set; }  // 敵番号
         public float Tickness { get; set; }  // オブジェクトの厚さ
 
+        [SerializeField] TreasureChest treasureChest;
+
         void Awake()
         {
             MyLogger.Log("登録");
@@ -35,6 +37,7 @@ namespace CareerQuest.Enemy
         void PerformAttack()
         {
             MyLogger.Log("攻撃開始");
+            treasureChest.TakeDamage();
         }
     }
 }

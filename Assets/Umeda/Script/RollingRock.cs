@@ -13,6 +13,9 @@ public class RollingRock : MonoBehaviour
     public float rotationSpeedMultiplier = 200f; // 回転スピード調整用
     public float stopDistance = 0.05f;
 
+    [Tooltip("オブジェクトの大きさの倍率を入力")]
+    public float magnification = 1f;
+
     private Rigidbody rb;
     private int currentIndex = 0;
     private bool isRolling = false;
@@ -31,7 +34,7 @@ public class RollingRock : MonoBehaviour
     void Update()
     {
         // 1. 接地判定と物理の切り替え（落下以外は不動）
-        isGrounded = Physics.Raycast(transform.position, Vector3.down, 0.6f);
+        isGrounded = Physics.Raycast(transform.position, Vector3.down, 0.6f * magnification);
         rb.isKinematic = isGrounded && !isRolling;
 
         // 2. 移動開始判定

@@ -1,11 +1,11 @@
-using CareerQuest.Core;
-using CareerQuest.Enemy;
 using System.Collections.Generic;
 using UnityEngine;
+using CareerQuest.Core;
+using CareerQuest.Enemy;
 
-public class Test_Treasuer: MonoBehaviour, ISpatialEntity
+public class Test_Player : MonoBehaviour, ISpatialEntity
 {
-    TreasureHashManager _hashManager;
+    PlayerHashManager _hashManager;
     public List<int> nearbyEntities = new List<int>(64);
 
 
@@ -14,7 +14,7 @@ public class Test_Treasuer: MonoBehaviour, ISpatialEntity
 
     void Awake()
     {
-        _hashManager = ServiceLocator.Resolve<TreasureHashManager>();
+        _hashManager = ServiceLocator.Resolve<PlayerHashManager>();
         _hashManager.Register(this);
         Tickness = 0.2f;
     }

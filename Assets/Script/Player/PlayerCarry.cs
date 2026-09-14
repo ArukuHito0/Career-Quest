@@ -6,14 +6,33 @@ public class PlayerCarry : MonoBehaviour
     private CarryObject carryObject; // 現在運搬中のオブジェクト
     private NavMeshAgent agent;      // プレイヤーのNavMeshAgent
 
+    // プレイヤーの状態管理
+    private PlayerStateManager stateManager;
 
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
+        stateManager = GetComponent<PlayerStateManager>();
     }
 
     private void OnTriggerEnter(Collider other)
     {
+        // 運搬できない状態なら何もしない
+        if (!stateManager.CanCarry())
+            return;
+
+        // お化け状態なら運搬できない
+        if (stateManager.IsGhost())
+        {
+            return;
+        }
+
+        // 護衛モードなら運搬しない
+        if (!stateManager.IsCarryMode())
+        {
+            return;
+        }
+
         // 親オブジェクトからCarryObjectを探す
         CarryObject obj = other.GetComponentInParent<CarryObject>();
 
@@ -27,6 +46,16 @@ public class PlayerCarry : MonoBehaviour
 
     public void AttachToObject(CarryObject obj, Transform point)
     {
+        // 運搬できない状態なら何もしない
+        if (!stateManager.CanCarry())
+            return;
+
+        // お化け状態なら運搬できない
+        if (stateManager.IsGhost())
+        {
+            return;
+        }
+
         carryObject = obj;
 
         NavMeshAgent agent = GetComponent<NavMeshAgent>();

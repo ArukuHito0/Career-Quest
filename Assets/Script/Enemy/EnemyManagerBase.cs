@@ -14,8 +14,8 @@ namespace CareerQuest.Enemy
         protected PlayerHashManager playerHashManager; // プレイヤーのグリッドマップ管理クラス
         protected EnemyHashManager enemyHashManager; // 敵のグリッドマップ管理クラス
 
-        protected List<Test_Treasuer> activeTreasureEntities = new List<Test_Treasuer>();
-        protected List<Test_Player> activePlayerEntities = new List<Test_Player>();
+        protected List<TreasureChest1> activeTreasureEntities = new List<TreasureChest1>();
+        protected List<PlayerMove> activePlayerEntities = new List<PlayerMove>();
         protected List<EnemyController> activeEnemyEntities = new List<EnemyController>();
         protected NativeArray<Vector3> wallPositions;
 

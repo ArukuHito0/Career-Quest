@@ -356,7 +356,7 @@ namespace CareerQuest.Enemy
                     {
                         EnemyID.Golem => enemy.GolemTickness,
                         EnemyID.Ghost => enemy.GhostTickness,
-                        _ => 0f // default の代わりに `_`（破棄パターン）を使う
+                        _ => 0f
                     };
 
                     if (sqrDist <= hitRadius * hitRadius)

@@ -15,7 +15,7 @@ public class Test_Player : MonoBehaviour, ISpatialEntity
     void Awake()
     {
         _hashManager = ServiceLocator.Resolve<PlayerHashManager>();
-        _hashManager.Register(this);
+        //_hashManager.Register(this);
         Tickness = 0.2f;
     }
     void Update()

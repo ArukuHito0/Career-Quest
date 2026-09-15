@@ -7,21 +7,55 @@ using static CareerQuest.Enemy.MoveJob;
 namespace CareerQuest.Enemy
 {
     //  敵の挙動を制御するクラス
-    public sealed class EnemyManager : EnemyManagerBase<Test_Treasuer>
+    public sealed class EnemyManager : EnemyManagerBase<TreasureChest1>
     {
         protected override void Awake()
         {
             base.Awake();
+            InvokeRepeating("MyMethod", 2.0f, 7.0f);  // a用
+            InvokeRepeating("SpawnEnmey", 2.0f, 2.0f);  // a用
         }
 
         protected override void Start()
         {
             base.Start();
-            SpawnEnemy(new Vector3(0, 0, 0));
+            //SpawnEnemy(new Vector3(0, 0, 0));
         }
-
+        //  --  FOR ALPHA  --  //
+        float timer1 = 0f;
+        float timer2 = 0f;
+        float timer3 = 0f;
+        [SerializeField] Transform testPos1;
+        [SerializeField] Transform testPos2;
+        [SerializeField] Transform testPos3;
+        //  --  FOR ALPHA  --  //
         void Update()
         {
+            //  --  FOR ALPHA  --  //
+
+            timer1 += Time.deltaTime;
+            if (timer1 >= 5f)
+            {
+                timer1 = 0f;
+                SpawnEnemy(testPos1.position);
+            }
+
+            timer2 += Time.deltaTime;
+            if (timer2 >= 3f)
+            {
+                timer2 = 0f;
+                SpawnEnemy(testPos2.position);
+            }
+
+            timer3 += Time.deltaTime;
+            if (timer3 >= 1.7f)
+            {
+                timer3 = 0f;
+                SpawnEnemy(testPos3.position);
+            }
+
+            //  --  FOR ALPHA  --  //
+
             if (activeTreasureEntities.Count == 0) return;
             if (activeEnemyEntities.Count == 0) return;
 
@@ -57,6 +91,22 @@ namespace CareerQuest.Enemy
             };
 
             JobHandle searchTreasureHandle = searchTreasureJob.Schedule(activeEnemyEntities.Count, 64);
+
+            searchTreasureHandle.Complete();
+
+            for (int i = 0; i < activeEnemyEntities.Count; i++)
+            {
+                if (
+                    readBuffer[i].TargetIndex <= -1 ||
+                    readBuffer[i].TargetIndex >= treasureHashManager.ActiveEntities.Count
+                    )
+                    continue;
+
+                activeEnemyEntities[i].TreasureChest = treasureHashManager.ActiveEntities[readBuffer[i].TargetIndex];
+                MyLogger.Log(readBuffer[i].TargetIndex);
+                MyLogger.Log(treasureHashManager.ActiveEntities.Count);
+                MyLogger.Log(treasureHashManager.ActiveEntities[0]);
+            }
 
             var searchPlayerJob = new SearchPlayerJob
             {
@@ -99,7 +149,6 @@ namespace CareerQuest.Enemy
             }
 
             if (bulletManager == null || bulletManager.ActiveCount == 0) return;
-
 
             var collisionJob = new CollisionJob
             {

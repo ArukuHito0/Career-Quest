@@ -2,6 +2,7 @@ using CareerQuest.Core;
 using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Jobs;
+using static CareerQuest.Enemy.MoveJob;
 
 namespace CareerQuest.Enemy
 {
@@ -37,11 +38,11 @@ namespace CareerQuest.Enemy
                     GolemAttackPower = golemAttackPower,
                     GolemMoveSpeed = golemMoveSpeed,
                     GolemSearchRadius = golemSearchRadius,
-                    GolemBodyTickness = golemBodyTickness,
+                    GolemTickness = golemBodyTickness,
 
                     GhostMoveSpeed = ghostMoveSpeed,
                     GhostSearchRadius = golemSearchRadius,
-                    GhostBodyTickness = ghostBodyTickness,
+                    GhostTickness = ghostBodyTickness,
                 };
             }
 
@@ -97,7 +98,19 @@ namespace CareerQuest.Enemy
                 activeEnemyEntities[i].EnemyData.GolemAttackPower = golemAttackPower;
             }
 
+            if (bulletManager == null || bulletManager.ActiveCount == 0) return;
+
+
+            var collisionJob = new CollisionJob
+            {
+                Bullets = bulletManager.BulletBuffer,
+                BulletCount = bulletManager.ActiveCount,
+                Enemies = writeBuffer
+            };
+
             isUsingBufferA = !isUsingBufferA;
+
+            MyLogger.Log("敵行動サイクル通った");
         }
 
         protected override void OnDestroy()

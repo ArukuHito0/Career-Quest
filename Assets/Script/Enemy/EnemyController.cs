@@ -1,5 +1,6 @@
 using CareerQuest.Core;
 using UnityEngine;
+using UAssert = UnityEngine.Assertions.Assert;
 
 namespace CareerQuest.Enemy
 {
@@ -17,13 +18,15 @@ namespace CareerQuest.Enemy
         public int Index { get; set; }  // 敵番号
         public float Tickness { get; set; }  // オブジェクトの厚さ
 
-        [SerializeField] TreasureChest treasureChest;
+        [SerializeField] TreasureChest _treasureChest;
 
         void Awake()
         {
             MyLogger.Log("登録");
             _hashManager = ServiceLocator.Resolve<EnemyHashManager>();
             _hashManager.Register(this);
+
+            UAssert.IsNotNull(_treasureChest, "_treasureChestの参照がありません");
         }
 
         void Update()
@@ -37,7 +40,7 @@ namespace CareerQuest.Enemy
         void PerformAttack()
         {
             MyLogger.Log("攻撃開始");
-            treasureChest.TakeDamage();
+            _treasureChest?.TakeDamage();
         }
     }
 }

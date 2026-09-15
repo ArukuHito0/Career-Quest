@@ -1,13 +1,20 @@
-using Mono.Cecil;
+using CareerQuest.Player;
 using UnityEngine;
 
-public class Bullet : MonoBehaviour
+public class Bullet : MonoBehaviour , IBullet
 {
+    //  ’e‚Ìƒ_ƒ[ƒW
+    [SerializeField] private float damage = 5f;
+
     // ’e‚ÌˆÚ“®‘¬“x
     [SerializeField] private float speed = 10f;
 
     // ’e‚ª”ò‚×‚éÅ‘å‹——£
     [SerializeField] private float maxDistance = 20f;
+
+    //  ’e‚Ì‘å‚«‚³(“–‚½‚è”»’è—p)
+    [SerializeField] private float tickness = 0.5f;
+
 
     // ”­Ë‚µ‚½ˆÊ’u
     private Vector3 startPosition;
@@ -15,6 +22,11 @@ public class Bullet : MonoBehaviour
     // ’e‚ª”ò‚Ô•ûŒü
     private Vector3 direction;
 
+    public byte Damage { get; }
+    public bool IsActive { get; }
+    public float Tickness { get; }
+    //  ’e‚ÌŒú‚İ(“–‚½‚è”»’è—p)
+    public Vector3 Position { get; }
 
     private void Start()
     {
@@ -22,6 +34,10 @@ public class Bullet : MonoBehaviour
         startPosition = transform.position;
     }
 
+    void OnEnable()
+    {
+        BulletManager.ActiveBullets.Add(this);
+    }
 
     private void Update()
     {
@@ -36,6 +52,11 @@ public class Bullet : MonoBehaviour
         {
             Destroy(gameObject);
         }
+    }
+
+    void OnDisable()
+    {
+        BulletManager.ActiveBullets.Remove(this);
     }
 
     // ”­Ë•ûŒü‚ğİ’è

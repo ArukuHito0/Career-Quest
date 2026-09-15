@@ -2,6 +2,7 @@ using Unity.Collections;
 using Unity.Burst;
 using Unity.Jobs;
 using UnityEngine;
+using CareerQuest.Player;
 
 namespace CareerQuest.Enemy
 {
@@ -204,7 +205,7 @@ namespace CareerQuest.Enemy
             float distSqToTarget = toTarget.sqrMagnitude;
 
             float targetRadius = treasureTickness[data.TargetIndex];
-            float effectiveAttackRange = data.GolemAttackRange + data.GhostBodyTickness + targetRadius;
+            float effectiveAttackRange = data.GolemAttackRange + data.GhostTickness + targetRadius;
 
             if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
             {
@@ -222,7 +223,7 @@ namespace CareerQuest.Enemy
             {
                 if (i == index) continue;
 
-                float combinedRadius = data.GolemBodyTickness + inputEnemyDatas[i].GolemBodyTickness;
+                float combinedRadius = data.GolemTickness + inputEnemyDatas[i].GolemTickness;
                 float effectiveAvoidRadius = enemyAvoidRadius + combinedRadius;
                 float sqrEffectiveAvoidRadius = effectiveAvoidRadius * effectiveAvoidRadius;
 
@@ -277,7 +278,7 @@ namespace CareerQuest.Enemy
             float distSqToTarget = toTarget.sqrMagnitude;
 
             float targetRadius = playerTickness[data.TargetIndex];
-            float effectiveAttackRange = data.GolemAttackRange + data.GhostBodyTickness + targetRadius;
+            float effectiveAttackRange = data.GolemAttackRange + data.GhostTickness + targetRadius;
 
             if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
             {
@@ -295,7 +296,7 @@ namespace CareerQuest.Enemy
             {
                 if (i == index) continue;
 
-                float combinedRadius = data.GolemBodyTickness + inputEnemyDatas[i].GolemBodyTickness;
+                float combinedRadius = data.GolemTickness + inputEnemyDatas[i].GolemTickness;
                 float effectiveAvoidRadius = enemyAvoidRadius + combinedRadius;
                 float sqrEffectiveAvoidRadius = effectiveAvoidRadius * effectiveAvoidRadius;
 
@@ -328,7 +329,46 @@ namespace CareerQuest.Enemy
             data.State = (byte)EnemyState.Move;
             outputEnemyDatas[index] = data;
         }
-#endregion
+        #endregion
+
+        //  当たり判定判断
+        [BurstCompile]
+        public struct CollisionJob : IJobParallelFor
+        {
+            [ReadOnly] public NativeArray<BulletData> Bullets;
+            public int BulletCount;
+            public NativeArray<EnemyData> Enemies;
+
+            public void Execute(int index)
+            {
+                var enemy = Enemies[index];
+                if (enemy.CurrentHp <= 0) return;
+
+                for (int p = 0; p < Bullets.Length; p++)
+                {
+                    var proj = Bullets[p];
+                    if (!proj.IsActive) continue;
+
+                    float sqrDist = (enemy.Position - proj.Position).sqrMagnitude;
+                    float hitRadius = proj.Radius + 1.0f;
+
+                    float tickness = enemy.ID switch
+                    {
+                        EnemyID.Golem => enemy.GolemTickness,
+                        EnemyID.Ghost => enemy.GhostTickness,
+                        _ => 0f // default の代わりに `_`（破棄パターン）を使う
+                    };
+
+                    if (sqrDist <= hitRadius * hitRadius)
+                    {
+                        int newHp = enemy.CurrentHp - proj.Damage;
+                        enemy.CurrentHp = (newHp < 0 ? 0 : newHp);
+                    }
+                }
+
+                Enemies[index] = enemy;
+            }
+        }
     }
 }
 

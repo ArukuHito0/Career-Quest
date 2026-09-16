@@ -13,6 +13,17 @@ public class RollingRock : MonoBehaviour
     public float rotationSpeedMultiplier = 200f; // 回転スピード調整用
     public float stopDistance = 0.05f;
 
+    [Tooltip("オブジェクトの大きさの倍率を入力")]
+    public float magnification = 1f;
+
+    [Header("起動設定")]
+    public bool rollByClick = false;       // クリックで転がるか
+    public bool rollByPlayer = true;     // プレイヤー接近で転がるか（初期値：true）
+
+    [Header("プレイヤー検知設定")]
+    public Transform player;             // 手動設定用（空でもタグで自動取得します）
+    public float detectionDistance = 3f; // プレイヤーが近づいたと判定する距離
+
     private Rigidbody rb;
     private int currentIndex = 0;
     private bool isRolling = false;
@@ -31,13 +42,40 @@ public class RollingRock : MonoBehaviour
     void Update()
     {
         // 1. 接地判定と物理の切り替え（落下以外は不動）
-        isGrounded = Physics.Raycast(transform.position, Vector3.down, 0.6f);
+        isGrounded = Physics.Raycast(transform.position, Vector3.down, 0.6f * magnification);
         rb.isKinematic = isGrounded && !isRolling;
 
         // 2. 移動開始判定
         if (isGrounded && !isRolling && currentIndex < waypoints.Count)
         {
-            if (waypoints[currentIndex].autoProceed || (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && IsClicked()))
+            bool triggerClick = rollByClick && Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame && IsClicked();
+
+            bool triggerPlayer = false;
+            if (rollByPlayer)
+            {
+                // player変数にアサインされていない、またはシーン内で見つからない場合に備えてタグから取得
+                Transform targetPlayer = player;
+                if (targetPlayer == null)
+                {
+                    GameObject playerObj = GameObject.FindWithTag("Player");
+                    if (playerObj != null)
+                    {
+                        targetPlayer = playerObj.transform;
+                    }
+                }
+
+                // プレイヤーが見つかっていれば距離を測定
+                if (targetPlayer != null)
+                {
+                    float distanceToPlayer = Vector3.Distance(transform.position, targetPlayer.position);
+                    if (distanceToPlayer <= detectionDistance)
+                    {
+                        triggerPlayer = true;
+                    }
+                }
+            }
+
+            if (waypoints[currentIndex].autoProceed || triggerClick || triggerPlayer)
             {
                 isRolling = true;
             }
@@ -67,7 +105,7 @@ public class RollingRock : MonoBehaviour
             if (Vector2.Distance(new Vector2(transform.position.x, transform.position.z),
                                 new Vector2(target.position.x, target.position.z)) < stopDistance)
             {
-                transform.position = new Vector3(target.position.x, transform.position.y, target.position.z);
+                transform.position = new Vector3(target.position.x, target.position.y, target.position.z);
                 isRolling = false;
                 currentIndex++;
             }

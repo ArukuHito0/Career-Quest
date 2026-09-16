@@ -6,20 +6,21 @@ using UnityEngine.AI;
 
 public class PlayerMove : MonoBehaviour, ISpatialEntity
 {
-    //  ƒvƒŒƒCƒ„[‚ÌNavMeshAgent
+    //  ï¿½vï¿½ï¿½ï¿½Cï¿½ï¿½ï¿½[ï¿½ï¿½NavMeshAgent
     private NavMeshAgent agent;
 
     PlayerHashManager _hashManager;
     public List<int> nearbyEntities = new List<int>(64);
 
 
-    public int Index { get; set; }  // ‚±‚Ì•ó•¨‚Ì”Ô†(ˆêˆÓ)
-    public float Tickness { get; set; }  // ƒIƒuƒWƒFƒNƒg‚ÌŒú‚³
+    public int Index { get; set; }  // ï¿½ï¿½ï¿½Ì•ó•¨‚Ì”Ôï¿½(ï¿½ï¿½ï¿½)
+    public float Tickness { get; set; }  // ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½ÌŒï¿½ï¿½ï¿½
 
+    private PlayerStateManager stateManager;
 
     private void Awake()
     {
-        // ©•ª‚É‚Â‚¢‚Ä‚¢‚éNavMeshAgent‚ğæ“¾
+        // ï¿½ï¿½ï¿½ï¿½ï¿½É‚Â‚ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½NavMeshAgentï¿½ï¿½ï¿½æ“¾
         agent = GetComponent<NavMeshAgent>();
         _hashManager = ServiceLocator.Resolve<PlayerHashManager>();
         _hashManager.Register(this);
@@ -57,20 +58,25 @@ public class PlayerMove : MonoBehaviour, ISpatialEntity
             {
             }
         }
+        stateManager = GetComponent<PlayerStateManager>();
     }
 
-    // w’è‚µ‚½À•W‚ÖˆÚ“®‚·‚é
+    // ï¿½wï¿½è‚µï¿½ï¿½ï¿½ï¿½ï¿½Wï¿½ÖˆÚ“ï¿½ï¿½ï¿½ï¿½ï¿½
     public void MoveTo(Vector3 position)
     {
-        // ‰^”À’†‚È‚Ç‚ÅAgent‚ª–³Œø‚È‚ç‰½‚à‚µ‚È‚¢
+        // ï¿½ï¿½ï¿½Ö‚ï¿½ï¿½ï¿½ï¿½È‚ï¿½Ú“ï¿½ï¿½Å‚ï¿½ï¿½È‚ï¿½
+        if (stateManager != null && !stateManager.CanMove())
+            return;
+
+        // ï¿½^ï¿½ï¿½ï¿½ï¿½ï¿½È‚Ç‚ï¿½Agentï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ç‰½ï¿½ï¿½ï¿½ï¿½ï¿½È‚ï¿½
         if (!agent.enabled)
             return;
 
-        // NavMeshã‚É‚¢‚È‚¢ê‡‚àˆÚ“®‚Å‚«‚È‚¢
+        // NavMeshï¿½ï¿½É‚ï¿½ï¿½È‚ï¿½ï¿½ê‡ï¿½ï¿½ï¿½Ú“ï¿½ï¿½Å‚ï¿½ï¿½È‚ï¿½
         if (!agent.isOnNavMesh)
             return;
 
-        // –Ú“I’n‚ğİ’è
+        // ï¿½Ú“Iï¿½nï¿½ï¿½İ’ï¿½
         agent.SetDestination(position);
     }
 }

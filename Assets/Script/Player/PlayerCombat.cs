@@ -19,9 +19,34 @@ public class PlayerCombat : MonoBehaviour
 
     // 索敵用タイマー
     private float searchTimer;
-    
+
+    // プレイヤーの状態管理
+    private PlayerStateManager stateManager;
+
+    private void Awake()
+    {
+        stateManager = GetComponent<PlayerStateManager>();
+    }
+
     private void Update()
     {
+        if (!stateManager.CanAttack())
+            return;
+
+        // お化け状態なら攻撃処理をしない
+        if (stateManager.IsGhost())
+        {
+            target = null;
+            return;
+        }
+
+        // 運搬モードなら攻撃しない
+        if (stateManager.IsCarryMode())
+        {
+            target = null;
+            return;
+        }
+
         // 索敵タイマーを進める
         searchTimer += Time.deltaTime;
 

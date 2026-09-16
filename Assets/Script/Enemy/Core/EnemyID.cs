@@ -1,8 +1,9 @@
 namespace CareerQuest.Enemy
 {
     // “G‚ÌID
-    public enum EnemyID
+    public enum EnemyID : byte
     {
-        Golem,  // ƒS[ƒŒƒ€
+        Golem = 0,  // ƒS[ƒŒƒ€
+        Ghost = 1,  // ƒS[ƒXƒg
     }
 }

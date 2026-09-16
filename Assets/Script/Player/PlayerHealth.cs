@@ -9,12 +9,6 @@ public class PlayerHealth : MonoBehaviour
     // お化け状態になっている時間
     [SerializeField] private float ghostDuration = 5f;
 
-    // 通常時に表示するオブジェクト
-    [SerializeField] private GameObject normalVisual;
-
-    // お化け状態で表示するオブジェクト
-    [SerializeField] private GameObject ghostVisual;
-
     // 現在HP
     private int currentHealth;
 

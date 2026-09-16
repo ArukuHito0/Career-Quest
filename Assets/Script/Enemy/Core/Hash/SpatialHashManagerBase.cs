@@ -13,7 +13,7 @@ namespace CareerQuest.Enemy
         public List<T> ActiveEntities = new List<T>();
 
         protected NativeArray<Vector3> positions;  // 敵座標配列
-        protected NativeParallelMultiHashMap<int, int> cellToEntityMap;  // <セルID, セル内のオブジェクトの数>のMap
+        protected NativeParallelMultiHashMap<int, int> cellToEntityMap;  // <セルID, index>のMap
         protected NativeArray<float> ticknesses;  // <セルID, セル内のオブジェクトの数>のMap
 
         [Min(1)] public readonly int girdWidth = 1000;  // マップをいくつのセルで埋めるか

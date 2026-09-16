@@ -15,7 +15,7 @@ public class Test_Treasuer: MonoBehaviour, ISpatialEntity
     void Awake()
     {
         _hashManager = ServiceLocator.Resolve<TreasureHashManager>();
-        _hashManager.Register(this);
+        //_hashManager.Register(this);
         Tickness = 0.2f;
     }
     void Update()

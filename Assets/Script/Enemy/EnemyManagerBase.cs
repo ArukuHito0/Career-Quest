@@ -3,6 +3,7 @@ using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Pool;
 using CareerQuest.Core;
+using CareerQuest.Player;
 
 namespace CareerQuest.Enemy
 {
@@ -13,12 +14,12 @@ namespace CareerQuest.Enemy
         protected PlayerHashManager playerHashManager; // プレイヤーのグリッドマップ管理クラス
         protected EnemyHashManager enemyHashManager; // 敵のグリッドマップ管理クラス
 
-        protected List<Test_Treasuer> activeTreasureEntities = new List<Test_Treasuer>();
-        protected List<Test_Player> activePlayerEntities = new List<Test_Player>();
+        protected List<TreasureChest1> activeTreasureEntities = new List<TreasureChest1>();
+        protected List<PlayerMove> activePlayerEntities = new List<PlayerMove>();
         protected List<EnemyController> activeEnemyEntities = new List<EnemyController>();
         protected NativeArray<Vector3> wallPositions;
 
-        [SerializeField] EnemyController _enemyPrefab;
+        [SerializeField] EnemyController _enemyController;
         [SerializeField] protected int maxEnemyCount = 10;
         ObjectPool<EnemyController> _pool;
 
@@ -26,7 +27,8 @@ namespace CareerQuest.Enemy
         protected NativeArray<EnemyData> bufferB;
         protected bool isUsingBufferA = true;
 
-        [SerializeField] EnemyID _enemyID = EnemyID.Golem;
+        protected BulletManager bulletManager;
+
         [SerializeField] EnemyStatHolder _enemyStatHolder;  // ステータス保持SO
 
         EnemyStat enemyStat;  // 敵のパラメーター(キャッシュ用)
@@ -57,11 +59,13 @@ namespace CareerQuest.Enemy
             playerHashManager = ServiceLocator.Resolve<PlayerHashManager>();
             enemyHashManager = ServiceLocator.Resolve<EnemyHashManager>();
 
+            bulletManager = ServiceLocator.Resolve<BulletManager>();
+
             bufferA = new NativeArray<EnemyData>(maxEnemyCount, Allocator.Persistent);
             bufferB = new NativeArray<EnemyData>(maxEnemyCount, Allocator.Persistent);
 
             _pool = new ObjectPool<EnemyController>(
-            createFunc: () => Instantiate(_enemyPrefab),
+            createFunc: () => Instantiate(_enemyController),
             actionOnGet: e => e.gameObject.SetActive(true),
             actionOnRelease: e => e.gameObject.SetActive(false),
             actionOnDestroy: e => Destroy(e.gameObject),

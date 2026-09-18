@@ -4,61 +4,62 @@ using UnityEngine.InputSystem;
 
 public class ClickMoveController : MonoBehaviour
 {
-    [SerializeField] private Camera mainCamera;       // 使用するカメラ
-    [SerializeField] private PlayerMove[] players;    // 操作対象のプレイヤー一覧
-    [SerializeField] private CarryObject carryObject; // 運搬対象のオブジェクト
-    [SerializeField] private Transform clickMarker;   // クリック位置を表示するマーカー
+    // メインカメラ
+    [SerializeField] private Camera mainCamera;
+
+    // プレイヤー一覧
+    [SerializeField] private PlayerMove[] players;
+
+    // お宝
+    [SerializeField] private CarryObject carryObject;
+
+    // クリック位置を表示するマーカー
+    [SerializeField] private Transform clickMarker;
 
     private void Start()
     {
-        // カメラが未設定ならMainCameraを取得
         if (mainCamera == null)
-        {
             mainCamera = Camera.main;
-        }
     }
 
     private void Update()
     {
-        // 左クリックで移動命令を出す
+        // マウスがない場合は何もしない
+        if (Mouse.current == null)
+            return;
+
+        // 左クリック中
         if (Mouse.current.leftButton.isPressed)
-        {
             ClickMove();
-        }
     }
 
-    // クリック地点に移動させる
+    // クリックした場所を目的地にする
     private void ClickMove()
     {
-        if (mainCamera == null) return;
-
         // マウス位置からRayを飛ばす
         Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
 
-        // Rayが何かに当たったか
-        if (Physics.Raycast(ray, out RaycastHit hit))
+        // Rayが何にも当たらなければ何もしない
+        if (!Physics.Raycast(ray, out RaycastHit hit))
+            return;
+
+        // 当たった場所からNavMesh上の位置を探す
+        if (!NavMesh.SamplePosition(hit.point, out NavMeshHit navHit, 2f, NavMesh.AllAreas))
+            return;
+
+        // 全プレイヤーに目的地を設定
+        foreach (PlayerMove player in players)
         {
-            // 当たった地点に近いNavMesh上の座標を取得
-            if (NavMesh.SamplePosition(hit.point, out NavMeshHit navHit, 2f, NavMesh.AllAreas))
-            {
-                // プレイヤー移動
-                foreach (var player in players)
-                {
-                    player.MoveTo(navHit.position);
-                }
-                
-                // 運搬オブジェクト移動
-                if (carryObject != null && carryObject.CanCarry())
-                {
-                    carryObject.MoveTo(navHit.position);
-                }
-                
-                // クリック位置表示
-                if (clickMarker != null)
-                {
-                    clickMarker.position = navHit.position;
-                }
-            }
+            if (player != null)
+                player.MoveTo(navHit.position);
         }
+
+        // お宝が運搬可能なら移動
+        if (carryObject != null && carryObject.CanCarry())
+            carryObject.MoveTo(navHit.position);
+
+        // クリック位置を表示
+        if (clickMarker != null)
+            clickMarker.position = navHit.position;
     }
 }

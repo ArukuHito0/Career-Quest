@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 using System.Collections;
 
 public class PlayerStateManager : MonoBehaviour
@@ -74,6 +75,9 @@ public class PlayerStateManager : MonoBehaviour
         if (isChangingMode)
             return false;
 
+        if (IsGhost())
+            return false;
+
         return true;
     }
 
@@ -112,7 +116,7 @@ public class PlayerStateManager : MonoBehaviour
     // 指定したモードへ変更
     public void SetMode(PlayerMode newMode)
     {
-        // お化け状態ならモード変更しない
+        // お化け状態なら変更しない
         if (IsGhost())
             return;
 
@@ -124,6 +128,21 @@ public class PlayerStateManager : MonoBehaviour
         if (currentMode == newMode)
             return;
 
+        // 運搬中のプレイヤーを取得
+        PlayerCarry playerCarry = GetComponent<PlayerCarry>();
+
+        // 護衛モードへ変更する場合
+        if (newMode == PlayerMode.Escort)
+        {
+            // 現在お宝を運搬中なら解除
+            if (playerCarry != null && playerCarry.IsCarrying())
+                playerCarry.Release();
+        }
+
+        // 移動を停止
+        StopMovement();
+
+        // 着替え開始
         StartCoroutine(ChangeModeCoroutine(newMode));
     }
 
@@ -139,22 +158,56 @@ public class PlayerStateManager : MonoBehaviour
         SetMode(PlayerMode.Escort);
     }
 
+    // プレイヤーの移動を停止
+    private void StopMovement()
+{
+    PlayerMove playerMove = GetComponent<PlayerMove>();
+
+    if (playerMove != null)
+    {
+        playerMove.StopMovement();
+        return;
+    }
+
+    NavMeshAgent agent = GetComponent<NavMeshAgent>();
+
+    if (agent == null)
+        return;
+
+    if (!agent.enabled)
+        return;
+
+    agent.ResetPath();
+    agent.velocity = Vector3.zero;
+}
+
     // 着替え処理
     private IEnumerator ChangeModeCoroutine(PlayerMode newMode)
     {
         isChangingMode = true;
+
+        // 着替え開始時にもう一度移動を停止
+        StopMovement();
 
         Debug.Log($"{gameObject.name}着替え開始");
 
         // 着替え中
         yield return new WaitForSeconds(changeModeTime);
 
-        // 着替え完了後にモードを変更
+        // 着替え完了後にモード変更
         currentMode = newMode;
 
         isChangingMode = false;
 
         Debug.Log($"{gameObject.name}着替え完了→{currentMode}");
+
+        // もともと向かっていた場所へ再び移動
+        PlayerMove playerMove = GetComponent<PlayerMove>();
+
+        if (playerMove != null)
+        {
+            playerMove.ResumeMove();
+        }
     }
 
     // お化け状態へ変更
@@ -164,6 +217,9 @@ public class PlayerStateManager : MonoBehaviour
 
         // 着替え中だった場合は解除
         isChangingMode = false;
+
+        // 移動停止
+        StopMovement();
 
         Debug.Log($"{gameObject.name}がお化けになりました");
     }

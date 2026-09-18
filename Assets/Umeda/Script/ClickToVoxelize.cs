@@ -7,15 +7,20 @@ public class ClickToVoxelize : MonoBehaviour
 {
     [Header("分割設定")]
     [Tooltip("各ボクセル（破片）の一辺の長さ")]
-    public float voxelSize = 0.1f;
+    public float voxelSize = 0.2f;
     [Tooltip("爆発力")]
-    public float explosionForce = 0.1f;
+    public float explosionForce = 7.0f;
     [Tooltip("爆発範囲")]
     public float explosionRadius = 1.0f;
     [Tooltip("破壊時間")]
-    public float destroyTime = 1.0f;
+    public float destroyTime = 4.0f;
     [Tooltip("縮小時間")]
     public float shrinkDuration = 0.5f;
+
+    [Header("プレイヤー検知設定")]
+    public Transform player;             // 手動設定用（空でもタグで自動取得します）
+    public float detectionDistance = 3f; // プレイヤーが近づいたと判定する距離
+
 
     void Update()
     {
@@ -29,6 +34,28 @@ public class ClickToVoxelize : MonoBehaviour
                 {
                     DivideIntoVoxels();
                 }
+            }
+        }
+
+        // player変数にアサインされていない、またはシーン内で見つからない場合に備えてタグから取得
+        Transform targetPlayer = player;
+        if (targetPlayer == null)
+        {
+
+            GameObject playerObj = GameObject.FindWithTag("Player");
+            if (playerObj != null)
+            {
+                targetPlayer = playerObj.transform;
+            }
+        }
+
+        // プレイヤーが見つかっていれば距離を測定
+        if (targetPlayer != null)
+        {
+            float distanceToPlayer = Vector3.Distance(transform.position, targetPlayer.position);
+            if (distanceToPlayer <= detectionDistance)
+            {
+                DivideIntoVoxels();
             }
         }
     }

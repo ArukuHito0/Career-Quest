@@ -1,8 +1,8 @@
 using CareerQuest.Core;
+using CareerQuest.Enemy;
 using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Jobs;
-using static CareerQuest.Enemy.MoveJob;
 
 namespace CareerQuest.Enemy
 {
@@ -41,14 +41,14 @@ namespace CareerQuest.Enemy
             }
 
             timer2 += Time.deltaTime;
-            if (timer2 >= 3f)
+            if (timer2 >= 10f)
             {
                 timer2 = 0f;
                 SpawnEnemy(testPos2.position);
             }
 
             timer3 += Time.deltaTime;
-            if (timer3 >= 1.7f)
+            if (timer3 >= 15f)
             {
                 timer3 = 0f;
                 SpawnEnemy(testPos3.position);
@@ -124,28 +124,25 @@ namespace CareerQuest.Enemy
             combinedSearchHandle.Complete();
             MyLogger.Log("周囲探索完了");
 
-            var moveJob = new MoveJob
-            {
-                InputDatas = readBuffer,
-                OutputDatas = writeBuffer,
-                TreasurePositions = treasureHashManager.Positions,
-                TreasureTickness = treasureHashManager.Ticknesses,
-                PlaeyrPositions = playerHashManager.Positions,
-                PlayerTickness = playerHashManager.Ticknesses,
-                WallPositions = wallPositions,
-                WallAvoidRadius = golemWallAvoidRadius,
-                EnemyAvoidRadius = golemEnemyAvoidRadius,
-                DeltaTime = Time.deltaTime
-            };
-
-            var moveHandle = moveJob.Schedule(activeEnemyEntities.Count, 64, combinedSearchHandle);
-            moveHandle.Complete();
-
             for (int i = 0; i < activeEnemyEntities.Count; i++)
             {
-                activeEnemyEntities[i].transform.position = writeBuffer[i].Position;
-                activeEnemyEntities[i].EnemyData.State = writeBuffer[i].State;
+                //activeEnemyEntities[i].transform.position = writeBuffer[i].Position;
+                //activeEnemyEntities[i].EnemyData.State = writeBuffer[i].State;
+                //activeEnemyEntities[i].EnemyData.GolemAttackPower = golemAttackPower;
+
+                activeEnemyEntities[i].transform.position = readBuffer[i].Position;
+                activeEnemyEntities[i].EnemyData.State = readBuffer[i].State;
                 activeEnemyEntities[i].EnemyData.GolemAttackPower = golemAttackPower;
+
+                int targetIndex = readBuffer[i].TargetIndex;  // 可読性のためのにintに移してます。
+                if (targetIndex >= 0 && targetIndex < treasureHashManager.ActiveEntities.Count)
+                {
+                    MyLogger.Log("敵：ターゲット設定ループ侵入");
+                    var targetChest = treasureHashManager.ActiveEntities[targetIndex];
+                    activeEnemyEntities[i].TreasureChest = targetChest;
+
+                    activeEnemyEntities[i].SetTarget(targetChest.transform.position);
+                }
             }
 
             if (bulletManager == null || bulletManager.ActiveCount == 0) return;
@@ -154,7 +151,8 @@ namespace CareerQuest.Enemy
             {
                 Bullets = bulletManager.BulletBuffer,
                 BulletCount = bulletManager.ActiveCount,
-                Enemies = writeBuffer
+                //Enemies = writeBuffer
+                Enemies = readBuffer
             };
 
             isUsingBufferA = !isUsingBufferA;
@@ -168,3 +166,19 @@ namespace CareerQuest.Enemy
         }
     }
 }
+
+
+/* navmeshで代替してみるのでコメントアウト */
+//var moveJob = new MoveJob
+//{
+//    InputDatas = readBuffer,
+//    OutputDatas = writeBuffer,
+//    TreasurePositions = treasureHashManager.Positions,
+//    TreasureTickness = treasureHashManager.Ticknesses,
+//    PlaeyrPositions = playerHashManager.Positions,
+//    PlayerTickness = playerHashManager.Ticknesses,
+//    WallPositions = wallPositions,
+//    WallAvoidRadius = golemWallAvoidRadius,
+//    EnemyAvoidRadius = golemEnemyAvoidRadius,
+//    DeltaTime = Time.deltaTime
+//};

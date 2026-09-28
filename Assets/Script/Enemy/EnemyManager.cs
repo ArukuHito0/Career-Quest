@@ -1,5 +1,4 @@
 using CareerQuest.Core;
-using CareerQuest.Enemy;
 using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Jobs;

@@ -11,22 +11,15 @@ namespace CareerQuest.Enemy
         protected override void Awake()
         {
             base.Awake();
-            InvokeRepeating("MyMethod", 2.0f, 7.0f);  // a用
-            InvokeRepeating("SpawnEnmey", 2.0f, 2.0f);  // a用
         }
 
         protected override void Start()
         {
             base.Start();
-            //SpawnEnemy(new Vector3(0, 0, 0));
         }
         //  --  FOR ALPHA  --  //
         float timer1 = 0f;
-        float timer2 = 0f;
-        float timer3 = 0f;
         [SerializeField] Transform testPos1;
-        [SerializeField] Transform testPos2;
-        [SerializeField] Transform testPos3;
         //  --  FOR ALPHA  --  //
         void Update()
         {
@@ -39,19 +32,6 @@ namespace CareerQuest.Enemy
                 SpawnEnemy(testPos1.position);
             }
 
-            timer2 += Time.deltaTime;
-            if (timer2 >= 10f)
-            {
-                timer2 = 0f;
-                SpawnEnemy(testPos2.position);
-            }
-
-            timer3 += Time.deltaTime;
-            if (timer3 >= 15f)
-            {
-                timer3 = 0f;
-                SpawnEnemy(testPos3.position);
-            }
 
             //  --  FOR ALPHA  --  //
 
@@ -74,7 +54,7 @@ namespace CareerQuest.Enemy
                     GolemTickness = golemBodyTickness,
 
                     GhostMoveSpeed = ghostMoveSpeed,
-                    GhostSearchRadius = golemSearchRadius,
+                    GhostSearchRadius = ghostSearchRadius,
                     GhostTickness = ghostBodyTickness,
                 };
             }
@@ -125,10 +105,6 @@ namespace CareerQuest.Enemy
 
             for (int i = 0; i < activeEnemyEntities.Count; i++)
             {
-                //activeEnemyEntities[i].transform.position = writeBuffer[i].Position;
-                //activeEnemyEntities[i].EnemyData.State = writeBuffer[i].State;
-                //activeEnemyEntities[i].EnemyData.GolemAttackPower = golemAttackPower;
-
                 activeEnemyEntities[i].transform.position = readBuffer[i].Position;
                 activeEnemyEntities[i].EnemyData.State = readBuffer[i].State;
                 activeEnemyEntities[i].EnemyData.GolemAttackPower = golemAttackPower;
@@ -136,11 +112,17 @@ namespace CareerQuest.Enemy
                 int targetIndex = readBuffer[i].TargetIndex;  // 可読性のためのにintに移してます。
                 if (targetIndex >= 0 && targetIndex < treasureHashManager.ActiveEntities.Count)
                 {
-                    MyLogger.Log("敵：ターゲット設定ループ侵入");
                     var targetChest = treasureHashManager.ActiveEntities[targetIndex];
-                    activeEnemyEntities[i].TreasureChest = targetChest;
-
-                    activeEnemyEntities[i].SetTarget(targetChest.transform.position);
+                    if (activeEnemyEntities[i].EnemyID == EnemyID.Golem)
+                    {
+                        activeEnemyEntities[i].TreasureChest = targetChest;
+                        activeEnemyEntities[i].SetTarget(targetChest.transform.position);
+                    }
+                    if (activeEnemyEntities[i].EnemyID == EnemyID.Ghost)
+                    {
+                        activeEnemyEntities[i].SetTarget(playerHashManager.Positions[targetIndex]);
+                        Debug.Log(playerHashManager.Positions[targetIndex]);
+                    }
                 }
             }
 
@@ -150,7 +132,6 @@ namespace CareerQuest.Enemy
             {
                 Bullets = bulletManager.BulletBuffer,
                 BulletCount = bulletManager.ActiveCount,
-                //Enemies = writeBuffer
                 Enemies = readBuffer
             };
 

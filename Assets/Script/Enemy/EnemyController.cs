@@ -1,5 +1,4 @@
 using CareerQuest.Core;
-using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
 using UAssert = UnityEngine.Assertions.Assert;
@@ -49,15 +48,14 @@ namespace CareerQuest.Enemy
                 {
                     AttackPlayer();
                 }
-
             }
         }
         public void SetTarget(Vector3 targetPos)
         {
-            MyLogger.Log("敵ターゲットセット関数作動");
             if (_navAgent.enabled && _navAgent != null)
             {
                 MyLogger.Log("敵のNavMeshターゲット設定");
+                MyLogger.Log(this.gameObject);
                 _navAgent.SetDestination(targetPos);
             }
         }

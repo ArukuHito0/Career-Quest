@@ -10,11 +10,11 @@ public class RangedAttack : AttackBase
     [SerializeField] private Transform firePoint;
 
     // ‰“‹——£UŒ‚
-    protected override void Attack(Transform target)
+    protected override bool Attack(Transform target)
     {
         // ’e‚â”­Ë’n“_‚ªİ’è‚³‚ê‚Ä‚¢‚È‚¯‚ê‚ÎUŒ‚‚µ‚È‚¢
         if (bulletPrefab == null || firePoint == null)
-            return;
+            return false;
 
         // ’e‚ğ¶¬
         GameObject bulletObject = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
@@ -26,6 +26,9 @@ public class RangedAttack : AttackBase
         if (bullet != null)
         {
             bullet.SetTarget(target);
+            return true;
         }
+
+        return true;
     }
 }

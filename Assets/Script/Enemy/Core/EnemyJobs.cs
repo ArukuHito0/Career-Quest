@@ -109,7 +109,7 @@ namespace CareerQuest.Enemy
 
                             float dist = Vector3.Distance(data.Position, PlayerPositions[entityIndex]);
 
-                            if (dist < data.GolemSearchRadius && dist < minDistance)
+                            if (dist < data.GhostSearchRadius && dist < minDistance)
                             {
                                 minDistance = dist;
                                 nearestIndex = entityIndex;

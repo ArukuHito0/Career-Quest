@@ -6,8 +6,6 @@ namespace CareerQuest.Enemy
     [System.Serializable]
     public sealed class EnemyStat
     {
-        [Header("敵プレハブ")]
-        public GameObject EnemyPrefab;
         [Header("パラメーター")]
         public int HP = 100;
         public int AttackPower = 5;

@@ -1,13 +1,17 @@
 using CareerQuest.Core;
 using UnityEngine;
+using UnityEngine.AI;
 using UAssert = UnityEngine.Assertions.Assert;
 
 namespace CareerQuest.Enemy
 {
     //  敵を制御するクラス
     [DisallowMultipleComponent]
+    [RequireComponent(typeof(NavMeshAgent))]
     public sealed class EnemyController : MonoBehaviour, ISpatialEntity
     {
+        NavMeshAgent _navAgent;
+
         EnemyHashManager _hashManager;
         
         [SerializeField] EnemyID _enemyID = EnemyID.Golem;
@@ -28,7 +32,8 @@ namespace CareerQuest.Enemy
             _hashManager = ServiceLocator.Resolve<EnemyHashManager>();
             _hashManager.Register(this);
 
-            //UAssert.IsNotNull(_treasureChest, "_treasureChestの参照がありません");
+            _navAgent = GetComponent<NavMeshAgent>();
+            UAssert.IsNotNull(_navAgent, "NavMeshAgentの参照がありません");
         }
 
         void Update()
@@ -43,9 +48,18 @@ namespace CareerQuest.Enemy
                 {
                     AttackPlayer();
                 }
-
             }
         }
+        public void SetTarget(Vector3 targetPos)
+        {
+            if (_navAgent.enabled && _navAgent != null)
+            {
+                MyLogger.Log("敵のNavMeshターゲット設定");
+                MyLogger.Log(this.gameObject);
+                _navAgent.SetDestination(targetPos);
+            }
+        }
+
 
         void AttackTreasure()
         {

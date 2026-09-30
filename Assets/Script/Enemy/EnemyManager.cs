@@ -2,7 +2,6 @@ using CareerQuest.Core;
 using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Jobs;
-using static CareerQuest.Enemy.MoveJob;
 
 namespace CareerQuest.Enemy
 {
@@ -12,22 +11,15 @@ namespace CareerQuest.Enemy
         protected override void Awake()
         {
             base.Awake();
-            InvokeRepeating("MyMethod", 2.0f, 7.0f);  // a用
-            InvokeRepeating("SpawnEnmey", 2.0f, 2.0f);  // a用
         }
 
         protected override void Start()
         {
             base.Start();
-            //SpawnEnemy(new Vector3(0, 0, 0));
         }
         //  --  FOR ALPHA  --  //
         float timer1 = 0f;
-        float timer2 = 0f;
-        float timer3 = 0f;
         [SerializeField] Transform testPos1;
-        [SerializeField] Transform testPos2;
-        [SerializeField] Transform testPos3;
         //  --  FOR ALPHA  --  //
         void Update()
         {
@@ -40,19 +32,6 @@ namespace CareerQuest.Enemy
                 SpawnEnemy(testPos1.position);
             }
 
-            timer2 += Time.deltaTime;
-            if (timer2 >= 3f)
-            {
-                timer2 = 0f;
-                SpawnEnemy(testPos2.position);
-            }
-
-            timer3 += Time.deltaTime;
-            if (timer3 >= 1.7f)
-            {
-                timer3 = 0f;
-                SpawnEnemy(testPos3.position);
-            }
 
             //  --  FOR ALPHA  --  //
 
@@ -75,7 +54,7 @@ namespace CareerQuest.Enemy
                     GolemTickness = golemBodyTickness,
 
                     GhostMoveSpeed = ghostMoveSpeed,
-                    GhostSearchRadius = golemSearchRadius,
+                    GhostSearchRadius = ghostSearchRadius,
                     GhostTickness = ghostBodyTickness,
                 };
             }
@@ -124,28 +103,27 @@ namespace CareerQuest.Enemy
             combinedSearchHandle.Complete();
             MyLogger.Log("周囲探索完了");
 
-            var moveJob = new MoveJob
-            {
-                InputDatas = readBuffer,
-                OutputDatas = writeBuffer,
-                TreasurePositions = treasureHashManager.Positions,
-                TreasureTickness = treasureHashManager.Ticknesses,
-                PlaeyrPositions = playerHashManager.Positions,
-                PlayerTickness = playerHashManager.Ticknesses,
-                WallPositions = wallPositions,
-                WallAvoidRadius = golemWallAvoidRadius,
-                EnemyAvoidRadius = golemEnemyAvoidRadius,
-                DeltaTime = Time.deltaTime
-            };
-
-            var moveHandle = moveJob.Schedule(activeEnemyEntities.Count, 64, combinedSearchHandle);
-            moveHandle.Complete();
-
             for (int i = 0; i < activeEnemyEntities.Count; i++)
             {
-                activeEnemyEntities[i].transform.position = writeBuffer[i].Position;
-                activeEnemyEntities[i].EnemyData.State = writeBuffer[i].State;
+                activeEnemyEntities[i].transform.position = readBuffer[i].Position;
+                activeEnemyEntities[i].EnemyData.State = readBuffer[i].State;
                 activeEnemyEntities[i].EnemyData.GolemAttackPower = golemAttackPower;
+
+                int targetIndex = readBuffer[i].TargetIndex;  // 可読性のためのにintに移してます。
+                if (targetIndex >= 0 && targetIndex < treasureHashManager.ActiveEntities.Count)
+                {
+                    var targetChest = treasureHashManager.ActiveEntities[targetIndex];
+                    if (activeEnemyEntities[i].EnemyID == EnemyID.Golem)
+                    {
+                        activeEnemyEntities[i].TreasureChest = targetChest;
+                        activeEnemyEntities[i].SetTarget(targetChest.transform.position);
+                    }
+                    if (activeEnemyEntities[i].EnemyID == EnemyID.Ghost)
+                    {
+                        activeEnemyEntities[i].SetTarget(playerHashManager.Positions[targetIndex]);
+                        Debug.Log(playerHashManager.Positions[targetIndex]);
+                    }
+                }
             }
 
             if (bulletManager == null || bulletManager.ActiveCount == 0) return;
@@ -154,7 +132,7 @@ namespace CareerQuest.Enemy
             {
                 Bullets = bulletManager.BulletBuffer,
                 BulletCount = bulletManager.ActiveCount,
-                Enemies = writeBuffer
+                Enemies = readBuffer
             };
 
             isUsingBufferA = !isUsingBufferA;
@@ -168,3 +146,19 @@ namespace CareerQuest.Enemy
         }
     }
 }
+
+
+/* navmeshで代替してみるのでコメントアウト */
+//var moveJob = new MoveJob
+//{
+//    InputDatas = readBuffer,
+//    OutputDatas = writeBuffer,
+//    TreasurePositions = treasureHashManager.Positions,
+//    TreasureTickness = treasureHashManager.Ticknesses,
+//    PlaeyrPositions = playerHashManager.Positions,
+//    PlayerTickness = playerHashManager.Ticknesses,
+//    WallPositions = wallPositions,
+//    WallAvoidRadius = golemWallAvoidRadius,
+//    EnemyAvoidRadius = golemEnemyAvoidRadius,
+//    DeltaTime = Time.deltaTime
+//};

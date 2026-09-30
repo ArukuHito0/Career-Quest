@@ -21,8 +21,8 @@ namespace CareerQuest.Enemy
         public void Execute(int index)
         {
             var data = InputDatas[index];
-            
-            if(
+
+            if (
                 data.ID != EnemyID.Golem ||
                 data.State == (byte)EnemyState.Attack
                 )
@@ -109,7 +109,7 @@ namespace CareerQuest.Enemy
 
                             float dist = Vector3.Distance(data.Position, PlayerPositions[entityIndex]);
 
-                            if (dist < data.GolemSearchRadius && dist < minDistance)
+                            if (dist < data.GhostSearchRadius && dist < minDistance)
                             {
                                 minDistance = dist;
                                 nearestIndex = entityIndex;
@@ -124,254 +124,252 @@ namespace CareerQuest.Enemy
             InputDatas[index] = data;
         }
     }
-
-    //  移動
+    //  当たり判定判断
     [BurstCompile]
-    public struct MoveJob : IJobParallelFor
+    public struct CollisionJob : IJobParallelFor
     {
-        [ReadOnly] public NativeArray<EnemyData> InputDatas; // 読み取り用
-        public NativeArray<EnemyData> OutputDatas;          // 書き込み用
-        public int ActiveEnmeyCount;
-        [ReadOnly] public NativeArray<Vector3> TreasurePositions;  // お宝座標
-        [ReadOnly] public NativeArray<float> TreasureTickness;  // お宝の厚み
-        [ReadOnly] public NativeArray<Vector3> PlaeyrPositions;  // プレイヤー座標
-        [ReadOnly] public NativeArray<float> PlayerTickness;  // プレイヤーの厚み
-        [ReadOnly] public NativeArray<Vector3> WallPositions; // 壁の座標
+        [ReadOnly] public NativeArray<BulletData> Bullets;
+        public int BulletCount;
+        public NativeArray<EnemyData> Enemies;
 
-        public float WallAvoidRadius;  // 壁を避け始める距離
-        public float EnemyAvoidRadius;  // 敵同士で避け始める距離
-
-        public float DeltaTime;
         public void Execute(int index)
         {
-            var data = InputDatas[index];
-            if (data.TargetIndex < 0) return;
-            if (data.State == (byte)EnemyState.Attack) return;
+            var enemy = Enemies[index];
+            if (enemy.CurrentHp <= 0) return;
 
-
-            switch (data.ID)
+            for (int p = 0; p < Bullets.Length; p++)
             {
-                case EnemyID.Golem:
-                    HandleGolemMovement(
-                        ref data,
-                        index,
-                        InputDatas,
-                        OutputDatas,
-                        ActiveEnmeyCount,
-                        TreasurePositions,
-                        TreasureTickness,
-                        WallPositions,
-                        WallAvoidRadius,
-                        EnemyAvoidRadius,
-                        DeltaTime
-                        );
-                    break;
-                case EnemyID.Ghost:
-                    HandleGhostMovement(
-                        ref data,
-                        index,
-                        InputDatas,
-                        OutputDatas,
-                        ActiveEnmeyCount,
-                        PlaeyrPositions,
-                        PlayerTickness,
-                        WallPositions,
-                        WallAvoidRadius,
-                        EnemyAvoidRadius,
-                        DeltaTime
-                        );
-                    break;
-            }
+                var proj = Bullets[p];
+                if (!proj.IsActive) continue;
 
-        }
+                float sqrDist = (enemy.Position - proj.Position).sqrMagnitude;
+                float hitRadius = proj.Radius + 1.0f;
 
-        #region ゴーレム移動ロジック
-        static void HandleGolemMovement(
-        ref EnemyData data,
-        int index,
-        NativeArray<EnemyData> inputEnemyDatas,
-        NativeArray<EnemyData> outputEnemyDatas,
-        int ActiveEnemyCount,
-        NativeArray<Vector3> treasurePositions,
-        NativeArray<float> treasureTickness,
-        NativeArray<Vector3> wallPositions,
-        float wallAvoidRadius,
-        float enemyAvoidRadius,
-        float deltaTime
-            )
-        {
-
-            Vector3 toTarget = treasurePositions[data.TargetIndex] - data.Position;
-            float distSqToTarget = toTarget.sqrMagnitude;
-
-            float targetRadius = treasureTickness[data.TargetIndex];
-            float effectiveAttackRange = data.GolemAttackRange + data.GhostTickness + targetRadius;
-
-            if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
-            {
-                data.State = (byte)EnemyState.Attack;
-                outputEnemyDatas[index] = data;
-
-                return;
-            }
-
-            Vector3 dir = toTarget / Mathf.Sqrt(distSqToTarget);
-            dir.y = 0;
-            Vector3 avoidance = Vector3.zero;
-
-            for (int i = 0; i < ActiveEnemyCount; i++)
-            {
-                if (i == index) continue;
-
-                float combinedRadius = data.GolemTickness + inputEnemyDatas[i].GolemTickness;
-                float effectiveAvoidRadius = enemyAvoidRadius + combinedRadius;
-                float sqrEffectiveAvoidRadius = effectiveAvoidRadius * effectiveAvoidRadius;
-
-                Vector3 diff = data.Position - inputEnemyDatas[i].Position;
-                float sqrDist = diff.sqrMagnitude;
-
-                if (sqrDist < sqrEffectiveAvoidRadius)
+                float tickness = enemy.ID switch
                 {
-                    avoidance += (data.Position - inputEnemyDatas[i].Position).normalized * (sqrEffectiveAvoidRadius - sqrDist);
+                    EnemyID.Golem => enemy.GolemTickness,
+                    EnemyID.Ghost => enemy.GhostTickness,
+                    _ => 0f
+                };
+
+                if (sqrDist <= hitRadius * hitRadius)
+                {
+                    int newHp = enemy.CurrentHp - proj.Damage;
+                    enemy.CurrentHp = (newHp < 0 ? 0 : newHp);
                 }
             }
 
-            float wallAvoidRadSq = wallAvoidRadius * wallAvoidRadius;
-            for (int i = 0; i < wallPositions.Length; i++)
-            {
-                Vector3 diff = data.Position - wallPositions[i];
-                diff.y = 0;
-                float sqrDist = diff.sqrMagnitude;
-
-                if (sqrDist < wallAvoidRadSq)
-                {
-                    float dist = Mathf.Sqrt(sqrDist);
-                    avoidance += diff / dist * (wallAvoidRadSq - dist) * 2;
-                }
-            }
-
-            avoidance.y = 0;
-
-            data.Position += (dir + avoidance) * data.GolemMoveSpeed * deltaTime;
-            data.State = (byte)EnemyState.Move;
-            outputEnemyDatas[index] = data;
-        }
-        #endregion
-
-        #region ゴースト移動ロジック
-        static void HandleGhostMovement(
-        ref EnemyData data,
-        int index,
-        NativeArray<EnemyData> inputEnemyDatas,
-        NativeArray<EnemyData> outputEnemyDatas,
-        int ActiveEnemyCount,
-        NativeArray<Vector3> playerPositions,
-        NativeArray<float> playerTickness,
-        NativeArray<Vector3> wallPositions,
-        float wallAvoidRadius,
-        float enemyAvoidRadius,
-        float deltaTime
-            )
-        {
-
-            Vector3 toTarget = playerPositions[data.TargetIndex] - data.Position;
-            float distSqToTarget = toTarget.sqrMagnitude;
-
-            float targetRadius = playerTickness[data.TargetIndex];
-            float effectiveAttackRange = data.GolemAttackRange + data.GhostTickness + targetRadius;
-
-            if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
-            {
-                data.State = (byte)EnemyState.Attack;
-                outputEnemyDatas[index] = data;
-
-                return;
-            }
-
-            Vector3 dir = toTarget / Mathf.Sqrt(distSqToTarget);
-            dir.y = 0;
-            Vector3 avoidance = Vector3.zero;
-
-            for (int i = 0; i < ActiveEnemyCount; i++)
-            {
-                if (i == index) continue;
-
-                float combinedRadius = data.GolemTickness + inputEnemyDatas[i].GolemTickness;
-                float effectiveAvoidRadius = enemyAvoidRadius + combinedRadius;
-                float sqrEffectiveAvoidRadius = effectiveAvoidRadius * effectiveAvoidRadius;
-
-                Vector3 diff = data.Position - inputEnemyDatas[i].Position;
-                float sqrDist = diff.sqrMagnitude;
-
-                if (sqrDist < sqrEffectiveAvoidRadius)
-                {
-                    avoidance += (data.Position - inputEnemyDatas[i].Position).normalized * (sqrEffectiveAvoidRadius - sqrDist);
-                }
-            }
-
-            float wallAvoidRadSq = wallAvoidRadius * wallAvoidRadius;
-            for (int i = 0; i < wallPositions.Length; i++)
-            {
-                Vector3 diff = data.Position - wallPositions[i];
-                diff.y = 0;
-                float sqrDist = diff.sqrMagnitude;
-
-                if (sqrDist < wallAvoidRadSq)
-                {
-                    float dist = Mathf.Sqrt(sqrDist);
-                    avoidance += diff / dist * (wallAvoidRadSq - dist) * 2;
-                }
-            }
-
-            avoidance.y = 0;
-
-            data.Position += (dir + avoidance) * data.GolemMoveSpeed * deltaTime;
-            data.State = (byte)EnemyState.Move;
-            outputEnemyDatas[index] = data;
-        }
-        #endregion
-
-        //  当たり判定判断
-        [BurstCompile]
-        public struct CollisionJob : IJobParallelFor
-        {
-            [ReadOnly] public NativeArray<BulletData> Bullets;
-            public int BulletCount;
-            public NativeArray<EnemyData> Enemies;
-
-            public void Execute(int index)
-            {
-                var enemy = Enemies[index];
-                if (enemy.CurrentHp <= 0) return;
-
-                for (int p = 0; p < Bullets.Length; p++)
-                {
-                    var proj = Bullets[p];
-                    if (!proj.IsActive) continue;
-
-                    float sqrDist = (enemy.Position - proj.Position).sqrMagnitude;
-                    float hitRadius = proj.Radius + 1.0f;
-
-                    float tickness = enemy.ID switch
-                    {
-                        EnemyID.Golem => enemy.GolemTickness,
-                        EnemyID.Ghost => enemy.GhostTickness,
-                        _ => 0f
-                    };
-
-                    if (sqrDist <= hitRadius * hitRadius)
-                    {
-                        int newHp = enemy.CurrentHp - proj.Damage;
-                        enemy.CurrentHp = (newHp < 0 ? 0 : newHp);
-                    }
-                }
-
-                Enemies[index] = enemy;
-            }
+            Enemies[index] = enemy;
         }
     }
 }
 
+//  移動はNavMeshを試用してみるのでコメントアウト
+//    //  移動
+//    [BurstCompile]
+//    public struct MoveJob : IJobParallelFor
+//    {
+//        [ReadOnly] public NativeArray<EnemyData> InputDatas; // 読み取り用
+//        public NativeArray<EnemyData> OutputDatas;          // 書き込み用
+//        public int ActiveEnmeyCount;
+//        [ReadOnly] public NativeArray<Vector3> TreasurePositions;  // お宝座標
+//        [ReadOnly] public NativeArray<float> TreasureTickness;  // お宝の厚み
+//        [ReadOnly] public NativeArray<Vector3> PlaeyrPositions;  // プレイヤー座標
+//        [ReadOnly] public NativeArray<float> PlayerTickness;  // プレイヤーの厚み
+//        [ReadOnly] public NativeArray<Vector3> WallPositions; // 壁の座標
+
+//        public float WallAvoidRadius;  // 壁を避け始める距離
+//        public float EnemyAvoidRadius;  // 敵同士で避け始める距離
+
+//        public float DeltaTime;
+//        public void Execute(int index)
+//        {
+//            var data = InputDatas[index];
+//            if (data.TargetIndex < 0) return;
+//            if (data.State == (byte)EnemyState.Attack) return;
+
+
+//            switch (data.ID)
+//            {
+//                case EnemyID.Golem:
+//                    HandleGolemMovement(
+//                        ref data,
+//                        index,
+//                        InputDatas,
+//                        OutputDatas,
+//                        ActiveEnmeyCount,
+//                        TreasurePositions,
+//                        TreasureTickness,
+//                        WallPositions,
+//                        WallAvoidRadius,
+//                        EnemyAvoidRadius,
+//                        DeltaTime
+//                        );
+//                    break;
+//                case EnemyID.Ghost:
+//                    HandleGhostMovement(
+//                        ref data,
+//                        index,
+//                        InputDatas,
+//                        OutputDatas,
+//                        ActiveEnmeyCount,
+//                        PlaeyrPositions,
+//                        PlayerTickness,
+//                        WallPositions,
+//                        WallAvoidRadius,
+//                        EnemyAvoidRadius,
+//                        DeltaTime
+//                        );
+//                    break;
+//            }
+
+//        }
+
+//        #region ゴーレム移動ロジック
+//        static void HandleGolemMovement(
+//        ref EnemyData data,
+//        int index,
+//        NativeArray<EnemyData> inputEnemyDatas,
+//        NativeArray<EnemyData> outputEnemyDatas,
+//        int ActiveEnemyCount,
+//        NativeArray<Vector3> treasurePositions,
+//        NativeArray<float> treasureTickness,
+//        NativeArray<Vector3> wallPositions,
+//        float wallAvoidRadius,
+//        float enemyAvoidRadius,
+//        float deltaTime
+//            )
+//        {
+
+//            Vector3 toTarget = treasurePositions[data.TargetIndex] - data.Position;
+//            float distSqToTarget = toTarget.sqrMagnitude;
+
+//            float targetRadius = treasureTickness[data.TargetIndex];
+//            float effectiveAttackRange = data.GolemAttackRange + data.GhostTickness + targetRadius;
+
+//            if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
+//            {
+//                data.State = (byte)EnemyState.Attack;
+//                outputEnemyDatas[index] = data;
+
+//                return;
+//            }
+
+//            Vector3 dir = toTarget / Mathf.Sqrt(distSqToTarget);
+//            dir.y = 0;
+//            Vector3 avoidance = Vector3.zero;
+
+//            for (int i = 0; i < ActiveEnemyCount; i++)
+//            {
+//                if (i == index) continue;
+
+//                float combinedRadius = data.GolemTickness + inputEnemyDatas[i].GolemTickness;
+//                float effectiveAvoidRadius = enemyAvoidRadius + combinedRadius;
+//                float sqrEffectiveAvoidRadius = effectiveAvoidRadius * effectiveAvoidRadius;
+
+//                Vector3 diff = data.Position - inputEnemyDatas[i].Position;
+//                float sqrDist = diff.sqrMagnitude;
+
+//                if (sqrDist < sqrEffectiveAvoidRadius)
+//                {
+//                    avoidance += (data.Position - inputEnemyDatas[i].Position).normalized * (sqrEffectiveAvoidRadius - sqrDist);
+//                }
+//            }
+
+//            float wallAvoidRadSq = wallAvoidRadius * wallAvoidRadius;
+//            for (int i = 0; i < wallPositions.Length; i++)
+//            {
+//                Vector3 diff = data.Position - wallPositions[i];
+//                diff.y = 0;
+//                float sqrDist = diff.sqrMagnitude;
+
+//                if (sqrDist < wallAvoidRadSq)
+//                {
+//                    float dist = Mathf.Sqrt(sqrDist);
+//                    avoidance += diff / dist * (wallAvoidRadSq - dist) * 2;
+//                }
+//            }
+
+//            avoidance.y = 0;
+
+//            data.Position += (dir + avoidance) * data.GolemMoveSpeed * deltaTime;
+//            data.State = (byte)EnemyState.Move;
+//            outputEnemyDatas[index] = data;
+//        }
+//        #endregion
+
+//        #region ゴースト移動ロジック
+//        static void HandleGhostMovement(
+//        ref EnemyData data,
+//        int index,
+//        NativeArray<EnemyData> inputEnemyDatas,
+//        NativeArray<EnemyData> outputEnemyDatas,
+//        int ActiveEnemyCount,
+//        NativeArray<Vector3> playerPositions,
+//        NativeArray<float> playerTickness,
+//        NativeArray<Vector3> wallPositions,
+//        float wallAvoidRadius,
+//        float enemyAvoidRadius,
+//        float deltaTime
+//            )
+//        {
+
+//            Vector3 toTarget = playerPositions[data.TargetIndex] - data.Position;
+//            float distSqToTarget = toTarget.sqrMagnitude;
+
+//            float targetRadius = playerTickness[data.TargetIndex];
+//            float effectiveAttackRange = data.GolemAttackRange + data.GhostTickness + targetRadius;
+
+//            if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
+//            {
+//                data.State = (byte)EnemyState.Attack;
+//                outputEnemyDatas[index] = data;
+
+//                return;
+//            }
+
+//            Vector3 dir = toTarget / Mathf.Sqrt(distSqToTarget);
+//            dir.y = 0;
+//            Vector3 avoidance = Vector3.zero;
+
+//            for (int i = 0; i < ActiveEnemyCount; i++)
+//            {
+//                if (i == index) continue;
+
+//                float combinedRadius = data.GolemTickness + inputEnemyDatas[i].GolemTickness;
+//                float effectiveAvoidRadius = enemyAvoidRadius + combinedRadius;
+//                float sqrEffectiveAvoidRadius = effectiveAvoidRadius * effectiveAvoidRadius;
+
+//                Vector3 diff = data.Position - inputEnemyDatas[i].Position;
+//                float sqrDist = diff.sqrMagnitude;
+
+//                if (sqrDist < sqrEffectiveAvoidRadius)
+//                {
+//                    avoidance += (data.Position - inputEnemyDatas[i].Position).normalized * (sqrEffectiveAvoidRadius - sqrDist);
+//                }
+//            }
+
+//            float wallAvoidRadSq = wallAvoidRadius * wallAvoidRadius;
+//            for (int i = 0; i < wallPositions.Length; i++)
+//            {
+//                Vector3 diff = data.Position - wallPositions[i];
+//                diff.y = 0;
+//                float sqrDist = diff.sqrMagnitude;
+
+//                if (sqrDist < wallAvoidRadSq)
+//                {
+//                    float dist = Mathf.Sqrt(sqrDist);
+//                    avoidance += diff / dist * (wallAvoidRadSq - dist) * 2;
+//                }
+//            }
+
+//            avoidance.y = 0;
+
+//            data.Position += (dir + avoidance) * data.GolemMoveSpeed * deltaTime;
+//            data.State = (byte)EnemyState.Move;
+//            outputEnemyDatas[index] = data;
+//        }
+//        #endregion
 
 //    Vector3 toTarget = TreasurePositions[data.TargetIndex] - data.Position;
 //    float distSqToTarget = toTarget.sqrMagnitude;

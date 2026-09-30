@@ -72,8 +72,8 @@ public class AudioVolumeSettings
     {
         audioMixer = mixer;
 
-        manager.MasterSliderAddListner(SetMasterVolume);
-        manager.BGMSliderAddListner(SetBGMVolume);
-        manager.SESliderAddListner(SetSEVolume);
+        manager.MasterVolumeSlider.VolumeSliderAddLister(SetMasterVolume);
+        manager.BGMVolumeSlider.VolumeSliderAddLister(SetBGMVolume);
+        manager.SEVolumeSlider.VolumeSliderAddLister(SetSEVolume);
     }
 }

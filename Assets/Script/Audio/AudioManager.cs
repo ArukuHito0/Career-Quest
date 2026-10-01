@@ -20,6 +20,8 @@ public class AudioManager : MonoBehaviour
     private AudioSource bgmSource;  // BGM用オーディオソース
     private AudioSource seSource;   // SE用オーディオソース
 
+    [SerializeField] AudioUIManager audioUIManager;
+
     private void OnDestroy()
     {
         if (Instance != null)
@@ -58,7 +60,7 @@ public class AudioManager : MonoBehaviour
 
         // 各クラスのインスタンスを作成
         clipProvider = new AudioClipProvider(database);
-        volumeSettings = new AudioVolumeSettings(audioMixer, AudioUIManager.Instance);
+        volumeSettings = new AudioVolumeSettings(audioMixer, audioUIManager);
     }
 
     // BGMを再生する関数

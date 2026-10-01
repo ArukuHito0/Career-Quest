@@ -10,11 +10,11 @@ namespace CareerQuest.Enemy
     [DisallowMultipleComponent]
     public abstract class EnemyManagerBase<T> : MonoBehaviour where T : Component
     {
-        protected TreasureHashManager treasureHashManager;  // 宝物のグリッドマップ管理クラス
-        protected PlayerHashManager playerHashManager; // プレイヤーのグリッドマップ管理クラス
-        protected EnemyHashManager enemyHashManager; // 敵のグリッドマップ管理クラス
+        protected TreasureHashManager treasureHashManager;  // 宝物のグリッドマップ管理
+        protected PlayerHashManager playerHashManager; // プレイヤーのグリッドマップ管理
+        protected EnemyHashManager enemyHashManager; // 敵のグリッドマップ管理
 
-        protected List<TreasureChest1> activeTreasureEntities = new List<TreasureChest1>();
+        protected List<TreasureChest> activeTreasureEntities = new List<TreasureChest>();
         protected List<PlayerMove> activePlayerEntities = new List<PlayerMove>();
         protected List<EnemyController> activeEnemyEntities = new List<EnemyController>();
         protected NativeArray<Vector3> wallPositions;
@@ -100,7 +100,6 @@ namespace CareerQuest.Enemy
         {
             EnsureBufferSize(activeEnemyEntities.Count + 1);
 
-            MyLogger.Log("敵生成");
             var enemy = _pool.Get();
             enemy.transform.position = position;
         }
@@ -124,7 +123,7 @@ namespace CareerQuest.Enemy
         //    _pool.Release(enemy);
         //}
 
-        // バッファをリサイズするメソッドを追加
+        // バッファをリサイズ
         protected void EnsureBufferSize(int count)
         {
             if (bufferA.IsCreated && bufferA.Length >= count) return;

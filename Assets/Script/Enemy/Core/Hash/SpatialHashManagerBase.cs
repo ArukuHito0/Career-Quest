@@ -16,7 +16,7 @@ namespace CareerQuest.Enemy
         protected NativeParallelMultiHashMap<int, int> cellToEntityMap;  // <セルID, index>のMap
         protected NativeArray<float> ticknesses;  // <セルID, セル内のオブジェクトの数>のMap
 
-        [Min(1)] public readonly int girdWidth = 1000;  // マップをいくつのセルで埋めるか
+        [Min(1)] public readonly int girdWidth = 1000;  // マップの横セルの上限
         [Min(1)] public readonly int cellSize = 10;  // 1つのセルの大きさ
         protected int maxEntitie = 50;  // 敵の数
 

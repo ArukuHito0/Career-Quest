@@ -6,7 +6,7 @@ using UnityEngine.Jobs;
 namespace CareerQuest.Enemy
 {
     //  “G‚Ì‹““®‚ğ§Œä‚·‚éƒNƒ‰ƒX
-    public sealed class EnemyManager : EnemyManagerBase<TreasureChest1>
+    public sealed class EnemyManager : EnemyManagerBase<TreasureChest>
     {
         protected override void Awake()
         {
@@ -17,22 +17,22 @@ namespace CareerQuest.Enemy
         {
             base.Start();
         }
+
         //  --  FOR ALPHA  --  //
         float timer1 = 0f;
         [SerializeField] Transform testPos1;
         //  --  FOR ALPHA  --  //
+        
         void Update()
         {
-            //  --  FOR ALPHA  --  //
 
+            //  --  FOR ALPHA  --  //
             timer1 += Time.deltaTime;
             if (timer1 >= 5f)
             {
                 timer1 = 0f;
                 SpawnEnemy(testPos1.position);
             }
-
-
             //  --  FOR ALPHA  --  //
 
             if (activeTreasureEntities.Count == 0) return;
@@ -82,9 +82,6 @@ namespace CareerQuest.Enemy
                     continue;
 
                 activeEnemyEntities[i].TreasureChest = treasureHashManager.ActiveEntities[readBuffer[i].TargetIndex];
-                MyLogger.Log(readBuffer[i].TargetIndex);
-                MyLogger.Log(treasureHashManager.ActiveEntities.Count);
-                MyLogger.Log(treasureHashManager.ActiveEntities[0]);
             }
 
             var searchPlayerJob = new SearchPlayerJob
@@ -120,8 +117,10 @@ namespace CareerQuest.Enemy
                     }
                     if (activeEnemyEntities[i].EnemyID == EnemyID.Ghost)
                     {
-                        activeEnemyEntities[i].SetTarget(playerHashManager.Positions[targetIndex]);
-                        Debug.Log(playerHashManager.Positions[targetIndex]);
+                        activeEnemyEntities[i].SetTarget(playerHashManager.Positions[1]);
+                        Debug.Log(playerHashManager.ActiveEntities[targetIndex], playerHashManager.ActiveEntities[targetIndex]);
+                        MyLogger.Log(playerHashManager.ActiveEntities[targetIndex]);
+                        MyLogger.Log(targetIndex);
                     }
                 }
             }

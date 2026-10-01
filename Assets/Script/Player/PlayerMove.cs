@@ -34,7 +34,6 @@ public class PlayerMove : MonoBehaviour, ISpatialEntity
 
         _hashManager = ServiceLocator.Resolve<PlayerHashManager>();
         _hashManager.Register(this);
-
         Tickness = 0.2f;
     }
 
@@ -64,10 +63,6 @@ public class PlayerMove : MonoBehaviour, ISpatialEntity
             var otherEnemy = _hashManager.ActiveEntities[index];
 
             float dist = Vector3.Distance(transform.position, otherEnemy.transform.position);
-
-            if (dist < 20.0f)
-            {
-            }
         }
     }
 

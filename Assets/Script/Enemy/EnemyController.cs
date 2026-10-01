@@ -16,19 +16,18 @@ namespace CareerQuest.Enemy
         
         [SerializeField] EnemyID _enemyID = EnemyID.Golem;
         public EnemyData EnemyData;
-        TreasureChest1 _treasureChest;
+        TreasureChest _treasureChest;
 
         public EnemyID EnemyID { get => _enemyID; }
         
         public int Index { get; set; }  // 敵番号
         public float Tickness { get; set; }  // オブジェクトの厚さ
 
-        public TreasureChest1 TreasureChest { get => _treasureChest; set => _treasureChest = value; }
+        public TreasureChest TreasureChest { get => _treasureChest; set => _treasureChest = value; }
 
 
         void Awake()
         {
-            MyLogger.Log("登録");
             _hashManager = ServiceLocator.Resolve<EnemyHashManager>();
             _hashManager.Register(this);
 
@@ -50,16 +49,14 @@ namespace CareerQuest.Enemy
                 }
             }
         }
+
         public void SetTarget(Vector3 targetPos)
         {
             if (_navAgent.enabled && _navAgent != null)
             {
-                MyLogger.Log("敵のNavMeshターゲット設定");
-                MyLogger.Log(this.gameObject);
                 _navAgent.SetDestination(targetPos);
             }
         }
-
 
         void AttackTreasure()
         {

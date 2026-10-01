@@ -6,7 +6,7 @@ using UnityEngine.Jobs;
 namespace CareerQuest.Enemy
 {
     //  “G‚Ì‹““®‚ğ§Œä‚·‚éƒNƒ‰ƒX
-    public sealed class EnemyManager : EnemyManagerBase<TreasureChest1>
+    public sealed class EnemyManager : EnemyManagerBase<TreasureChest>
     {
         protected override void Awake()
         {
@@ -17,22 +17,22 @@ namespace CareerQuest.Enemy
         {
             base.Start();
         }
+
         //  --  FOR ALPHA  --  //
         float timer1 = 0f;
         [SerializeField] Transform testPos1;
         //  --  FOR ALPHA  --  //
+        
         void Update()
         {
-            //  --  FOR ALPHA  --  //
 
+            //  --  FOR ALPHA  --  //
             timer1 += Time.deltaTime;
             if (timer1 >= 5f)
             {
                 timer1 = 0f;
                 SpawnEnemy(testPos1.position);
             }
-
-
             //  --  FOR ALPHA  --  //
 
             if (activeTreasureEntities.Count == 0) return;
@@ -63,7 +63,7 @@ namespace CareerQuest.Enemy
             {
                 InputDatas = readBuffer,
                 TreasurePositions = treasureHashManager.Positions,
-                CellToEntityMap = treasureHashManager.CellToEntityMap,
+                CellToEntityMap = treasureHashManager.CellEnemyIndexMap,
                 CellSize = treasureHashManager.cellSize,
                 GridWidth = treasureHashManager.girdWidth,
                 DeltaTime = Time.deltaTime
@@ -82,18 +82,15 @@ namespace CareerQuest.Enemy
                     continue;
 
                 activeEnemyEntities[i].TreasureChest = treasureHashManager.ActiveEntities[readBuffer[i].TargetIndex];
-                MyLogger.Log(readBuffer[i].TargetIndex);
-                MyLogger.Log(treasureHashManager.ActiveEntities.Count);
-                MyLogger.Log(treasureHashManager.ActiveEntities[0]);
             }
 
             var searchPlayerJob = new SearchPlayerJob
             {
                 InputDatas = readBuffer,
                 PlayerPositions = playerHashManager.Positions,
-                CellToEntityMap = playerHashManager.CellToEntityMap,
-                CellSize = treasureHashManager.cellSize,
-                GridWidth = treasureHashManager.girdWidth,
+                CellToEntityMap = playerHashManager.CellEnemyIndexMap,
+                CellSize = playerHashManager.cellSize,
+                GridWidth = playerHashManager.girdWidth,
                 DeltaTime = Time.deltaTime
             };
 
@@ -110,18 +107,23 @@ namespace CareerQuest.Enemy
                 activeEnemyEntities[i].EnemyData.GolemAttackPower = golemAttackPower;
 
                 int targetIndex = readBuffer[i].TargetIndex;  // ‰Â“Ç«‚Ì‚½‚ß‚Ì‚Éint‚ÉˆÚ‚µ‚Ä‚Ü‚·B
-                if (targetIndex >= 0 && targetIndex < treasureHashManager.ActiveEntities.Count)
+                if (targetIndex >= 0)
                 {
-                    var targetChest = treasureHashManager.ActiveEntities[targetIndex];
-                    if (activeEnemyEntities[i].EnemyID == EnemyID.Golem)
+                    if (activeEnemyEntities[i].EnemyID == EnemyID.Golem && targetIndex < treasureHashManager.ActiveEntities.Count)
                     {
+                        var targetChest = treasureHashManager.ActiveEntities[targetIndex];
                         activeEnemyEntities[i].TreasureChest = targetChest;
                         activeEnemyEntities[i].SetTarget(targetChest.transform.position);
+                        Debug.Log(treasureHashManager.ActiveEntities[targetIndex], treasureHashManager.ActiveEntities[targetIndex]);
+                        MyLogger.Log(treasureHashManager.ActiveEntities[targetIndex]);
+                        MyLogger.Log(targetIndex);
                     }
-                    if (activeEnemyEntities[i].EnemyID == EnemyID.Ghost)
+                    else if (activeEnemyEntities[i].EnemyID == EnemyID.Ghost && targetIndex < playerHashManager.ActiveEntities.Count)
                     {
                         activeEnemyEntities[i].SetTarget(playerHashManager.Positions[targetIndex]);
-                        Debug.Log(playerHashManager.Positions[targetIndex]);
+                        Debug.Log(playerHashManager.ActiveEntities[targetIndex], playerHashManager.ActiveEntities[targetIndex]);
+                        MyLogger.Log(playerHashManager.ActiveEntities[targetIndex]);
+                        MyLogger.Log(targetIndex);
                     }
                 }
             }

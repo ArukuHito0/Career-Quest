@@ -13,7 +13,7 @@ namespace CareerQuest.Enemy
         public List<T> ActiveEntities = new List<T>();
 
         protected NativeArray<Vector3> positions;  // 敵座標配列
-        protected NativeParallelMultiHashMap<int, int> cellToEntityMap;  // <セルID, index>のMap
+        protected NativeParallelMultiHashMap<int, int> cellEnemyIndexMap;  // <セルID, index>のMap
         protected NativeArray<float> ticknesses;  // <セルID, セル内のオブジェクトの数>のMap
 
         [Min(1)] public readonly int girdWidth = 1000;  // マップの横セルの上限
@@ -21,13 +21,13 @@ namespace CareerQuest.Enemy
         protected int maxEntitie = 50;  // 敵の数
 
         public NativeArray<Vector3> Positions { get => positions; }
-        public NativeParallelMultiHashMap<int, int> CellToEntityMap { get => cellToEntityMap; }
+        public NativeParallelMultiHashMap<int, int> CellEnemyIndexMap { get => cellEnemyIndexMap; }
         public NativeArray<float> Ticknesses { get => ticknesses; }
 
         protected virtual void Start()
         {
             positions = new NativeArray<Vector3>(maxEntitie, Allocator.Persistent);
-            cellToEntityMap = new NativeParallelMultiHashMap<int, int>(maxEntitie, Allocator.Persistent);
+            cellEnemyIndexMap = new NativeParallelMultiHashMap<int, int>(maxEntitie, Allocator.Persistent);
             ticknesses = new NativeArray<float>(maxEntitie, Allocator.Persistent);
         }
 
@@ -43,12 +43,12 @@ namespace CareerQuest.Enemy
                 }
             }
 
-            cellToEntityMap.Clear();
+            cellEnemyIndexMap.Clear();
 
             var job = new UpdateGridJob
             {
                 Positions = positions,
-                CellMap = cellToEntityMap.AsParallelWriter(),
+                CellMap = cellEnemyIndexMap.AsParallelWriter(),
                 CellSize = cellSize,
                 GridWidth = girdWidth,
             };
@@ -61,7 +61,7 @@ namespace CareerQuest.Enemy
         protected virtual void OnDestroy()
         {
             if (positions.IsCreated) positions.Dispose();
-            if (cellToEntityMap.IsCreated) cellToEntityMap.Dispose();
+            if (cellEnemyIndexMap.IsCreated) cellEnemyIndexMap.Dispose();
             if (ticknesses.IsCreated) ticknesses.Dispose();
         }
 
@@ -81,11 +81,11 @@ namespace CareerQuest.Enemy
         //  セルIDから周囲の状況を取得
         public void GetEntitiesInCell(int cellId, List<int> results)
         {
-            if (cellToEntityMap.TryGetFirstValue(cellId, out int entityIndex, out var iterator))
+            if (cellEnemyIndexMap.TryGetFirstValue(cellId, out int entityIndex, out var iterator))
             {
                 results.Add(entityIndex);
 
-                while (cellToEntityMap.TryGetNextValue(out entityIndex, ref iterator))
+                while (cellEnemyIndexMap.TryGetNextValue(out entityIndex, ref iterator))
                 {
                     results.Add(entityIndex);
                 }

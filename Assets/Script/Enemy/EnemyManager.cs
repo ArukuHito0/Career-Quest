@@ -63,7 +63,7 @@ namespace CareerQuest.Enemy
             {
                 InputDatas = readBuffer,
                 TreasurePositions = treasureHashManager.Positions,
-                CellToEntityMap = treasureHashManager.CellToEntityMap,
+                CellToEntityMap = treasureHashManager.CellEnemyIndexMap,
                 CellSize = treasureHashManager.cellSize,
                 GridWidth = treasureHashManager.girdWidth,
                 DeltaTime = Time.deltaTime
@@ -88,9 +88,9 @@ namespace CareerQuest.Enemy
             {
                 InputDatas = readBuffer,
                 PlayerPositions = playerHashManager.Positions,
-                CellToEntityMap = playerHashManager.CellToEntityMap,
-                CellSize = treasureHashManager.cellSize,
-                GridWidth = treasureHashManager.girdWidth,
+                CellToEntityMap = playerHashManager.CellEnemyIndexMap,
+                CellSize = playerHashManager.cellSize,
+                GridWidth = playerHashManager.girdWidth,
                 DeltaTime = Time.deltaTime
             };
 
@@ -107,17 +107,20 @@ namespace CareerQuest.Enemy
                 activeEnemyEntities[i].EnemyData.GolemAttackPower = golemAttackPower;
 
                 int targetIndex = readBuffer[i].TargetIndex;  // ‰Â“Ç«‚Ì‚½‚ß‚Ì‚Éint‚ÉˆÚ‚µ‚Ä‚Ü‚·B
-                if (targetIndex >= 0 && targetIndex < treasureHashManager.ActiveEntities.Count)
+                if (targetIndex >= 0)
                 {
-                    var targetChest = treasureHashManager.ActiveEntities[targetIndex];
-                    if (activeEnemyEntities[i].EnemyID == EnemyID.Golem)
+                    if (activeEnemyEntities[i].EnemyID == EnemyID.Golem && targetIndex < treasureHashManager.ActiveEntities.Count)
                     {
+                        var targetChest = treasureHashManager.ActiveEntities[targetIndex];
                         activeEnemyEntities[i].TreasureChest = targetChest;
                         activeEnemyEntities[i].SetTarget(targetChest.transform.position);
+                        Debug.Log(treasureHashManager.ActiveEntities[targetIndex], treasureHashManager.ActiveEntities[targetIndex]);
+                        MyLogger.Log(treasureHashManager.ActiveEntities[targetIndex]);
+                        MyLogger.Log(targetIndex);
                     }
-                    if (activeEnemyEntities[i].EnemyID == EnemyID.Ghost)
+                    else if (activeEnemyEntities[i].EnemyID == EnemyID.Ghost && targetIndex < playerHashManager.ActiveEntities.Count)
                     {
-                        activeEnemyEntities[i].SetTarget(playerHashManager.Positions[1]);
+                        activeEnemyEntities[i].SetTarget(playerHashManager.Positions[targetIndex]);
                         Debug.Log(playerHashManager.ActiveEntities[targetIndex], playerHashManager.ActiveEntities[targetIndex]);
                         MyLogger.Log(playerHashManager.ActiveEntities[targetIndex]);
                         MyLogger.Log(targetIndex);

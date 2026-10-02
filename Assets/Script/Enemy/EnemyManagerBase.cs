@@ -35,7 +35,7 @@ namespace CareerQuest.Enemy
         
         //  -- Golemステータス --  //
         protected int golemHp;                  // 体力
-        protected float golemMoveSpeed;         // 移動速度
+        //protected float golemMoveSpeed;         // 移動速度 NavMeshを使うためコメントアウト
         protected float golemAttackRange;       // 移動速度
         protected float golemSearchRadius;      // 状況把握できる範囲の半径
         protected int golemAttackPower;         // 攻撃力
@@ -45,7 +45,7 @@ namespace CareerQuest.Enemy
 
         //  -- Ghostステータス --  //
         protected int ghostHp;                  // 体力
-        protected float ghostMoveSpeed;         // 移動速度
+        //protected float ghostMoveSpeed;         // 移動速度 NavMeshを使うためコメントアウト
         protected float ghostAttackRange;       // 移動速度
         protected float ghostSearchRadius;      // 状況把握できる範囲の半径
         protected int ghostAttackPower;         // 攻撃力
@@ -105,23 +105,25 @@ namespace CareerQuest.Enemy
         }
 
         //  削除
-        //public void DespawnEnemy(EnemyController enemy)
-        //{
-        //    int indexToRemove = enemy.DataIndex;
-        //    int lastIndex = activeEnemyEntities.Count - 1;
+        public void DespawnEnemy(EnemyController enemy)
+        {
+            if (enemy == null) return;
 
-        //    if (indexToRemove < lastIndex)
-        //    {
-        //        var lastEnemy = activeEnemyEntities[lastIndex];
-        //        activeEnemyEntities[indexToRemove] = lastEnemy;
-        //        lastEnemy.DataIndex = indexToRemove;
-        //        bufferA[indexToRemove] = bufferA[lastIndex];
-        //        bufferB[indexToRemove] = bufferB[lastIndex];
-        //    }
+            int removeIndex = enemy.Index;
+            int lastIndex = activeEnemyEntities.Count - 1;
 
-        //    activeEnemyEntities.RemoveAt(lastIndex);
-        //    _pool.Release(enemy);
-        //}
+            if (removeIndex < lastIndex)
+            {
+                var lastEnemy = activeEnemyEntities[lastIndex];
+                activeEnemyEntities[removeIndex] = lastEnemy;
+                lastEnemy.Index = removeIndex;
+                bufferA[removeIndex] = bufferA[lastIndex];
+                bufferB[removeIndex] = bufferB[lastIndex];
+            }
+
+            activeEnemyEntities.RemoveAt(lastIndex);
+            _pool.Release(enemy);
+        }
 
         // バッファをリサイズ
         protected void EnsureBufferSize(int count)
@@ -141,7 +143,7 @@ namespace CareerQuest.Enemy
             //  -- ゴーレムの能力値設定
             enemyStat = _enemyStatHolder.GetStat(EnemyID.Golem);
             golemHp = enemyStat.HP;
-            golemMoveSpeed = enemyStat.MoveSpeed;
+            //golemMoveSpeed = enemyStat.MoveSpeed; NavMeshを使うためコメントアウト
             golemAttackRange = enemyStat.AtackRange;
             golemSearchRadius = enemyStat.SearchRadius;
             golemBodyTickness = enemyStat.BodyTickness;
@@ -152,7 +154,7 @@ namespace CareerQuest.Enemy
             //  -- ゴーストの能力値設定
             enemyStat = _enemyStatHolder.GetStat(EnemyID.Ghost);
             ghostHp = enemyStat.HP;
-            ghostMoveSpeed = enemyStat.MoveSpeed;
+            //ghostMoveSpeed = enemyStat.MoveSpeed; NavMeshを使うためコメントアウト
             ghostAttackRange = enemyStat.AtackRange;
             ghostSearchRadius = enemyStat.SearchRadius;
             ghostBodyTickness = enemyStat.BodyTickness;

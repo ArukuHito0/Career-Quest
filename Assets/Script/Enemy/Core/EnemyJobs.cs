@@ -54,7 +54,6 @@ namespace CareerQuest.Enemy
                             {
                                 minDistance = dist;
                                 nearestIndex = entityIndex;
-                                MyLogger.Log($"標的発見{entityIndex}");
                             }
 
                         } while (CellToEntityMap.TryGetNextValue(out entityIndex, ref iterator));
@@ -115,7 +114,6 @@ namespace CareerQuest.Enemy
                             {
                                 minDistance = dist;
                                 nearestIndex = entityIndex;
-                                MyLogger.Log($"標的発見{entityIndex}");
                             }
 
                         } while (CellToEntityMap.TryGetNextValue(out entityIndex, ref iterator));
@@ -165,8 +163,116 @@ namespace CareerQuest.Enemy
             Enemies[index] = enemy;
         }
     }
-}
 
+    //  攻撃するか判断
+    [BurstCompile]
+    public struct AttackDicisionob : IJobParallelFor
+    {
+        [ReadOnly] public NativeArray<EnemyData> InputDatas; // 読み取り用
+        public NativeArray<EnemyData> OutputDatas;          // 書き込み用
+        [ReadOnly] public NativeArray<Vector3> TreasurePositions;  // お宝座標
+        [ReadOnly] public NativeArray<float> TreasureTickness;  // お宝の厚み
+        [ReadOnly] public NativeArray<Vector3> PlaeyrPositions;  // プレイヤー座標
+        [ReadOnly] public NativeArray<float> PlayerTickness;  // プレイヤーの厚み
+
+        public float EnemyAvoidRadius;  // 敵同士で避け始める距離
+
+        public float DeltaTime;
+        public void Execute(int index)
+        {
+            var data = InputDatas[index];
+            if (data.TargetIndex < 0) return;
+            if (data.State == (byte)EnemyState.Attack) return;
+
+
+            switch (data.ID)
+            {
+                case EnemyID.Golem:
+                    HandleGolemMovement(
+                        ref data,
+                        index,
+                        OutputDatas,
+                        TreasurePositions,
+                        TreasureTickness,
+                        DeltaTime
+                        );
+                    break;
+                case EnemyID.Ghost:
+                    HandleGhostMovement(
+                        ref data,
+                        index,
+                        OutputDatas,
+                        PlaeyrPositions,
+                        PlayerTickness,
+                        DeltaTime
+                        );
+                    break;
+            }
+
+        }
+
+        #region ゴーレム移動ロジック
+        static void HandleGolemMovement(
+        ref EnemyData data,
+        int index,
+        NativeArray<EnemyData> outputEnemyDatas,
+        NativeArray<Vector3> treasurePositions,
+        NativeArray<float> treasureTickness,
+        float deltaTime
+            )
+        {
+
+            Vector3 toTarget = treasurePositions[data.TargetIndex] - data.Position;
+            float distSqToTarget = toTarget.sqrMagnitude;
+
+            float targetRadius = treasureTickness[data.TargetIndex];
+            float effectiveAttackRange = data.GolemAttackRange + data.GhostTickness + targetRadius;
+
+            if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
+            {
+                data.State = (byte)EnemyState.Attack;
+                outputEnemyDatas[index] = data;
+
+                return;
+            }
+        }
+        #endregion
+
+        #region ゴースト移動ロジック
+        static void HandleGhostMovement(
+        ref EnemyData data,
+        int index,
+        NativeArray<EnemyData> outputEnemyDatas,
+        NativeArray<Vector3> playerPositions,
+        NativeArray<float> playerTickness,
+        float deltaTime
+            )
+        {
+
+            Vector3 toTarget = playerPositions[data.TargetIndex] - data.Position;
+            float distSqToTarget = toTarget.sqrMagnitude;
+
+            float targetRadius = playerTickness[data.TargetIndex];
+            float effectiveAttackRange = data.GolemAttackRange + data.GhostTickness + targetRadius;
+
+            if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
+            {
+                data.State = (byte)EnemyState.Attack;
+                outputEnemyDatas[index] = data;
+                
+                return;
+            }
+            else
+            {
+                data.State = (byte)EnemyState.Move;
+                outputEnemyDatas[index] = data;
+                
+                return;
+            }
+        }
+    }
+}
+        #endregion
 //  移動はNavMeshを試用してみるのでコメントアウト
 //    //  移動
 //    [BurstCompile]

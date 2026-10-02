@@ -34,13 +34,14 @@ public abstract class AttackBase : MonoBehaviour
         if (!CanAttack())
             return;
 
-        // 攻撃処理を実行
-        Attack(target);
+        // 攻撃が成功したか確認
+        bool attacked = Attack(target);
 
-        // 攻撃タイマーをリセット
-        attackTimer = 0f;
+        // 攻撃した場合だけタイマーをリセット
+        if(attacked)
+            attackTimer = 0f;
     }
 
     // 攻撃方法は子クラス側で実装する
-    protected abstract void Attack(Transform targer);
+    protected abstract bool Attack(Transform targer);
 }

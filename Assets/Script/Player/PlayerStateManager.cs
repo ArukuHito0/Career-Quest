@@ -75,9 +75,6 @@ public class PlayerStateManager : MonoBehaviour
         if (isChangingMode)
             return false;
 
-        if (IsGhost())
-            return false;
-
         return true;
     }
 
@@ -217,9 +214,6 @@ public class PlayerStateManager : MonoBehaviour
 
         // ’…‘Ö‚¦’†‚¾‚Á‚½ê‡‚Í‰ğœ
         isChangingMode = false;
-
-        // ˆÚ“®’â~
-        StopMovement();
 
         Debug.Log($"{gameObject.name}‚ª‚¨‰»‚¯‚É‚È‚è‚Ü‚µ‚½");
     }

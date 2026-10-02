@@ -4,13 +4,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class PlayerMove : MonoBehaviour, ISpatialEntity
+public class PlayerMove : MonoBehaviour
 {
     // プレイヤーのNavMeshAgent
     private NavMeshAgent agent;
-
-    PlayerHashManager _hashManager;
-    public List<int> nearbyEntities = new List<int>(64);
 
     // 最後に指定された移動先
     private Vector3 lastTargetPosition;
@@ -32,38 +29,6 @@ public class PlayerMove : MonoBehaviour, ISpatialEntity
         // プレイヤーの状態管理を取得
         stateManager = GetComponent<PlayerStateManager>();
 
-        _hashManager = ServiceLocator.Resolve<PlayerHashManager>();
-        _hashManager.Register(this);
-        Tickness = 0.2f;
-    }
-
-    private void Update()
-    {
-        nearbyEntities.Clear();
-
-        int myX = Mathf.FloorToInt(transform.position.x / _hashManager.cellSize);
-        int myZ = Mathf.FloorToInt(transform.position.z / _hashManager.cellSize);
-        int myCellId = myX + (myZ * _hashManager.girdWidth);
-
-        for (int dz = -1; dz <= 1; dz++)
-        {
-            for (int dx = -1; dx <= 1; dx++)
-            {
-                int targetCellId = (myX + dx) + ((myZ + dz) * _hashManager.girdWidth);
-
-                _hashManager.GetEntitiesInCell(targetCellId, nearbyEntities);
-            }
-        }
-
-        foreach (int index in nearbyEntities)
-        {
-            if (_hashManager.ActiveEntities[index] == this)
-                continue;
-
-            var otherEnemy = _hashManager.ActiveEntities[index];
-
-            float dist = Vector3.Distance(transform.position, otherEnemy.transform.position);
-        }
     }
 
     // 指定した場所を目的地として設定

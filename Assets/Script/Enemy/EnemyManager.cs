@@ -49,11 +49,12 @@ namespace CareerQuest.Enemy
                     ID = activeEnemyEntities[i].EnemyID,
 
                     GolemAttackPower = golemAttackPower,
-                    GolemMoveSpeed = golemMoveSpeed,
+                    //GolemMoveSpeed = golemMoveSpeed, 今はNavmeshのスピードを使ってる
+                    GolemAttackRange = golemAttackRange,
                     GolemSearchRadius = golemSearchRadius,
                     GolemTickness = golemBodyTickness,
 
-                    GhostMoveSpeed = ghostMoveSpeed,
+                    //GhostMoveSpeed = ghostMoveSpeed, 今はNavmeshのスピードを使ってる
                     GhostAttackPower = ghostAttackPower,
                     GhostAttackRange = ghostAttackRange,
                     GhostSearchRadius = ghostSearchRadius,
@@ -114,8 +115,8 @@ namespace CareerQuest.Enemy
                 DeltaTime = Time.deltaTime
             };
 
-            JobHandle AttackDicisionHandle = attackDicisionjob.Schedule(activeEnemyEntities.Count, 64, combinedSearchHandle);
-            AttackDicisionHandle.Complete();
+            JobHandle attackDicisionHandle = attackDicisionjob.Schedule(activeEnemyEntities.Count, 64, combinedSearchHandle);
+            attackDicisionHandle.Complete();
             
             for (int i = 0; i < activeEnemyEntities.Count; i++)
             {
@@ -152,11 +153,27 @@ namespace CareerQuest.Enemy
             {
                 Bullets = bulletManager.BulletBuffer,
                 BulletCount = bulletManager.ActiveCount,
-                Enemies = readBuffer
+                Enemies = writeBuffer
             };
 
+            var collisionHandle = collisionJob.Schedule(activeEnemyEntities.Count, 64, attackDicisionHandle);
+            collisionHandle.Complete();
             isUsingBufferA = !isUsingBufferA;
 
+            for (int i = activeEnemyEntities.Count - 1; i >= 0; i--)
+            {
+                var enemyData = isUsingBufferA ? bufferA[i] : bufferB[i];
+
+                if (enemyData.State == (byte)EnemyState.Dead)
+                {
+                    var enemyController = activeEnemyEntities[i];
+                    DespawnEnemy(enemyController);
+                }
+            }
+
+            if(isUsingBufferA)
+            { bufferA = writeBuffer; }
+            else{ bufferB = writeBuffer; }
             MyLogger.Log("敵行動サイクル通った");
         }
 

@@ -3,6 +3,7 @@ using Unity.Burst;
 using Unity.Jobs;
 using UnityEngine;
 using CareerQuest.Player;
+using CareerQuest.Core;
 
 namespace CareerQuest.Enemy
 {
@@ -53,6 +54,7 @@ namespace CareerQuest.Enemy
                             {
                                 minDistance = dist;
                                 nearestIndex = entityIndex;
+                                MyLogger.Log($"標的発見{entityIndex}");
                             }
 
                         } while (CellToEntityMap.TryGetNextValue(out entityIndex, ref iterator));
@@ -113,6 +115,7 @@ namespace CareerQuest.Enemy
                             {
                                 minDistance = dist;
                                 nearestIndex = entityIndex;
+                                MyLogger.Log($"標的発見{entityIndex}");
                             }
 
                         } while (CellToEntityMap.TryGetNextValue(out entityIndex, ref iterator));

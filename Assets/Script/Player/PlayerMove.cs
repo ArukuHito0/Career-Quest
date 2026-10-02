@@ -92,7 +92,7 @@ public class PlayerMove : MonoBehaviour, ISpatialEntity
             return;
         }
 
-        // お化け状態など移動できない場合
+        // 移動できない場合
         if (!stateManager.CanMove())
         {
             StopMovement();

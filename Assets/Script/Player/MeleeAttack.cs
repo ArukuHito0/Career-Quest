@@ -22,8 +22,6 @@ public class MeleeAttack : AttackBase
         // ƒvƒŒƒCƒ„[‚©‚ç“G‚Ü‚Å‚Ì‹——£‚ğŒvZ
         float distance = Vector3.Distance(transform.position, target.position);
 
-        Debug.Log($"UŒ‚‹——£F{distance} / UŒ‚”ÍˆÍF{attackRange}");
-
         // UŒ‚”ÍˆÍŠO‚È‚çUŒ‚‚µ‚È‚¢
         if (distance > attackRange)
             return false;
@@ -31,7 +29,7 @@ public class MeleeAttack : AttackBase
         // UŒ‚”ÍˆÍ‚ğ•\¦
         ShowAttackEffect();
 
-        Debug.Log($"{gameObject.name}‚ª{target.name}‚ğ‹ßÚUŒ‚‚µ‚Ü‚µ‚½");
+        //Debug.Log($"{gameObject.name}‚ª{target.name}‚ğ‹ßÚUŒ‚‚µ‚Ü‚µ‚½");
 
         return true;
     }

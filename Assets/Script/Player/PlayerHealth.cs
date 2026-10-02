@@ -3,6 +3,9 @@ using System.Collections;
 
 public class PlayerHealth : MonoBehaviour
 {
+    // ユニットの状態管理
+    private PlayerStateManager stateManager;
+
     // 最大HP
     [SerializeField] private int maxHealth = 100;
 
@@ -26,6 +29,8 @@ public class PlayerHealth : MonoBehaviour
 
     private void Awake()
     {
+        stateManager = GetComponent<PlayerStateManager>();
+
         // ゲーム開始時は最大HP
         currentHealth = maxHealth;
     }
@@ -95,6 +100,8 @@ public class PlayerHealth : MonoBehaviour
 
         isGhost = true;
 
+        stateManager.SetGhost();
+
         Debug.Log($"{gameObject.name}がお化け状態になりました");
 
         // 指定時間待つ
@@ -113,6 +120,7 @@ public class PlayerHealth : MonoBehaviour
 
         // 通常状態へ戻す
         isGhost = false;
+        stateManager.SetAlive();
 
         Debug.Log($"{gameObject.name}が復活しました");
     }

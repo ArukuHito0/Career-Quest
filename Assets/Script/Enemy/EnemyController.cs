@@ -16,14 +16,14 @@ namespace CareerQuest.Enemy
         
         [SerializeField] EnemyID _enemyID = EnemyID.Golem;
         public EnemyData EnemyData;
-        TreasureChest _treasureChest;
+        ISpatialEntity _target;
 
         public EnemyID EnemyID { get => _enemyID; }
         
         public int Index { get; set; }  // 敵番号
         public float Tickness { get; set; }  // オブジェクトの厚さ
 
-        public TreasureChest TreasureChest { get => _treasureChest; set => _treasureChest = value; }
+        public ISpatialEntity Target { get => _target; set => _target = value; }
 
 
         void Awake()
@@ -61,12 +61,15 @@ namespace CareerQuest.Enemy
         void AttackTreasure()
         {
             MyLogger.Log("お宝攻撃開始");
-            _treasureChest?.TakeDamage();
+            TreasureChest t = _target as TreasureChest;
+            t?.TakeDamage();
         }
 
         void AttackPlayer()
         {
             MyLogger.Log("プレイヤー攻撃開始");
+            PlayerHealth playerHelth = _target as PlayerHealth;
+            playerHelth?.TakeDamage(EnemyData.GhostAttackPower);
         }
     }
 }

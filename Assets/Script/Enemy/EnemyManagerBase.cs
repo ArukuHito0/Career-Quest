@@ -101,7 +101,8 @@ namespace CareerQuest.Enemy
             EnsureBufferSize(activeEnemyEntities.Count + 1);
 
             var enemy = _pool.Get();
-            enemy.transform.position = position;
+            //enemy.transform.position = position;
+            enemy.transform.position = new Vector3(1,13, -71);
         }
 
         //  çÌèú

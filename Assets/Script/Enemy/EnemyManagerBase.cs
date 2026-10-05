@@ -1,9 +1,10 @@
+using CareerQuest.Core;
+using CareerQuest.Player;
 using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Pool;
-using CareerQuest.Core;
-using CareerQuest.Player;
+using UnityEngine.UIElements;
 
 namespace CareerQuest.Enemy
 {
@@ -36,9 +37,10 @@ namespace CareerQuest.Enemy
         //  -- Golemステータス --  //
         protected int golemHp;                  // 体力
         //protected float golemMoveSpeed;         // 移動速度 NavMeshを使うためコメントアウト
-        protected float golemAttackRange;       // 移動速度
-        protected float golemSearchRadius;      // 状況把握できる範囲の半径
         protected int golemAttackPower;         // 攻撃力
+        protected float golemAttackCoolDown;    // 攻撃間隔
+        protected float golemAttackRange;       // 攻撃半径
+        protected float golemSearchRadius;      // 状況把握できる範囲の半径
         protected float golemWallAvoidRadius;   // 壁を避け始める距離
         protected float golemEnemyAvoidRadius;  // 敵を避け始める距離
         protected float golemBodyTickness;      // 体の厚さ
@@ -46,9 +48,10 @@ namespace CareerQuest.Enemy
         //  -- Ghostステータス --  //
         protected int ghostHp;                  // 体力
         //protected float ghostMoveSpeed;         // 移動速度 NavMeshを使うためコメントアウト
-        protected float ghostAttackRange;       // 移動速度
-        protected float ghostSearchRadius;      // 状況把握できる範囲の半径
         protected int ghostAttackPower;         // 攻撃力
+        protected float ghostAttackRange;       // 移動速度
+        protected float ghostAttackCoolDown;    // 攻撃間隔
+        protected float ghostSearchRadius;      // 状況把握できる範囲の半径
         protected float ghostWallAvoidRadius;   // 壁を避け始める距離
         protected float ghostEnemyAvoidRadius;  // 敵を避け始める距離
         protected float ghostBodyTickness;      // 体の厚さ
@@ -102,6 +105,16 @@ namespace CareerQuest.Enemy
 
             var enemy = _pool.Get();
             enemy.transform.position = position;
+
+            int newIndex = activeEnemyEntities.Count - 1;
+            if(isUsingBufferA)
+            {
+                bufferA[newIndex] = CreateInitialEnemyData(enemy);
+            }
+            else
+            {
+                bufferB[newIndex] = CreateInitialEnemyData(enemy);
+            }
         }
 
         //  削除
@@ -138,29 +151,73 @@ namespace CareerQuest.Enemy
             bufferB = new NativeArray<EnemyData>(newSize, Allocator.Persistent);
         }
 
+        protected EnemyData CreateInitialEnemyData(EnemyController entity)
+        {
+            if (entity.ID == EnemyID.Golem)
+            {
+                return new EnemyData
+                {
+                    ID = entity.ID,
+                    State = (byte)EnemyState.Search,
+                    CurrentHp = golemHp,
+                    CurrentAttackCoolDown = 20f,
+                    Position = entity.transform.position,
+                    TargetIndex = -1,
+
+                    //GolemMoveSpeed = golemMoveSpeed, 今はNavmeshのスピードを使ってる
+                    GolemAttackPower = golemAttackPower,
+                    GolemAttackCoolDown = golemAttackCoolDown,
+                    GolemAttackRange = golemAttackRange,
+                    GolemSearchRadius = golemSearchRadius,
+                    GolemTickness = golemBodyTickness,
+                };
+            }
+            else // Ghostステータス
+            {
+                return new EnemyData
+                {
+                    ID = entity.ID,
+                    State = (byte)EnemyState.Search,
+                    CurrentHp = ghostHp,
+                    CurrentAttackCoolDown = 20f,
+                    Position = entity.transform.position,
+                    TargetIndex = -1,
+
+                    //GhostMoveSpeed = ghostMoveSpeed, 今はNavmeshのスピードを使ってる
+                    GhostAttackPower = ghostAttackPower,
+                    GhostAttackCoolDown = ghostAttackCoolDown,
+                    GhostAttackRange = ghostAttackRange,
+                    GhostSearchRadius = ghostSearchRadius,
+                    GhostTickness = ghostBodyTickness,
+                };
+            }
+        }
+
         void SetStat()
         {
             //  -- ゴーレムの能力値設定
             enemyStat = _enemyStatHolder.GetStat(EnemyID.Golem);
             golemHp = enemyStat.HP;
             //golemMoveSpeed = enemyStat.MoveSpeed; NavMeshを使うためコメントアウト
+            golemAttackPower = enemyStat.AttackPower;
             golemAttackRange = enemyStat.AtackRange;
+            golemAttackCoolDown = enemyStat.AtackCoolDown;
             golemSearchRadius = enemyStat.SearchRadius;
             golemBodyTickness = enemyStat.BodyTickness;
             golemWallAvoidRadius = enemyStat.WallAvoidRadius;
             golemEnemyAvoidRadius = enemyStat.EnmeyAvoidRadius;
-            golemAttackPower = enemyStat.AttackPower;
 
             //  -- ゴーストの能力値設定
             enemyStat = _enemyStatHolder.GetStat(EnemyID.Ghost);
             ghostHp = enemyStat.HP;
             //ghostMoveSpeed = enemyStat.MoveSpeed; NavMeshを使うためコメントアウト
+            ghostAttackPower = enemyStat.AttackPower;
+            ghostAttackCoolDown = enemyStat.AtackCoolDown;
             ghostAttackRange = enemyStat.AtackRange;
             ghostSearchRadius = enemyStat.SearchRadius;
             ghostBodyTickness = enemyStat.BodyTickness;
             ghostWallAvoidRadius = enemyStat.WallAvoidRadius;
             ghostEnemyAvoidRadius = enemyStat.EnmeyAvoidRadius;
-            ghostAttackPower = enemyStat.AttackPower;
         }
     }
 }

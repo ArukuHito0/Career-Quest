@@ -14,11 +14,11 @@ namespace CareerQuest.Enemy
 
         EnemyHashManager _hashManager;
         
-        [SerializeField] EnemyID _enemyID = EnemyID.Golem;
+        [SerializeField] EnemyID _id = EnemyID.Golem;
         public EnemyData EnemyData;
         ISpatialEntity _target;
 
-        public EnemyID EnemyID { get => _enemyID; }
+        public EnemyID ID { get => _id; }
         
         public int Index { get; set; }  // 敵番号
         public float Tickness { get; set; }  // オブジェクトの厚さ
@@ -34,27 +34,22 @@ namespace CareerQuest.Enemy
             _navAgent = GetComponent<NavMeshAgent>();
             UAssert.IsNotNull(_navAgent, "NavMeshAgentの参照がありません");
         }
-
-        void Update()
-        {
-            if (EnemyData.State == (byte)EnemyState.Attack)
-            {
-                if (_enemyID == EnemyID.Golem)
-                {
-                    AttackTreasure();
-                }
-                else if (_enemyID == EnemyID.Ghost)
-                {
-                    AttackPlayer();
-                }
-            }
-        }
-
         public void SetTarget(Vector3 targetPos)
         {
             if (_navAgent.enabled && _navAgent != null)
             {
                 _navAgent.SetDestination(targetPos);
+            }
+        }
+        public void Attack()
+        {
+            if (_id == EnemyID.Golem)
+            {
+                AttackTreasure();
+            }
+            else if (_id == EnemyID.Ghost)
+            {
+                AttackPlayer();
             }
         }
 

@@ -5,7 +5,7 @@ using UAssert = UnityEngine.Assertions.Assert;
 
 namespace CareerQuest.Enemy
 {
-    //  敵を制御するクラス
+    //  EnemyMgrでしにくい所をするクラス
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NavMeshAgent))]
     public sealed class EnemyController : MonoBehaviour, ISpatialEntity
@@ -43,7 +43,7 @@ namespace CareerQuest.Enemy
                 {
                     AttackTreasure();
                 }
-                if (_enemyID == EnemyID.Ghost)
+                else if (_enemyID == EnemyID.Ghost)
                 {
                     AttackPlayer();
                 }
@@ -61,8 +61,8 @@ namespace CareerQuest.Enemy
         void AttackTreasure()
         {
             MyLogger.Log("お宝攻撃開始");
-            TreasureChest t = _target as TreasureChest;
-            t?.TakeDamage();
+            TreasureChest treasure = _target as TreasureChest;
+            treasure?.TakeDamage(EnemyData.GolemAttackPower);
         }
 
         void AttackPlayer()

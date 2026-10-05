@@ -22,11 +22,11 @@ public class Bullet : MonoBehaviour , IBullet
     // ’e‚ª”ò‚Ô•ûŒü
     private Vector3 direction;
 
-    public byte Damage { get; }
-    public bool IsActive { get; }
-    public float Tickness { get; }
+    public byte Damage { get => (byte)damage;}
+    public bool IsActive { get => true; }
+    public float Tickness { get => tickness; }
     //  ’e‚ÌŒú‚Ý(“–‚½‚è”»’è—p)
-    public Vector3 Position { get; }
+    public Vector3 Position { get => this.Position; }
 
     private void Start()
     {

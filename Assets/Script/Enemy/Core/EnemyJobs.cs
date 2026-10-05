@@ -1,9 +1,9 @@
-using Unity.Collections;
+using CareerQuest.Enemy;
+using CareerQuest.Player;
 using Unity.Burst;
+using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
-using CareerQuest.Player;
-using CareerQuest.Core;
 
 namespace CareerQuest.Enemy
 {
@@ -125,44 +125,7 @@ namespace CareerQuest.Enemy
             InputDatas[index] = data;
         }
     }
-    //  “–‚½‚è”»’è”»’f
-    [BurstCompile]
-    public struct CollisionJob : IJobParallelFor
-    {
-        [ReadOnly] public NativeArray<BulletData> Bullets;
-        public int BulletCount;
-        public NativeArray<EnemyData> Enemies;
 
-        public void Execute(int index)
-        {
-            var enemy = Enemies[index];
-            if (enemy.CurrentHp <= 0) return;
-
-            for (int p = 0; p < Bullets.Length; p++)
-            {
-                var proj = Bullets[p];
-                if (!proj.IsActive) continue;
-
-                float sqrDist = (enemy.Position - proj.Position).sqrMagnitude;
-                float hitRadius = proj.Radius + 1.0f;
-
-                float tickness = enemy.ID switch
-                {
-                    EnemyID.Golem => enemy.GolemTickness,
-                    EnemyID.Ghost => enemy.GhostTickness,
-                    _ => 0f
-                };
-
-                if (sqrDist <= hitRadius * hitRadius)
-                {
-                    int newHp = enemy.CurrentHp - proj.Damage;
-                    enemy.CurrentHp = (newHp < 0 ? 0 : newHp);
-                }
-            }
-
-            Enemies[index] = enemy;
-        }
-    }
 
     //  UŒ‚‚·‚é‚©”»’f
     [BurstCompile]
@@ -210,8 +173,7 @@ namespace CareerQuest.Enemy
             }
 
         }
-
-        #region ƒS[ƒŒƒ€ˆÚ“®ƒƒWƒbƒN
+        #region ƒS[ƒŒƒ€UŒ‚”»’f
         static void HandleGolemMovement(
         ref EnemyData data,
         int index,
@@ -231,14 +193,18 @@ namespace CareerQuest.Enemy
             if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
             {
                 data.State = (byte)EnemyState.Attack;
-                outputEnemyDatas[index] = data;
-
-                return;
             }
+            else 
+            {
+                data.State = (byte)EnemyState.Move;
+            }
+
+            outputEnemyDatas[index] = data;
+            return;
         }
         #endregion
 
-        #region ƒS[ƒXƒgˆÚ“®ƒƒWƒbƒN
+        #region ƒS[ƒXƒgUŒ‚”»’f
         static void HandleGhostMovement(
         ref EnemyData data,
         int index,
@@ -272,7 +238,45 @@ namespace CareerQuest.Enemy
         }
     }
 }
-        #endregion
+#endregion
+
+//  “–‚½‚è”»’è”»’f
+[BurstCompile]
+public struct CollisionJob : IJobParallelFor
+{
+    [ReadOnly] public NativeArray<BulletData> Bullets;
+    public int BulletCount;
+    public NativeArray<EnemyData> Enemies;
+
+    public void Execute(int index)
+    {
+        var enemy = Enemies[index];
+        if (enemy.CurrentHp <= 0) return;
+
+        for (int p = 0; p < Bullets.Length; p++)
+        {
+            var proj = Bullets[p];
+            if (!proj.IsActive) continue;
+
+            float sqrDist = (enemy.Position - proj.Position).sqrMagnitude;
+            float tickness = enemy.ID switch
+            {
+                EnemyID.Golem => enemy.GolemTickness,
+                EnemyID.Ghost => enemy.GhostTickness,
+                _ => 0f
+            };
+            float hitRadius = proj.Radius + tickness;
+
+            if (sqrDist <= hitRadius * hitRadius)
+            {
+                int newHp = enemy.CurrentHp - proj.Damage;
+                enemy.CurrentHp = (newHp < 0 ? 0 : newHp);
+            }
+        }
+
+        Enemies[index] = enemy;
+    }
+}
 //  ˆÚ“®‚ÍNavMesh‚ðŽŽ—p‚µ‚Ä‚Ý‚é‚Ì‚ÅƒRƒƒ“ƒgƒAƒEƒg
 //    //  ˆÚ“®
 //    [BurstCompile]

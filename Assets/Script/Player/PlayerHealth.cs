@@ -1,10 +1,16 @@
-using UnityEngine;
+using CareerQuest.Core;
+using CareerQuest.Enemy;
 using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
-public class PlayerHealth : MonoBehaviour
+public class PlayerHealth : MonoBehaviour, ISpatialEntity
 {
     // ƒ†ƒjƒbƒg‚Ìó‘ÔŠÇ—
     private PlayerStateManager stateManager;
+
+    PlayerHashManager _hashManager;
+    public List<int> nearbyEntities = new List<int>(64);
 
     // Å‘åHP
     [SerializeField] private int maxHealth = 100;
@@ -27,12 +33,55 @@ public class PlayerHealth : MonoBehaviour
     // ‚¨‰»‚¯ó‘Ô‚ğæ“¾
     public bool IsGhost => isGhost;
 
+    public int Index { get; set; }
+    public float Tickness { get; set; }
+
+    public bool IsYuokascene = true;  //  ˆê“I‚È“z
+
     private void Awake()
     {
         stateManager = GetComponent<PlayerStateManager>();
 
         // ƒQ[ƒ€ŠJn‚ÍÅ‘åHP
         currentHealth = maxHealth;
+        if (!IsYuokascene)
+        {
+            _hashManager = ServiceLocator.Resolve<PlayerHashManager>();
+            _hashManager.Register(this);
+        }
+            Tickness = 0.2f;
+    }
+
+    private void Update()
+    {
+        if (!IsYuokascene)
+        {
+            nearbyEntities.Clear();
+
+            int myX = Mathf.FloorToInt(transform.position.x / _hashManager.cellSize);
+            int myZ = Mathf.FloorToInt(transform.position.z / _hashManager.cellSize);
+            int myCellId = myX + (myZ * _hashManager.girdWidth);
+
+            for (int dz = -1; dz <= 1; dz++)
+            {
+                for (int dx = -1; dx <= 1; dx++)
+                {
+                    int targetCellId = (myX + dx) + ((myZ + dz) * _hashManager.girdWidth);
+
+                    _hashManager.GetEntitiesInCell(targetCellId, nearbyEntities);
+                }
+            }
+
+            foreach (int index in nearbyEntities)
+            {
+                if (_hashManager.ActiveEntities[index] == this)
+                    continue;
+
+                var otherEnemy = _hashManager.ActiveEntities[index];
+
+                float dist = Vector3.Distance(transform.position, otherEnemy.transform.position);
+            }
+        }
     }
 
     // “G‚ÌUŒ‚‚É“–‚½‚Á‚½

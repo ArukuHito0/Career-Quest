@@ -13,17 +13,18 @@ namespace CareerQuest.Enemy
         public int TargetIndex;     // ターゲットのIndex
 
         //  -- GolemStatus
-        public int GolemMaxHp;              // 最大体力
-        public float GolemMoveSpeed;        // 移動速度
+        public int   GolemMaxHp;            // 最大体力
+        public float GolemMoveSpeed;        // 移動速度 今はNavmeshのmoveSpdを使ってる
         public float GolemSearchRadius;     // 探知範囲
         public float GolemTickness;         // 体の厚さ
-        public int GolemAttackPower;        // 攻撃力
-        public int GolemAttackRange;        // 攻撃範囲
+        public int   GolemAttackPower;      // 攻撃力
+        public float GolemAttackRange;      // 攻撃範囲
 
         //  -- GhostStatus
         public float GhostMaxHp;         // 最大体力
-        public float GhostMoveSpeed;     // 移動速度
+        public float GhostMoveSpeed;     // 移動速度  今はNavmeshのmoveSpdを使ってる
         public float GhostSearchRadius;  // 探知範囲
+        public int   GhostAttackPower;   // 攻撃力
         public float GhostAttackRange;   // 探知範囲
         public float GhostTickness;      // 体の厚さ
     }

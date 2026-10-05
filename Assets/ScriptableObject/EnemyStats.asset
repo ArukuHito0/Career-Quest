@@ -26,7 +26,7 @@ MonoBehaviour:
   - ID: 1
     Stat:
       HP: 100
-      AttackPower: 5
+      AttackPower: 10
       AtackRange: 1
       MoveSpeed: 9
       SearchRadius: 900

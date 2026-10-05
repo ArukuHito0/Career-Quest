@@ -49,11 +49,14 @@ namespace CareerQuest.Enemy
                     ID = activeEnemyEntities[i].EnemyID,
 
                     GolemAttackPower = golemAttackPower,
-                    GolemMoveSpeed = golemMoveSpeed,
+                    //GolemMoveSpeed = golemMoveSpeed, 今はNavmeshのスピードを使ってる
+                    GolemAttackRange = golemAttackRange,
                     GolemSearchRadius = golemSearchRadius,
                     GolemTickness = golemBodyTickness,
 
-                    GhostMoveSpeed = ghostMoveSpeed,
+                    //GhostMoveSpeed = ghostMoveSpeed, 今はNavmeshのスピードを使ってる
+                    GhostAttackPower = ghostAttackPower,
+                    GhostAttackRange = ghostAttackRange,
                     GhostSearchRadius = ghostSearchRadius,
                     GhostTickness = ghostBodyTickness,
                 };
@@ -81,7 +84,7 @@ namespace CareerQuest.Enemy
                     )
                     continue;
 
-                activeEnemyEntities[i].TreasureChest = treasureHashManager.ActiveEntities[readBuffer[i].TargetIndex];
+                activeEnemyEntities[i].Target= treasureHashManager.ActiveEntities[readBuffer[i].TargetIndex];
             }
 
             var searchPlayerJob = new SearchPlayerJob
@@ -100,30 +103,46 @@ namespace CareerQuest.Enemy
             combinedSearchHandle.Complete();
             MyLogger.Log("周囲探索完了");
 
+            var attackDicisionjob = new AttackDicisionob
+            {
+                InputDatas = readBuffer,
+                OutputDatas = writeBuffer,
+                TreasurePositions = treasureHashManager.Positions,
+                TreasureTickness = treasureHashManager.Ticknesses,
+                PlaeyrPositions = playerHashManager.Positions,
+                PlayerTickness = playerHashManager.Ticknesses,
+                EnemyAvoidRadius = golemEnemyAvoidRadius,
+                DeltaTime = Time.deltaTime
+            };
+
+            JobHandle attackDicisionHandle = attackDicisionjob.Schedule(activeEnemyEntities.Count, 64, combinedSearchHandle);
+            attackDicisionHandle.Complete();
+            
             for (int i = 0; i < activeEnemyEntities.Count; i++)
             {
-                activeEnemyEntities[i].transform.position = readBuffer[i].Position;
-                activeEnemyEntities[i].EnemyData.State = readBuffer[i].State;
-                activeEnemyEntities[i].EnemyData.GolemAttackPower = golemAttackPower;
+                activeEnemyEntities[i].EnemyData = writeBuffer[i];
 
-                int targetIndex = readBuffer[i].TargetIndex;  // 可読性のためのにintに移してます。
+                int targetIndex = writeBuffer[i].TargetIndex;  // 可読性のためのにintに移してます。
                 if (targetIndex >= 0)
                 {
-                    if (activeEnemyEntities[i].EnemyID == EnemyID.Golem && targetIndex < treasureHashManager.ActiveEntities.Count)
+                    if (
+                        activeEnemyEntities[i].EnemyID == EnemyID.Golem
+                        && targetIndex < treasureHashManager.ActiveEntities.Count
+                        && treasureHashManager.ActiveEntities[targetIndex] != null
+                        )
                     {
-                        var targetChest = treasureHashManager.ActiveEntities[targetIndex];
-                        activeEnemyEntities[i].TreasureChest = targetChest;
-                        activeEnemyEntities[i].SetTarget(targetChest.transform.position);
-                        Debug.Log(treasureHashManager.ActiveEntities[targetIndex], treasureHashManager.ActiveEntities[targetIndex]);
-                        MyLogger.Log(treasureHashManager.ActiveEntities[targetIndex]);
-                        MyLogger.Log(targetIndex);
+                        var target = activeTreasureEntities[targetIndex];
+                        activeEnemyEntities[i].Target = target;
+                        activeEnemyEntities[i].SetTarget(target.transform.position);
                     }
-                    else if (activeEnemyEntities[i].EnemyID == EnemyID.Ghost && targetIndex < playerHashManager.ActiveEntities.Count)
+                    else if (
+                        activeEnemyEntities[i].EnemyID == EnemyID.Ghost
+                        && targetIndex < playerHashManager.ActiveEntities.Count
+                        )
                     {
+                        var target = activePlayerEntities[targetIndex];
+                        activeEnemyEntities[i].Target = activePlayerEntities[targetIndex];
                         activeEnemyEntities[i].SetTarget(playerHashManager.Positions[targetIndex]);
-                        Debug.Log(playerHashManager.ActiveEntities[targetIndex], playerHashManager.ActiveEntities[targetIndex]);
-                        MyLogger.Log(playerHashManager.ActiveEntities[targetIndex]);
-                        MyLogger.Log(targetIndex);
                     }
                 }
             }
@@ -134,11 +153,27 @@ namespace CareerQuest.Enemy
             {
                 Bullets = bulletManager.BulletBuffer,
                 BulletCount = bulletManager.ActiveCount,
-                Enemies = readBuffer
+                Enemies = writeBuffer
             };
 
+            var collisionHandle = collisionJob.Schedule(activeEnemyEntities.Count, 64, attackDicisionHandle);
+            collisionHandle.Complete();
             isUsingBufferA = !isUsingBufferA;
 
+            for (int i = activeEnemyEntities.Count - 1; i >= 0; i--)
+            {
+                var enemyData = isUsingBufferA ? bufferA[i] : bufferB[i];
+
+                if (enemyData.State == (byte)EnemyState.Dead)
+                {
+                    var enemyController = activeEnemyEntities[i];
+                    DespawnEnemy(enemyController);
+                }
+            }
+
+            if(isUsingBufferA)
+            { bufferA = writeBuffer; }
+            else{ bufferB = writeBuffer; }
             MyLogger.Log("敵行動サイクル通った");
         }
 

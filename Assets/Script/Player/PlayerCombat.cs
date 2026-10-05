@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerCombat : MonoBehaviour
@@ -37,6 +38,7 @@ public class PlayerCombat : MonoBehaviour
         if (stateManager.IsGhost())
         {
             target = null;
+            searchTimer = 0f;
             return;
         }
 
@@ -63,9 +65,20 @@ public class PlayerCombat : MonoBehaviour
             return;
         }
 
+
+        // UŒ‚‘ÎÛ‚ªõ“G”ÍˆÍŠO‚È‚çUŒ‚‘ÎÛ‚©‚çŠO‚·
+        float distance = Vector3.Distance(transform.position, target.position);
+
+        if (distance > searchRange)
+        {
+            target = null;
+            return;
+        }
+
         // İ’è‚³‚ê‚Ä‚¢‚éUŒ‚•û–@‚ÅUŒ‚
         if (attack != null)
         {
+            Debug.Log("UŒ‚‚ğŠJn");
             attack.TryAttack(target);
         }
     }

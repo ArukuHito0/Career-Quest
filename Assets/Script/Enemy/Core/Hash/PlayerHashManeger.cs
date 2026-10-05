@@ -5,7 +5,7 @@ namespace CareerQuest.Enemy
 {
     //  お宝の位置をグリッドマップで把握するクラス
     [DefaultExecutionOrder(-10)]
-    public sealed class PlayerHashManager : SpatialHashManagerBase<PlayerMove>
+    public sealed class PlayerHashManager : SpatialHashManagerBase<PlayerHealth>
     {
         void Awake()
         {

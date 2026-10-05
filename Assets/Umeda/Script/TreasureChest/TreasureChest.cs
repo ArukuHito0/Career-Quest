@@ -6,7 +6,6 @@ using UnityEngine;
 public class TreasureChest : MonoBehaviour ,ISpatialEntity
 {
     [SerializeField] private float carrentHealth = 100f;
-    public float takeDamage;
 
     TreasureHashManager _hashManager;
     public List<int> nearbyEntities = new List<int>(64);
@@ -20,12 +19,6 @@ public class TreasureChest : MonoBehaviour ,ISpatialEntity
         _hashManager.Register(this);
         Tickness = 0.2f;
     }
-
-    void Start()
-    {
-        takeDamage = 10f;   // とりあえずダメージを10で固定
-    }
-
     void Update()
     {
         nearbyEntities.Clear();
@@ -61,8 +54,8 @@ public class TreasureChest : MonoBehaviour ,ISpatialEntity
         }
     }
 
-    public void TakeDamage()
+    public void TakeDamage(int damage)
     {
-        carrentHealth -= takeDamage;
+        carrentHealth -= damage;
     }
 }

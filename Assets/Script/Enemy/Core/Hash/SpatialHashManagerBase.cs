@@ -1,3 +1,4 @@
+using CareerQuest.Core;
 using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;

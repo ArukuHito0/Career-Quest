@@ -7,6 +7,12 @@ public class PlayerCarry : MonoBehaviour
     // 現在運搬中のプレイヤー一覧
     private static List<PlayerCarry> carryingPlayers = new();
 
+    // 全プレイヤー共通の運搬参加禁止終了時刻
+    private static float globalCarryCooldownEndTime;
+
+    // ReleaseAllCarriers実行後の運搬参加禁止時間
+    [SerializeField] private float globalCarryCooldown = 1f;
+
     // 現在運搬中のオブジェクト
     private CarryObject carryObject;
 
@@ -33,11 +39,14 @@ public class PlayerCarry : MonoBehaviour
             Release();
     }
 
-
     private void OnTriggerEnter(Collider other)
     {
         // 状態管理がない場合は何もしない
         if (stateManager == null)
+            return;
+
+        // 全体の再参加クールタイム中なら何もしない
+        if (IsGlobalCarryCooldown())
             return;
 
         // 運搬できない状態なら何もしない
@@ -50,6 +59,10 @@ public class PlayerCarry : MonoBehaviour
 
         // 護衛モードなら運搬しない
         if (!stateManager.IsCarryMode())
+            return;
+
+        // すでに別のお宝を運搬中なら参加しない
+        if (carryObject != null)
             return;
 
         // 親オブジェクトからCarryObjectを探す
@@ -67,6 +80,10 @@ public class PlayerCarry : MonoBehaviour
         if (stateManager == null)
             return;
 
+        // 全体の再参加クールタイム中なら参加しない
+        if (IsGlobalCarryCooldown())
+            return;
+
         // 運搬できない状態なら何もしない
         if (!stateManager.CanCarry())
             return;
@@ -75,11 +92,15 @@ public class PlayerCarry : MonoBehaviour
         if (stateManager.IsGhost())
             return;
 
-        // すでにお宝を運搬している場合は参加しない
+        // すでに別のお宝を運搬している場合は参加しない
         if (carryObject != null)
             return;
 
-        // 指定された位置がない場合は参加しない
+        // お宝が存在しない場合は参加しない
+        if (obj == null)
+            return;
+
+        // CarryPointが存在しない場合は参加しない
         if (point == null)
             return;
 
@@ -121,19 +142,17 @@ public class PlayerCarry : MonoBehaviour
     // 運搬解除
     public void Release()
     {
-        // 現在運搬しているお宝がある場合
+        // すでに運搬解除されている場合は何もしない
         if (carryObject == null)
-        {
             return;
-        }
 
         // 現在運搬しているお宝を保存
         CarryObject obj = carryObject;
 
-        // 運搬状態を解除
+        // 運搬対象を先に解除
         carryObject = null;
 
-        // お宝から運搬者を削除
+        // お宝側から運搬者を削除
         obj.RemoveCarrier(this);
 
         // 親子関係を解除
@@ -146,13 +165,17 @@ public class PlayerCarry : MonoBehaviour
 
             // 現在位置をNavMeshAgentに同期
             if (agent.isOnNavMesh)
-            {
                 agent.Warp(transform.position);
-            }
         }
 
-        // 運搬中のプレイヤー一覧かr削除
+        // 運搬中のプレイヤー一覧から削除
         carryingPlayers.Remove(this);
+    }
+
+    // 全体の運搬参加禁止中か確認
+    private static bool IsGlobalCarryCooldown()
+    {
+        return Time.time < globalCarryCooldownEndTime;
     }
 
     // 現在運搬中の全プレイヤーを解除
@@ -171,6 +194,22 @@ public class PlayerCarry : MonoBehaviour
         // 念のため一覧を空にする
         carryingPlayers.Clear();
 
-        Debug.Log("運搬中の全プレイヤーを解除しました");
+        // クールタイム時間
+        float cooldown = 1f;
+
+        // 運搬していたプレイヤーから設定値を取得
+        foreach (PlayerCarry player in players)
+        {
+            if (player != null)
+            {
+                cooldown = player.globalCarryCooldown;
+                break;
+            }
+        }
+
+        // 現在時刻 + クールタイム時間を終了時刻として保存
+        globalCarryCooldownEndTime = Time.time + cooldown;
+
+        Debug.Log($"全ユニットの運搬参加を{cooldown}秒間禁止しました");
     }
 }

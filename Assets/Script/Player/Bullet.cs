@@ -26,7 +26,7 @@ public class Bullet : MonoBehaviour , IBullet
     public bool IsActive { get => true; }
     public float Tickness { get => tickness; }
     //  ’e‚ÌŒú‚Ý(“–‚½‚è”»’è—p)
-    public Vector3 Position { get => this.Position; }
+    public Vector3 Position { get => this.transform.position; }
 
     private void Start()
     {

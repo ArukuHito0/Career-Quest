@@ -1,3 +1,4 @@
+using CareerQuest.Core;
 using CareerQuest.Enemy;
 using CareerQuest.Player;
 using Unity.Burst;
@@ -129,7 +130,7 @@ namespace CareerQuest.Enemy
 
     //  çUåÇÇ∑ÇÈÇ©îªíf
     [BurstCompile]
-    public struct AttackDicisionob : IJobParallelFor
+    public struct AttackDecisionJob : IJobParallelFor
     {
         [ReadOnly] public NativeArray<EnemyData> InputDatas; // ì«Ç›éÊÇËóp
         public NativeArray<EnemyData> OutputDatas;          // èëÇ´çûÇ›óp
@@ -144,46 +145,49 @@ namespace CareerQuest.Enemy
         public void Execute(int index)
         {
             var data = InputDatas[index];
-            if (data.TargetIndex < 0) return;
-            if (data.State == (byte)EnemyState.Attack) return;
+            if (data.TargetIndex < 0)
+            {
+                OutputDatas[index] = data;
+                return;
+            }
 
+            if ((data.CurrentAttackCoolDown -= DeltaTime) > 0)
+            {
+                data.State = (byte)EnemyState.Move;
+                OutputDatas[index] = data;
+                return;
+            }
 
             switch (data.ID)
             {
                 case EnemyID.Golem:
-                    HandleGolemMovement(
+                    GolemDecision(
                         ref data,
                         index,
-                        OutputDatas,
                         TreasurePositions,
-                        TreasureTickness,
-                        DeltaTime
-                        );
+                        TreasureTickness
+                   );
                     break;
                 case EnemyID.Ghost:
-                    HandleGhostMovement(
+                    GhostDecision(
                         ref data,
                         index,
-                        OutputDatas,
                         PlaeyrPositions,
-                        PlayerTickness,
-                        DeltaTime
-                        );
+                        PlayerTickness
+                   );
                     break;
             }
-
+            OutputDatas[index] = data;
         }
+
         #region ÉSÅ[ÉåÉÄçUåÇîªíf
-        static void HandleGolemMovement(
+        static void GolemDecision(
         ref EnemyData data,
         int index,
-        NativeArray<EnemyData> outputEnemyDatas,
         NativeArray<Vector3> treasurePositions,
-        NativeArray<float> treasureTickness,
-        float deltaTime
+        NativeArray<float> treasureTickness
             )
         {
-
             Vector3 toTarget = treasurePositions[data.TargetIndex] - data.Position;
             float distSqToTarget = toTarget.sqrMagnitude;
 
@@ -193,25 +197,21 @@ namespace CareerQuest.Enemy
             if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
             {
                 data.State = (byte)EnemyState.Attack;
+                data.CurrentAttackCoolDown = data.GolemAttackCoolDown;
             }
             else 
             {
                 data.State = (byte)EnemyState.Move;
             }
-
-            outputEnemyDatas[index] = data;
-            return;
         }
         #endregion
 
         #region ÉSÅ[ÉXÉgçUåÇîªíf
-        static void HandleGhostMovement(
+        static void GhostDecision(
         ref EnemyData data,
         int index,
-        NativeArray<EnemyData> outputEnemyDatas,
         NativeArray<Vector3> playerPositions,
-        NativeArray<float> playerTickness,
-        float deltaTime
+        NativeArray<float> playerTickness
             )
         {
 
@@ -224,16 +224,11 @@ namespace CareerQuest.Enemy
             if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
             {
                 data.State = (byte)EnemyState.Attack;
-                outputEnemyDatas[index] = data;
-                
-                return;
+                data.CurrentAttackCoolDown = data.GhostAttackCoolDown;
             }
             else
             {
                 data.State = (byte)EnemyState.Move;
-                outputEnemyDatas[index] = data;
-                
-                return;
             }
         }
     }

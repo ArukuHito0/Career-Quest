@@ -18,6 +18,7 @@ MonoBehaviour:
       HP: 200
       AttackPower: 5
       AtackRange: 1
+      AtackCoolDown: 20
       MoveSpeed: 5
       SearchRadius: 20
       WallAvoidRadius: 2
@@ -28,6 +29,7 @@ MonoBehaviour:
       HP: 100
       AttackPower: 10
       AtackRange: 1
+      AtackCoolDown: 10
       MoveSpeed: 9
       SearchRadius: 900
       WallAvoidRadius: 2

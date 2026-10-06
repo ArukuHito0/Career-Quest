@@ -10,6 +10,7 @@ namespace CareerQuest.Enemy
         public int HP = 100;
         public int AttackPower = 5;
         public float AtackRange = 5f;
+        public float AtackCoolDown = 5f;
         public float MoveSpeed = 5;
         public float SearchRadius = 20f;
         [Header("衝突回避パラメーター")]

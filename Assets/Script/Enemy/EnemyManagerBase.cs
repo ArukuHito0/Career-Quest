@@ -1,18 +1,19 @@
+using CareerQuest.Core;
+using CareerQuest.Player;
 using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Pool;
-using CareerQuest.Core;
-using CareerQuest.Player;
+using UnityEngine.UIElements;
 
 namespace CareerQuest.Enemy
 {
     [DisallowMultipleComponent]
     public abstract class EnemyManagerBase<T> : MonoBehaviour where T : Component
     {
-        protected TreasureHashManager treasureHashManager;  // •ó•¨‚ÌƒOƒŠƒbƒhƒ}ƒbƒvŠÇ—
-        protected PlayerHashManager playerHashManager; // ƒvƒŒƒCƒ„[‚ÌƒOƒŠƒbƒhƒ}ƒbƒvŠÇ—
-        protected EnemyHashManager enemyHashManager; // “G‚ÌƒOƒŠƒbƒhƒ}ƒbƒvŠÇ—
+        protected TreasureHashManager treasureHashManager;  // å®ç‰©ã®ã‚°ãƒªãƒƒãƒ‰ãƒãƒƒãƒ—ç®¡ç†
+        protected PlayerHashManager playerHashManager; // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ã‚°ãƒªãƒƒãƒ‰ãƒãƒƒãƒ—ç®¡ç†
+        protected EnemyHashManager enemyHashManager; // æ•µã®ã‚°ãƒªãƒƒãƒ‰ãƒãƒƒãƒ—ç®¡ç†
 
         protected List<TreasureChest> activeTreasureEntities = new List<TreasureChest>();
         protected List<PlayerHealth> activePlayerEntities = new List<PlayerHealth>();
@@ -29,29 +30,31 @@ namespace CareerQuest.Enemy
 
         protected BulletManager bulletManager;
 
-        [SerializeField] EnemyStatHolder _enemyStatHolder;  // ƒXƒe[ƒ^ƒX•ÛSO
+        [SerializeField] EnemyStatHolder _enemyStatHolder;  // ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ä¿æŒSO
 
-        EnemyStat enemyStat;  // “G‚Ìƒpƒ‰ƒ[ƒ^[(ƒLƒƒƒbƒVƒ…—p)
+        EnemyStat enemyStat;  // æ•µã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒ¼(ã‚­ãƒ£ãƒƒã‚·ãƒ¥ç”¨)
         
-        //  -- GolemƒXƒe[ƒ^ƒX --  //
-        protected int golemHp;                  // ‘Ì—Í
-        //protected float golemMoveSpeed;         // ˆÚ“®‘¬“x NavMesh‚ğg‚¤‚½‚ßƒRƒƒ“ƒgƒAƒEƒg
-        protected float golemAttackRange;       // ˆÚ“®‘¬“x
-        protected float golemSearchRadius;      // ó‹µ”cˆ¬‚Å‚«‚é”ÍˆÍ‚Ì”¼Œa
-        protected int golemAttackPower;         // UŒ‚—Í
-        protected float golemWallAvoidRadius;   // •Ç‚ğ”ğ‚¯n‚ß‚é‹——£
-        protected float golemEnemyAvoidRadius;  // “G‚ğ”ğ‚¯n‚ß‚é‹——£
-        protected float golemBodyTickness;      // ‘Ì‚ÌŒú‚³
+        //  -- Golemã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ --  //
+        protected int golemHp;                  // ä½“åŠ›
+        //protected float golemMoveSpeed;         // ç§»å‹•é€Ÿåº¦ NavMeshã‚’ä½¿ã†ãŸã‚ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆ
+        protected int golemAttackPower;         // æ”»æ’ƒåŠ›
+        protected float golemAttackCoolDown;    // æ”»æ’ƒé–“éš”
+        protected float golemAttackRange;       // æ”»æ’ƒåŠå¾„
+        protected float golemSearchRadius;      // çŠ¶æ³æŠŠæ¡ã§ãã‚‹ç¯„å›²ã®åŠå¾„
+        protected float golemWallAvoidRadius;   // å£ã‚’é¿ã‘å§‹ã‚ã‚‹è·é›¢
+        protected float golemEnemyAvoidRadius;  // æ•µã‚’é¿ã‘å§‹ã‚ã‚‹è·é›¢
+        protected float golemBodyTickness;      // ä½“ã®åšã•
 
-        //  -- GhostƒXƒe[ƒ^ƒX --  //
-        protected int ghostHp;                  // ‘Ì—Í
-        //protected float ghostMoveSpeed;         // ˆÚ“®‘¬“x NavMesh‚ğg‚¤‚½‚ßƒRƒƒ“ƒgƒAƒEƒg
-        protected float ghostAttackRange;       // ˆÚ“®‘¬“x
-        protected float ghostSearchRadius;      // ó‹µ”cˆ¬‚Å‚«‚é”ÍˆÍ‚Ì”¼Œa
-        protected int ghostAttackPower;         // UŒ‚—Í
-        protected float ghostWallAvoidRadius;   // •Ç‚ğ”ğ‚¯n‚ß‚é‹——£
-        protected float ghostEnemyAvoidRadius;  // “G‚ğ”ğ‚¯n‚ß‚é‹——£
-        protected float ghostBodyTickness;      // ‘Ì‚ÌŒú‚³
+        //  -- Ghostã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ --  //
+        protected int ghostHp;                  // ä½“åŠ›
+        //protected float ghostMoveSpeed;         // ç§»å‹•é€Ÿåº¦ NavMeshã‚’ä½¿ã†ãŸã‚ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆ
+        protected int ghostAttackPower;         // æ”»æ’ƒåŠ›
+        protected float ghostAttackRange;       // ç§»å‹•é€Ÿåº¦
+        protected float ghostAttackCoolDown;    // æ”»æ’ƒé–“éš”
+        protected float ghostSearchRadius;      // çŠ¶æ³æŠŠæ¡ã§ãã‚‹ç¯„å›²ã®åŠå¾„
+        protected float ghostWallAvoidRadius;   // å£ã‚’é¿ã‘å§‹ã‚ã‚‹è·é›¢
+        protected float ghostEnemyAvoidRadius;  // æ•µã‚’é¿ã‘å§‹ã‚ã‚‹è·é›¢
+        protected float ghostBodyTickness;      // ä½“ã®åšã•
 
         protected virtual void Awake()
         {
@@ -95,17 +98,26 @@ namespace CareerQuest.Enemy
             if (bufferB.IsCreated) bufferB.Dispose();
         }
 
-        //  ¶¬
+        //  ç”Ÿæˆ
         public void SpawnEnemy(Vector3 position)
         {
             EnsureBufferSize(activeEnemyEntities.Count + 1);
 
             var enemy = _pool.Get();
-            //enemy.transform.position = position;
-            enemy.transform.position = new Vector3(1,13, -71);
+            enemy.transform.position = position;
+
+            int newIndex = activeEnemyEntities.Count - 1;
+            if(isUsingBufferA)
+            {
+                bufferA[newIndex] = CreateInitialEnemyData(enemy);
+            }
+            else
+            {
+                bufferB[newIndex] = CreateInitialEnemyData(enemy);
+            }
         }
 
-        //  íœ
+        //  å‰Šé™¤
         public void DespawnEnemy(EnemyController enemy)
         {
             if (enemy == null) return;
@@ -126,7 +138,7 @@ namespace CareerQuest.Enemy
             _pool.Release(enemy);
         }
 
-        // ƒoƒbƒtƒ@‚ğƒŠƒTƒCƒY
+        // ãƒãƒƒãƒ•ã‚¡ã‚’ãƒªã‚µã‚¤ã‚º
         protected void EnsureBufferSize(int count)
         {
             if (bufferA.IsCreated && bufferA.Length >= count) return;
@@ -139,29 +151,73 @@ namespace CareerQuest.Enemy
             bufferB = new NativeArray<EnemyData>(newSize, Allocator.Persistent);
         }
 
+        protected EnemyData CreateInitialEnemyData(EnemyController entity)
+        {
+            if (entity.ID == EnemyID.Golem)
+            {
+                return new EnemyData
+                {
+                    ID = entity.ID,
+                    State = (byte)EnemyState.Search,
+                    CurrentHp = golemHp,
+                    CurrentAttackCoolDown = 20f,
+                    Position = entity.transform.position,
+                    TargetIndex = -1,
+
+                    //GolemMoveSpeed = golemMoveSpeed, ä»Šã¯Navmeshã®ã‚¹ãƒ”ãƒ¼ãƒ‰ã‚’ä½¿ã£ã¦ã‚‹
+                    GolemAttackPower = golemAttackPower,
+                    GolemAttackCoolDown = golemAttackCoolDown,
+                    GolemAttackRange = golemAttackRange,
+                    GolemSearchRadius = golemSearchRadius,
+                    GolemTickness = golemBodyTickness,
+                };
+            }
+            else // Ghostã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹
+            {
+                return new EnemyData
+                {
+                    ID = entity.ID,
+                    State = (byte)EnemyState.Search,
+                    CurrentHp = ghostHp,
+                    CurrentAttackCoolDown = 20f,
+                    Position = entity.transform.position,
+                    TargetIndex = -1,
+
+                    //GhostMoveSpeed = ghostMoveSpeed, ä»Šã¯Navmeshã®ã‚¹ãƒ”ãƒ¼ãƒ‰ã‚’ä½¿ã£ã¦ã‚‹
+                    GhostAttackPower = ghostAttackPower,
+                    GhostAttackCoolDown = ghostAttackCoolDown,
+                    GhostAttackRange = ghostAttackRange,
+                    GhostSearchRadius = ghostSearchRadius,
+                    GhostTickness = ghostBodyTickness,
+                };
+            }
+        }
+
         void SetStat()
         {
-            //  -- ƒS[ƒŒƒ€‚Ì”\—Í’lİ’è
+            //  -- ã‚´ãƒ¼ãƒ¬ãƒ ã®èƒ½åŠ›å€¤è¨­å®š
             enemyStat = _enemyStatHolder.GetStat(EnemyID.Golem);
             golemHp = enemyStat.HP;
-            //golemMoveSpeed = enemyStat.MoveSpeed; NavMesh‚ğg‚¤‚½‚ßƒRƒƒ“ƒgƒAƒEƒg
+            //golemMoveSpeed = enemyStat.MoveSpeed; NavMeshã‚’ä½¿ã†ãŸã‚ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆ
+            golemAttackPower = enemyStat.AttackPower;
             golemAttackRange = enemyStat.AtackRange;
+            golemAttackCoolDown = enemyStat.AtackCoolDown;
             golemSearchRadius = enemyStat.SearchRadius;
             golemBodyTickness = enemyStat.BodyTickness;
             golemWallAvoidRadius = enemyStat.WallAvoidRadius;
             golemEnemyAvoidRadius = enemyStat.EnmeyAvoidRadius;
-            golemAttackPower = enemyStat.AttackPower;
 
-            //  -- ƒS[ƒXƒg‚Ì”\—Í’lİ’è
+            //  -- ã‚´ãƒ¼ã‚¹ãƒˆã®èƒ½åŠ›å€¤è¨­å®š
             enemyStat = _enemyStatHolder.GetStat(EnemyID.Ghost);
             ghostHp = enemyStat.HP;
-            //ghostMoveSpeed = enemyStat.MoveSpeed; NavMesh‚ğg‚¤‚½‚ßƒRƒƒ“ƒgƒAƒEƒg
+            //ghostMoveSpeed = enemyStat.MoveSpeed; NavMeshã‚’ä½¿ã†ãŸã‚ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆ
+            ghostAttackPower = enemyStat.AttackPower;
+            ghostAttackCoolDown = enemyStat.AtackCoolDown;
             ghostAttackRange = enemyStat.AtackRange;
             ghostSearchRadius = enemyStat.SearchRadius;
             ghostBodyTickness = enemyStat.BodyTickness;
             ghostWallAvoidRadius = enemyStat.WallAvoidRadius;
             ghostEnemyAvoidRadius = enemyStat.EnmeyAvoidRadius;
-            ghostAttackPower = enemyStat.AttackPower;
         }
     }
 }

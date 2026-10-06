@@ -16,6 +16,12 @@ namespace CareerQuest.Enemy
         protected override void Start()
         {
             base.Start();
+
+            for (int i = 0; i < activeEnemyEntities.Count; i++)
+            {
+                var entity = activeEnemyEntities[i];
+                bufferA[i] = CreateInitialEnemyData(entity);
+            }
         }
 
         //  --  FOR ALPHA  --  //
@@ -43,24 +49,10 @@ namespace CareerQuest.Enemy
 
             for (int i = 0; i < activeEnemyEntities.Count; i++)
             {
-                readBuffer[i] = new EnemyData
-                {
-                    Position = activeEnemyEntities[i].transform.position,
-                    ID = activeEnemyEntities[i].EnemyID,
-
-                    GolemAttackPower = golemAttackPower,
-                    //GolemMoveSpeed = golemMoveSpeed, 今はNavmeshのスピードを使ってる
-                    GolemAttackRange = golemAttackRange,
-                    GolemSearchRadius = golemSearchRadius,
-                    GolemTickness = golemBodyTickness,
-
-                    //GhostMoveSpeed = ghostMoveSpeed, 今はNavmeshのスピードを使ってる
-                    GhostAttackPower = ghostAttackPower,
-                    GhostAttackRange = ghostAttackRange,
-                    GhostSearchRadius = ghostSearchRadius,
-                    GhostTickness = ghostBodyTickness,
-                };
-            }
+                var data = readBuffer[i];
+                data.Position = activeEnemyEntities[i].transform.position;
+                readBuffer[i] = data;
+            };
 
             var searchTreasureJob = new SearchTreasureJob
             {
@@ -103,7 +95,8 @@ namespace CareerQuest.Enemy
             combinedSearchHandle.Complete();
             MyLogger.Log("周囲探索完了");
 
-            var attackDicisionjob = new AttackDicisionob
+            //  攻撃判断ロジック
+            var attackDicisionjob = new AttackDecisionJob
             {
                 InputDatas = readBuffer,
                 OutputDatas = writeBuffer,
@@ -126,7 +119,7 @@ namespace CareerQuest.Enemy
                 if (targetIndex >= 0)
                 {
                     if (
-                        activeEnemyEntities[i].EnemyID == EnemyID.Golem
+                        activeEnemyEntities[i].ID == EnemyID.Golem
                         && targetIndex < treasureHashManager.ActiveEntities.Count
                         && treasureHashManager.ActiveEntities[targetIndex] != null
                         )
@@ -136,7 +129,7 @@ namespace CareerQuest.Enemy
                         activeEnemyEntities[i].SetTarget(target.transform.position);
                     }
                     else if (
-                        activeEnemyEntities[i].EnemyID == EnemyID.Ghost
+                        activeEnemyEntities[i].ID == EnemyID.Ghost
                         && targetIndex < playerHashManager.ActiveEntities.Count
                         )
                     {
@@ -147,7 +140,7 @@ namespace CareerQuest.Enemy
                 }
             }
 
-            if (bulletManager == null || bulletManager.ActiveCount == 0) return;
+            //if (bulletManager == null || bulletManager.ActiveCount == 0) return;
 
             var collisionJob = new CollisionJob
             {
@@ -158,22 +151,25 @@ namespace CareerQuest.Enemy
 
             var collisionHandle = collisionJob.Schedule(activeEnemyEntities.Count, 64, attackDicisionHandle);
             collisionHandle.Complete();
-            isUsingBufferA = !isUsingBufferA;
 
             for (int i = activeEnemyEntities.Count - 1; i >= 0; i--)
             {
-                var enemyData = isUsingBufferA ? bufferA[i] : bufferB[i];
+                var enemyData = writeBuffer[i];
 
                 if (enemyData.State == (byte)EnemyState.Dead)
                 {
-                    var enemyController = activeEnemyEntities[i];
-                    DespawnEnemy(enemyController);
+                    DespawnEnemy(activeEnemyEntities[i]);
+                }
+                else if(enemyData.State == (byte)EnemyState.Attack)
+                {
+                    activeEnemyEntities[i].Attack();
                 }
             }
 
-            if(isUsingBufferA)
+            isUsingBufferA = !isUsingBufferA;
+            if (isUsingBufferA)
             { bufferA = writeBuffer; }
-            else{ bufferB = writeBuffer; }
+            else { bufferB = writeBuffer; }
             MyLogger.Log("敵行動サイクル通った");
         }
 

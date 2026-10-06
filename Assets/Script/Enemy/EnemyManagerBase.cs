@@ -111,10 +111,21 @@ namespace CareerQuest.Enemy
         //  生成
         public void SpawnEnemy(Vector3 position)
         {
+            // 指定した座標の半径1.5メートル以内で、一番近いNavMesh上の位置を探す
+            if (UnityEngine.AI.NavMesh.SamplePosition(position, out var hit, 10f, UnityEngine.AI.NavMesh.AllAreas))
+            {
+                MyLogger.Log("changePos");
+                position = hit.position; // 補正された正しい位置
+            }
+
             EnsureBufferSize(activeEnemyEntities.Count + 1);
 
             var enemy = _pool.Get();
+           
+            var agent = enemy.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            if (agent != null) agent.enabled = false;
             enemy.transform.position = position;
+            if (agent != null) agent.enabled = true;
 
             int newIndex = activeEnemyEntities.Count - 1;
             if(newIndex < 0)

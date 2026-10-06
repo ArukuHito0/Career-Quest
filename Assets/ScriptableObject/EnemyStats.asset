@@ -20,7 +20,7 @@ MonoBehaviour:
       AtackRange: 1
       AtackCoolDown: 5
       MoveSpeed: 5
-      SearchRadius: 20
+      SearchRadius: 900
       WallAvoidRadius: 2
       EnmeyAvoidRadius: 0.1
       BodyTickness: 0.5
@@ -31,7 +31,7 @@ MonoBehaviour:
       AtackRange: 1
       AtackCoolDown: 3
       MoveSpeed: 9
-      SearchRadius: 10
+      SearchRadius: 900
       WallAvoidRadius: 2
       EnmeyAvoidRadius: 2
       BodyTickness: 1

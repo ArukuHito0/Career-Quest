@@ -840,7 +840,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b713161d2e4b1574e9bbe8f3cd8f9bd7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMove
-  nearbyEntities: 
 --- !u!114 &2402349096730076414
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -898,8 +897,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6aa699a369ec068479322ce4b6855e15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
+  nearbyEntities: 
   maxHealth: 100
   ghostDuration: 10
+  IsYuokascene: 1
 --- !u!54 &332676958172209382
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1279,7 +1280,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_LocalScale: {x: 1, y: 1.25, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1686578761774992761}
@@ -1317,7 +1318,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 6bd8a6c3445348d479eba667f5ce89b6, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

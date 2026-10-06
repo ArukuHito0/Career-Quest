@@ -16,6 +16,9 @@ public class CarryObject : MonoBehaviour
     // 現在運搬しているプレイヤー
     private List<PlayerCarry> carriers = new();
 
+    // CarryPointを誰が使用しているか
+    private Dictionary<Transform, PlayerCarry> pointUsers = new();
+
     // お宝のNavMeshAgent
     private NavMeshAgent agent;
 
@@ -33,7 +36,7 @@ public class CarryObject : MonoBehaviour
         // 最低人数の2倍を最大人数にする
         maxPeople = requiredPeople * 2;
 
-        // carryPointsの数を最大人数に合わせる
+        // CarryPointの数を最大人数に合わせる
         if (carryPoints.Length < maxPeople)
             Debug.LogWarning("carryPointsの数が最大参加人数より少ないです");
     }
@@ -53,15 +56,21 @@ public class CarryObject : MonoBehaviour
         if (carriers.Count >= maxPeople)
             return false;
 
-        // 運搬位置が足りない場合
-        if (carriers.Count >= carryPoints.Length)
+        // 空いているCarryPointを探す
+        Transform freePoint = GetFreeCarryPoint();
+
+        // 空いているCarryPointがない場合
+        if (freePoint == null)
             return false;
 
         // プレイヤーを一覧に追加
         carriers.Add(player);
 
+        // CarryPointの使用者として登録
+        pointUsers[freePoint] = player;
+
         // プレイヤーをお宝に固定
-        player.AttachToObject(this, carryPoints[carriers.Count - 1]);
+        player.AttachToObject(this, freePoint);
 
         // 運搬人数に応じて速度を更新
         UpdateMoveSpeed();
@@ -75,6 +84,24 @@ public class CarryObject : MonoBehaviour
         }
 
         return true;
+    }
+
+    // 空いているCarryPointを探す
+    private Transform GetFreeCarryPoint()
+    {
+        foreach (Transform point in carryPoints)
+        {
+            // CarryPointが存在しない場合はスキップ
+            if (point == null)
+                continue;
+
+            // まだ誰も使っていないCarryPointなら使用する
+            if (!pointUsers.ContainsKey(point))
+                return point;
+        }
+
+        // 空いているCarryPointがない
+        return null;
     }
 
     // お宝を移動させる
@@ -109,7 +136,23 @@ public class CarryObject : MonoBehaviour
         if (player == null)
             return;
 
-        // 一覧から削除
+        // 使用しているCarryPointを探す
+        Transform usedPoint = null;
+
+        foreach (KeyValuePair<Transform, PlayerCarry> pair in pointUsers)
+        {
+            if (pair.Value == player)
+            {
+                usedPoint = pair.Key;
+                break;
+            }
+        }
+
+        // CarryPointを空き状態にする
+        if (usedPoint != null)
+            pointUsers.Remove(usedPoint);
+
+        // 運搬一覧から削除
         carriers.Remove(player);
 
         // 人数に応じて速度を更新
@@ -164,8 +207,6 @@ public class CarryObject : MonoBehaviour
 
         // 最低速度～通常速度の間で計算
         agent.speed = Mathf.Lerp(minSpeed, normalMoveSpeed, speedRate);
-
-        Debug.Log($"運搬人数:{carriers.Count} / {maxPeople} 速度:{agent.speed}");
     }
 
     // お宝の移動を停止

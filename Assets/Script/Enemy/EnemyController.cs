@@ -18,9 +18,11 @@ namespace CareerQuest.Enemy
         public EnemyData EnemyData;
         ISpatialEntity _target;
 
+        public int index;
+
         public EnemyID ID { get => _id; }
         
-        public int Index { get; set; }  // 敵番号
+        public int Index { get => index; set => index = value; }  // 敵番号
         public float Tickness { get; set; }  // オブジェクトの厚さ
 
         public ISpatialEntity Target { get => _target; set => _target = value; }
@@ -29,11 +31,16 @@ namespace CareerQuest.Enemy
         void Awake()
         {
             _hashManager = ServiceLocator.Resolve<EnemyHashManager>();
-            _hashManager.Register(this);
 
             _navAgent = GetComponent<NavMeshAgent>();
             UAssert.IsNotNull(_navAgent, "NavMeshAgentの参照がありません");
         }
+
+        public void Regist()
+        {
+            _hashManager.Register(this);
+        }
+
         public void SetTarget(Vector3 targetPos)
         {
             if (_navAgent.enabled && _navAgent != null)

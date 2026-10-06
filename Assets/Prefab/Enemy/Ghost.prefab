@@ -128,7 +128,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1a8ed997976b644292fda5e7b8c16f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CareerQuest.Enemy.EnemyController
-  _enemyID: 1
+  _id: 1
+  index: 0
 --- !u!195 &7608969597134215898
 NavMeshAgent:
   m_ObjectHideFlags: 0

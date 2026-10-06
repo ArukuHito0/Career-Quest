@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Pool;
-using UnityEngine.UIElements;
 
 namespace CareerQuest.Enemy
 {
@@ -21,7 +20,7 @@ namespace CareerQuest.Enemy
         protected NativeArray<Vector3> wallPositions;
 
         [SerializeField] EnemyController _enemyController;
-        [SerializeField] protected int maxEnemyCount = 10;
+        [SerializeField] protected int maxEnemyCount = 20;
         ObjectPool<EnemyController> _pool;
 
         protected NativeArray<EnemyData> bufferA;
@@ -69,7 +68,11 @@ namespace CareerQuest.Enemy
 
             _pool = new ObjectPool<EnemyController>(
             createFunc: () => Instantiate(_enemyController),
-            actionOnGet: e => e.gameObject.SetActive(true),
+            actionOnGet: e =>
+            {
+                e.gameObject.SetActive(true);
+                e.Regist();
+            },
             actionOnRelease: e => e.gameObject.SetActive(false),
             actionOnDestroy: e => Destroy(e.gameObject),
             defaultCapacity: 100
@@ -90,6 +93,13 @@ namespace CareerQuest.Enemy
             {
                 wallPositions[i] = wallObjects[i].transform.position;
             }
+            var sceneEnemies = FindObjectsByType<EnemyController>(FindObjectsSortMode.None);
+
+            foreach (var enemy in sceneEnemies)
+            {
+                _pool.Release(enemy);
+                _pool.Get();
+            }
         }
 
         protected virtual void OnDestroy()
@@ -107,7 +117,11 @@ namespace CareerQuest.Enemy
             enemy.transform.position = position;
 
             int newIndex = activeEnemyEntities.Count - 1;
-            if(isUsingBufferA)
+            if(newIndex < 0)
+            {
+                newIndex = 0;
+            }
+            if (isUsingBufferA)
             {
                 bufferA[newIndex] = CreateInitialEnemyData(enemy);
             }
@@ -160,7 +174,7 @@ namespace CareerQuest.Enemy
                     ID = entity.ID,
                     State = (byte)EnemyState.Search,
                     CurrentHp = golemHp,
-                    CurrentAttackCoolDown = 20f,
+                    CurrentAttackCoolDown = 0f,
                     Position = entity.transform.position,
                     TargetIndex = -1,
 
@@ -179,7 +193,7 @@ namespace CareerQuest.Enemy
                     ID = entity.ID,
                     State = (byte)EnemyState.Search,
                     CurrentHp = ghostHp,
-                    CurrentAttackCoolDown = 20f,
+                    CurrentAttackCoolDown = 0f,
                     Position = entity.transform.position,
                     TargetIndex = -1,
 

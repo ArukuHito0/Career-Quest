@@ -22,6 +22,18 @@ public class PlayerCarry : MonoBehaviour
         stateManager = GetComponent<PlayerStateManager>();
     }
 
+    private void Update()
+    {
+        // 運搬中でなければ何もしない
+        if (carryObject == null)
+            return;
+
+        // お化け状態になったら運搬解除
+        if (stateManager.IsGhost())
+            Release();
+    }
+
+
     private void OnTriggerEnter(Collider other)
     {
         // 状態管理がない場合は何もしない
@@ -63,6 +75,14 @@ public class PlayerCarry : MonoBehaviour
         if (stateManager.IsGhost())
             return;
 
+        // すでにお宝を運搬している場合は参加しない
+        if (carryObject != null)
+            return;
+
+        // 指定された位置がない場合は参加しない
+        if (point == null)
+            return;
+
         carryObject = obj;
 
         // 運搬中のプレイヤー一覧に追加
@@ -102,8 +122,19 @@ public class PlayerCarry : MonoBehaviour
     public void Release()
     {
         // 現在運搬しているお宝がある場合
-        if (carryObject != null)
-            carryObject.RemoveCarrier(this);
+        if (carryObject == null)
+        {
+            return;
+        }
+
+        // 現在運搬しているお宝を保存
+        CarryObject obj = carryObject;
+
+        // 運搬状態を解除
+        carryObject = null;
+
+        // お宝から運搬者を削除
+        obj.RemoveCarrier(this);
 
         // 親子関係を解除
         transform.SetParent(null);
@@ -115,14 +146,13 @@ public class PlayerCarry : MonoBehaviour
 
             // 現在位置をNavMeshAgentに同期
             if (agent.isOnNavMesh)
+            {
                 agent.Warp(transform.position);
+            }
         }
 
-        // 運搬中のプレイヤー一覧から削除
+        // 運搬中のプレイヤー一覧かr削除
         carryingPlayers.Remove(this);
-
-        // 運搬状態を解除
-        carryObject = null;
     }
 
     // 現在運搬中の全プレイヤーを解除

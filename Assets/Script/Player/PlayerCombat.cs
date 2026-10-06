@@ -78,7 +78,6 @@ public class PlayerCombat : MonoBehaviour
         // İ’è‚³‚ê‚Ä‚¢‚éUŒ‚•û–@‚ÅUŒ‚
         if (attack != null)
         {
-            Debug.Log("UŒ‚‚ğŠJn");
             attack.TryAttack(target);
         }
     }

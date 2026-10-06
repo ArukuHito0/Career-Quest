@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1446702304971933067}
   - component: {fileID: 2509404105314666762}
   - component: {fileID: 1038856935211562427}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -124,7 +124,7 @@ GameObject:
   - component: {fileID: 1164706297761863941}
   - component: {fileID: 7340678600686461180}
   - component: {fileID: 3043527562581009858}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Cube (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -238,7 +238,7 @@ GameObject:
   - component: {fileID: 4729147165501355477}
   - component: {fileID: 8423803652305188634}
   - component: {fileID: 4635475288160146244}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Golem
   m_TagString: Untagged
   m_Icon: {fileID: 0}

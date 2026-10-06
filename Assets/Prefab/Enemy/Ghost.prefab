@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 1057057118950913486}
   - component: {fileID: 8182853143163855641}
   - component: {fileID: 7608969597134215898}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Ghost
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -163,7 +163,7 @@ GameObject:
   - component: {fileID: 6129617335335737902}
   - component: {fileID: 7282441692654357644}
   - component: {fileID: 9212205787275420581}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Sphere (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -275,7 +275,7 @@ GameObject:
   - component: {fileID: 2859816999352960453}
   - component: {fileID: 8096388384391511425}
   - component: {fileID: 7544984432068832035}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Sphere (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}

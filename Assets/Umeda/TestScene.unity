@@ -2471,7 +2471,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CarryObject
   requiredPeople: 2
-  normalMoveSpeed: 3.5
+  normalMoveSpeed: 5
   carryPoints:
   - {fileID: 164806983}
   - {fileID: 1173597215}
@@ -2611,7 +2611,7 @@ MonoBehaviour:
   - {fileID: 1712126602}
   - {fileID: 1645968316}
   - {fileID: 198676355}
-  carryObject: {fileID: 0}
+  carryObject: {fileID: 992934001}
   clickMarker: {fileID: 1752162033}
 --- !u!4 &1014387980
 Transform:

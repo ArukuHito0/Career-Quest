@@ -43,10 +43,8 @@ namespace CareerQuest.Enemy
 
         public void SetTarget(Vector3 targetPos)
         {
-            MyLogger.Log(123456);
             if (_navAgent.enabled && _navAgent != null)
             {
-                MyLogger.WarningLog(123456);
                 _navAgent.SetDestination(targetPos);
             }
         }

@@ -114,7 +114,6 @@ namespace CareerQuest.Enemy
             // 指定した座標の半径1.5メートル以内で、一番近いNavMesh上の位置を探す
             if (UnityEngine.AI.NavMesh.SamplePosition(position, out var hit, 10f, UnityEngine.AI.NavMesh.AllAreas))
             {
-                MyLogger.Log("changePos");
                 position = hit.position; // 補正された正しい位置
             }
 

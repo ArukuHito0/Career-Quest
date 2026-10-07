@@ -5,7 +5,8 @@ using UnityEngine;
 
 public class TreasureChest : MonoBehaviour ,ISpatialEntity
 {
-    [SerializeField] private float carrentHealth = 100f;
+    [SerializeField] private int maxHealth = 100;
+    private int currentHealth;
 
     TreasureHashManager _hashManager;
     public List<int> nearbyEntities = new List<int>(64);
@@ -13,8 +14,17 @@ public class TreasureChest : MonoBehaviour ,ISpatialEntity
     public int Index { get; set; }  // この宝物の番号(一意)
     public float Tickness { get; set; }  // オブジェクトの厚さ
 
+    // 現在HPを外部から取得
+    public int CurrentHealth => currentHealth;
+
+    // 最大HPを外部から取得
+    public int MaxHealth => maxHealth;
+
     void Awake()
     {
+        // 最大HPを現在HPに設定
+        currentHealth = maxHealth;
+
         _hashManager = ServiceLocator.Resolve<TreasureHashManager>();
         _hashManager.Register(this);
         Tickness = 0.2f;
@@ -48,7 +58,7 @@ public class TreasureChest : MonoBehaviour ,ISpatialEntity
             //float dist = Vector3.Distance(transform.position, otherEnemy.transform.position);
         }
 
-        if (carrentHealth < 0)
+        if (currentHealth < 0)
         {
             Destroy(gameObject);
         }
@@ -56,6 +66,6 @@ public class TreasureChest : MonoBehaviour ,ISpatialEntity
 
     public void TakeDamage(int damage)
     {
-        carrentHealth -= damage;
+        currentHealth -= damage;
     }
 }

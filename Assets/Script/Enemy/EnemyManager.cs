@@ -37,7 +37,7 @@ namespace CareerQuest.Enemy
             if (timer1 >= 3.5f)
             {
                 timer1 = 0f;
-                SpawnEnemy(testPos1.position);
+                SpawnEnemy(testPos1.position, EnemyID.Golem);
             }
             //  --  FOR ALPHA  --  //
 

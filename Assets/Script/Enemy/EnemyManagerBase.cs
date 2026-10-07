@@ -19,9 +19,12 @@ namespace CareerQuest.Enemy
         protected List<EnemyController> activeEnemyEntities = new List<EnemyController>();
         protected NativeArray<Vector3> wallPositions;
 
-        [SerializeField] EnemyController _enemyController;
+        [SerializeField] EnemySpawnPos spawnPos;
+        [SerializeField] EnemyController _golemPrefab;
+        [SerializeField] EnemyController _ghostPrefab;
         [SerializeField] protected int maxEnemyCount = 20;
         ObjectPool<EnemyController> _pool;
+        Dictionary<EnemyID, ObjectPool<EnemyController>> _pools = new Dictionary<EnemyID, ObjectPool<EnemyController>>();
 
         protected NativeArray<EnemyData> bufferA;
         protected NativeArray<EnemyData> bufferB;
@@ -66,8 +69,25 @@ namespace CareerQuest.Enemy
             bufferA = new NativeArray<EnemyData>(maxEnemyCount, Allocator.Persistent);
             bufferB = new NativeArray<EnemyData>(maxEnemyCount, Allocator.Persistent);
 
+            _pools[EnemyID.Golem] = new ObjectPool<EnemyController>(
+                createFunc: () => Instantiate(_golemPrefab),
+                actionOnGet: e => { e.gameObject.SetActive(true); e.Regist(); },
+                actionOnRelease: e => e.gameObject.SetActive(false),
+                actionOnDestroy: e => Destroy(e.gameObject),
+                defaultCapacity: 50
+            );
+
+            // ゴースト用のプールを作成
+            _pools[EnemyID.Ghost] = new ObjectPool<EnemyController>(
+                createFunc: () => Instantiate(_ghostPrefab),
+                actionOnGet: e => { e.gameObject.SetActive(true); e.Regist(); },
+                actionOnRelease: e => e.gameObject.SetActive(false),
+                actionOnDestroy: e => Destroy(e.gameObject),
+                defaultCapacity: 50
+            );
+
             _pool = new ObjectPool<EnemyController>(
-            createFunc: () => Instantiate(_enemyController),
+            createFunc: () => Instantiate(_ghostPrefab),
             actionOnGet: e =>
             {
                 e.gameObject.SetActive(true);
@@ -109,17 +129,19 @@ namespace CareerQuest.Enemy
         }
 
         //  生成
-        public void SpawnEnemy(Vector3 position)
+        public void SpawnEnemy(Vector3 position, EnemyID id)
         {
-            // 指定した座標の半径1.5メートル以内で、一番近いNavMesh上の位置を探す
             if (UnityEngine.AI.NavMesh.SamplePosition(position, out var hit, 10f, UnityEngine.AI.NavMesh.AllAreas))
             {
-                position = hit.position; // 補正された正しい位置
+                position = hit.position;
             }
 
             EnsureBufferSize(activeEnemyEntities.Count + 1);
+            
+            if (!_pools.TryGetValue(id, out var targetPool))
+                return;
 
-            var enemy = _pool.Get();
+            var enemy = targetPool.Get();
            
             var agent = enemy.GetComponent<UnityEngine.AI.NavMeshAgent>();
             if (agent != null) agent.enabled = false;

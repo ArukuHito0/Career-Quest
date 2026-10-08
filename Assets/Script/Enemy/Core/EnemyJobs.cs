@@ -36,10 +36,11 @@ namespace CareerQuest.Enemy
             int myX = Mathf.FloorToInt(data.Position.x / CellSize);
             int myZ = Mathf.FloorToInt(data.Position.z / CellSize);
             int myCellId = myX + (myZ * GridWidth);
-
-            for (int dz = -1; dz <= 1; dz++)
+            int sreachCell = (int)(data.GolemSearchRadius / CellSize);
+            //int sreachCell = Mathf.CeilToInt(data.GhostSearchRadius / CellSize);  //  サーチ漏れがなくなるが処理負荷も上がるので実装するときは最適化と一緒にする。
+            for (int dz = -sreachCell; dz <= sreachCell; dz++)
             {
-                for (int dx = -1; dx <= 1; dx++)
+                for (int dx = -sreachCell; dx <= sreachCell; dx++)
                 {
                     int targetCellId = (myX + dx) + ((myZ + dz) * GridWidth);
 
@@ -96,9 +97,11 @@ namespace CareerQuest.Enemy
             int myZ = Mathf.FloorToInt(data.Position.z / CellSize);
             int myCellId = myX + (myZ * GridWidth);
 
-            for (int dz = -1; dz <= 1; dz++)
+            int sreachCell = (int)(data.GhostSearchRadius / CellSize);
+            //int sreachCell = Mathf.CeilToInt(data.GhostSearchRadius / CellSize);  //  サーチ漏れがなくなるが処理負荷も上がるので実装するときは最適化と一緒にする。
+            for (int dz = -sreachCell; dz <= sreachCell; dz++)
             {
-                for (int dx = -1; dx <= 1; dx++)
+                for (int dx = -sreachCell; dx <= sreachCell; dx++)
                 {
                     int targetCellId = (myX + dx) + ((myZ + dz) * GridWidth);
 
@@ -110,7 +113,6 @@ namespace CareerQuest.Enemy
                                 continue;
 
                             float dist = Vector3.Distance(data.Position, PlayerPositions[entityIndex]);
-
                             if (dist < data.GhostSearchRadius && dist < minDistance)
                             {
                                 minDistance = dist;
@@ -533,3 +535,13 @@ public struct CollisionJob : IJobParallelFor
 //    data.Position += (dir + avoidance) * data.GolemMoveSpeed * DeltaTime;
 //    data.State = (byte)EnemyState.Move;
 //    Datas[index] = data;
+//    探索処理の代替案
+//for (int i = 0; i < PlayerPositions.Length; i++)
+//{
+//    float dist = Vector3.Distance(data.Position, PlayerPositions[i]);
+//    if (dist < data.GhostSearchRadius && dist < minDistance)
+//    {
+//        minDistance = dist;
+//        nearestIndex = i;
+//    }
+//}

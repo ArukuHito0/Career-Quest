@@ -23,23 +23,27 @@ namespace CareerQuest.Enemy
                 bufferA[i] = CreateInitialEnemyData(entity);
             }
         }
-
-        //  --  FOR ALPHA  --  //
-        float timer1 = 0f;
-        [SerializeField] Transform testPos1;
-        //  --  FOR ALPHA  --  //
         
         void Update()
         {
-
-            //  --  FOR ALPHA  --  //
-            timer1 += Time.deltaTime;
-            if (timer1 >= 3.5f)
+            float deltaTime = Time.deltaTime;
+            for (int i = 0; i < runtimeSpawnPoints.Count; i++)
             {
-                timer1 = 0f;
-                SpawnEnemy(testPos1.position, EnemyID.Golem);
+                var pointData = runtimeSpawnPoints[i];
+                pointData.CurrentTimer += deltaTime;
+
+                if (pointData.CurrentTimer >= pointData.TargetInterval)
+                {
+                    pointData.CurrentTimer = 0f;
+
+                    if (activeEnemyEntities.Count < maxEnemyCount)
+                    {
+                        EnemyID selectedID = LotteryEnemy(pointData.Candidates);
+                        SpawnEnemy(pointData.Position, selectedID);
+                    }
+                }
+                runtimeSpawnPoints[i] = pointData;
             }
-            //  --  FOR ALPHA  --  //
 
             if (activeTreasureEntities.Count == 0) return;
             if (activeEnemyEntities.Count == 0)

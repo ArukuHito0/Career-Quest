@@ -19,11 +19,10 @@ namespace CareerQuest.Enemy
         protected List<EnemyController> activeEnemyEntities = new List<EnemyController>();
         protected NativeArray<Vector3> wallPositions;
 
-        [SerializeField] EnemySpawnPos spawnPos;
+        [SerializeField] EnemySpawnData spawnPos;
         [SerializeField] EnemyController _golemPrefab;
         [SerializeField] EnemyController _ghostPrefab;
         [SerializeField] protected int maxEnemyCount = 20;
-        ObjectPool<EnemyController> _pool;
         Dictionary<EnemyID, ObjectPool<EnemyController>> _pools = new Dictionary<EnemyID, ObjectPool<EnemyController>>();
 
         protected NativeArray<EnemyData> bufferA;
@@ -35,7 +34,8 @@ namespace CareerQuest.Enemy
         [SerializeField] EnemyStatHolder _enemyStatHolder;  // ステータス保持SO
 
         EnemyStat enemyStat;  // 敵のパラメーター(キャッシュ用)
-        
+        protected List<RuntimeSpawnPoint> runtimeSpawnPoints = new List<RuntimeSpawnPoint>();
+
         //  -- Golemステータス --  //
         protected int golemHp;                  // 体力
         //protected float golemMoveSpeed;         // 移動速度 NavMeshを使うためコメントアウト
@@ -71,13 +71,17 @@ namespace CareerQuest.Enemy
 
             _pools[EnemyID.Golem] = new ObjectPool<EnemyController>(
                 createFunc: () => Instantiate(_golemPrefab),
-                actionOnGet: e => { e.gameObject.SetActive(true); e.Regist(); },
+                actionOnGet: e => {
+                    //var agent = e.GetComponent<UnityEngine.AI.NavMeshAgent>();
+                    //agent.enabled = false;
+                    e.gameObject.SetActive(true);
+                    e.Regist();
+                    
+                },
                 actionOnRelease: e => e.gameObject.SetActive(false),
                 actionOnDestroy: e => Destroy(e.gameObject),
                 defaultCapacity: 50
             );
-
-            // ゴースト用のプールを作成
             _pools[EnemyID.Ghost] = new ObjectPool<EnemyController>(
                 createFunc: () => Instantiate(_ghostPrefab),
                 actionOnGet: e => { e.gameObject.SetActive(true); e.Regist(); },
@@ -86,17 +90,23 @@ namespace CareerQuest.Enemy
                 defaultCapacity: 50
             );
 
-            _pool = new ObjectPool<EnemyController>(
-            createFunc: () => Instantiate(_ghostPrefab),
-            actionOnGet: e =>
+            if (spawnPos != null && spawnPos.SpawnPositions != null)
             {
-                e.gameObject.SetActive(true);
-                e.Regist();
-            },
-            actionOnRelease: e => e.gameObject.SetActive(false),
-            actionOnDestroy: e => Destroy(e.gameObject),
-            defaultCapacity: 100
-            );
+                foreach (var point in spawnPos.SpawnPositions)
+                {
+                    if (point.Candidates == null || point.Candidates.Length == 0) continue;
+
+                    float interval = point.Candidates[0].SpawnInterval;
+
+                    runtimeSpawnPoints.Add(new RuntimeSpawnPoint
+                    {
+                        Position = point.Position,
+                        CurrentTimer = 0f,
+                        TargetInterval = interval,
+                        Candidates = point.Candidates
+                    });
+                }
+            }
 
             SetStat();
         }
@@ -112,13 +122,6 @@ namespace CareerQuest.Enemy
             for (int i = 0; i < wallObjects.Length; i++)
             {
                 wallPositions[i] = wallObjects[i].transform.position;
-            }
-            var sceneEnemies = FindObjectsByType<EnemyController>(FindObjectsSortMode.None);
-
-            foreach (var enemy in sceneEnemies)
-            {
-                _pool.Release(enemy);
-                _pool.Get();
             }
         }
 
@@ -142,11 +145,19 @@ namespace CareerQuest.Enemy
                 return;
 
             var enemy = targetPool.Get();
-           
+
             var agent = enemy.GetComponent<UnityEngine.AI.NavMeshAgent>();
-            if (agent != null) agent.enabled = false;
-            enemy.transform.position = position;
-            if (agent != null) agent.enabled = true;
+            if (agent != null)
+            {
+                agent.enabled = false;
+                enemy.transform.position = position;
+                agent.enabled = true;
+                agent.Warp(position);
+            }
+            else
+            {
+                enemy.transform.position = position;
+            }
 
             int newIndex = activeEnemyEntities.Count - 1;
             if(newIndex < 0)
@@ -181,7 +192,30 @@ namespace CareerQuest.Enemy
             }
 
             activeEnemyEntities.RemoveAt(lastIndex);
-            _pool.Release(enemy);
+        }
+        protected EnemyID LotteryEnemy(EnemySpawnData.EnemySpawnCandidate[] candidates)
+        {
+            float totalPercent = 0f;
+            for (int i = 0; i < candidates.Length; i++)
+            {
+                totalPercent += candidates[i].Percent;
+            }
+
+            if (totalPercent <= 0f) return candidates[0].EnemyID;
+
+            float randomValue = Random.Range(0f, totalPercent);
+            float currentSum = 0f;
+
+            for (int i = 0; i < candidates.Length; i++)
+            {
+                currentSum += candidates[i].Percent;
+                if (randomValue <= currentSum)
+                {
+                    return candidates[i].EnemyID;
+                }
+            }
+
+            return candidates[0].EnemyID;
         }
 
         // バッファをリサイズ

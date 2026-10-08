@@ -899,9 +899,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
   nearbyEntities: 
-  maxHealth: 10000000
+  maxHealth: 100
   ghostDuration: 10
-  IsYuokascene: 1
 --- !u!54 &332676958172209382
 Rigidbody:
   m_ObjectHideFlags: 0

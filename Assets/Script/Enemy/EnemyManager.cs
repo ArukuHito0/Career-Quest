@@ -34,7 +34,7 @@ namespace CareerQuest.Enemy
 
             //  --  FOR ALPHA  --  //
             timer1 += Time.deltaTime;
-            if (timer1 >= 5f)
+            if (timer1 >= 3.5f)
             {
                 timer1 = 0f;
                 SpawnEnemy(testPos1.position);
@@ -42,7 +42,11 @@ namespace CareerQuest.Enemy
             //  --  FOR ALPHA  --  //
 
             if (activeTreasureEntities.Count == 0) return;
-            if (activeEnemyEntities.Count == 0) return;
+            if (activeEnemyEntities.Count == 0)
+            {
+                MyLogger.Log($"Enemy:アクティブな敵の数{activeEnemyEntities.Count}");
+                return;
+            }
 
             var readBuffer = isUsingBufferA ? bufferA : bufferB;
             var writeBuffer = isUsingBufferA ? bufferB : bufferA;
@@ -140,23 +144,23 @@ namespace CareerQuest.Enemy
                 }
             }
 
-            //if (bulletManager == null || bulletManager.ActiveCount == 0) return;
-
-            var collisionJob = new CollisionJob
+            if (bulletManager != null || bulletManager.ActiveCount <= 0)
             {
-                Bullets = bulletManager.BulletBuffer,
-                BulletCount = bulletManager.ActiveCount,
-                Enemies = writeBuffer
-            };
+                var collisionJob = new CollisionJob
+                {
+                    Bullets = bulletManager.BulletBuffer,
+                    BulletCount = bulletManager.ActiveCount,
+                    Enemies = writeBuffer
+                };
 
-            var collisionHandle = collisionJob.Schedule(activeEnemyEntities.Count, 64, attackDicisionHandle);
-            collisionHandle.Complete();
-
+                var collisionHandle = collisionJob.Schedule(activeEnemyEntities.Count, 64, attackDicisionHandle);
+                collisionHandle.Complete();
+            }
             for (int i = activeEnemyEntities.Count - 1; i >= 0; i--)
             {
                 var enemyData = writeBuffer[i];
 
-                if (enemyData.State == (byte)EnemyState.Dead)
+                if (enemyData.CurrentHp <= 0)
                 {
                     DespawnEnemy(activeEnemyEntities[i]);
                 }

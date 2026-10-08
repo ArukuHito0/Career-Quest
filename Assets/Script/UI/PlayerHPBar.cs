@@ -1,40 +1,29 @@
 using UnityEngine;
-using UnityEngine.UI;
 
-public class PlayerHPBar : MonoBehaviour
+public class PlayerHPBar : HPBarBase
 {
-    // HPを表示するslider
-    [SerializeField] private Slider hpSlider;
-
     // プレイヤーのHP管理
     private PlayerHealth playerHealth;
 
-    private void Awake()
+    protected override void FindHealth()
     {
         // 親にあるPlayerHealthを取得
         playerHealth = GetComponentInParent<PlayerHealth>();
-
-        if (playerHealth == null)
-        {
-            Debug.Log($"{gameObject.name}: PlayerHealthが見つかりません");
-            return;
-        }
-
-        // HPバーの最大値を設定
-        hpSlider.maxValue = playerHealth.MaxHealth;
-
-        // 現在HPを設定
-        hpSlider.value = playerHealth.CurrentHealth;
-
     }
 
-
-    private void Update()
+    protected override int GetMaxHealth()
     {
-        if (playerHealth == null && hpSlider)
-            return;
+        if (playerHealth == null)
+            return 0;
 
-        // 現在HPをHPバーに反映
-        hpSlider.value = playerHealth.CurrentHealth;
+        return playerHealth.MaxHealth;
+    }
+
+    protected override int GetCurrentHealth()
+    {
+        if (playerHealth == null)
+            return 0;
+
+        return playerHealth.CurrentHealth;
     }
 }

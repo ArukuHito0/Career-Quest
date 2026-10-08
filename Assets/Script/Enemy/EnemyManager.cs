@@ -1,4 +1,6 @@
 using CareerQuest.Core;
+using CareerQuest.Player;
+using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Jobs;
@@ -16,12 +18,6 @@ namespace CareerQuest.Enemy
         protected override void Start()
         {
             base.Start();
-
-            for (int i = 0; i < activeEnemyEntities.Count; i++)
-            {
-                var entity = activeEnemyEntities[i];
-                bufferA[i] = CreateInitialEnemyData(entity);
-            }
         }
         
         void Update()
@@ -44,11 +40,8 @@ namespace CareerQuest.Enemy
                 }
                 runtimeSpawnPoints[i] = pointData;
             }
-
-            if (activeTreasureEntities.Count == 0) return;
-            if (activeEnemyEntities.Count == 0)
+            if(CheckActiveCount())
             {
-                MyLogger.Log($"Enemy:アクティブな敵の数{activeEnemyEntities.Count}");
                 return;
             }
 
@@ -149,18 +142,45 @@ namespace CareerQuest.Enemy
                 MyLogger.Log("敵のターゲット設定完了");
             }
 
-            if (bulletManager != null || bulletManager.ActiveCount <= 0)
+
+            if (bulletManager != null && bulletManager.ActiveCount > 0)
             {
+                int maxBullet = bulletManager.ActiveCount;
+                var hitData = new NativeList<BulletHitData>(maxBullet, Allocator.TempJob);
+                hitData.Capacity = maxBullet; // 追加サイズを超えないように容量を固定
                 var collisionJob = new CollisionJob
                 {
+                    Enemies = writeBuffer,
                     Bullets = bulletManager.BulletBuffer,
-                    BulletCount = bulletManager.ActiveCount,
-                    Enemies = writeBuffer
+                    HitData = hitData.AsParallelWriter()
                 };
 
                 var collisionHandle = collisionJob.Schedule(activeEnemyEntities.Count, 64, attackDicisionHandle);
                 collisionHandle.Complete();
+
+                for (int i = 0; i < hitData.Length; i++)
+                {
+                    var hd = hitData[i];
+
+                    var enemy = writeBuffer[hd.EnemyIndex];
+                    if (enemy.CurrentHp > 0)
+                    {
+                        enemy.CurrentHp -= hd.Damage;
+                        writeBuffer[hd.EnemyIndex] = enemy;
+                    }
+
+                    if (hd.BulletIndex >= 0 && hd.BulletIndex < BulletManager.ActiveBullets.Count)
+                    {
+                        var targetBullet = BulletManager.ActiveBullets[hd.BulletIndex];
+                        if (targetBullet != null && targetBullet.IsActive)
+                        {
+                            targetBullet.IsActive = false;
+                        }
+                    }
+                }
+                hitData.Dispose();
             }
+
             for (int i = activeEnemyEntities.Count - 1; i >= 0; i--)
             {
                 var enemyData = writeBuffer[i];
@@ -185,6 +205,27 @@ namespace CareerQuest.Enemy
         protected override void OnDestroy()
         {
             base.OnDestroy();
+        }
+
+        //  マップの要素のアクティブ数を検査数r
+        bool CheckActiveCount()
+        {
+            if (activeTreasureEntities.Count == 0)
+            {
+                MyLogger.Log($"Enemy:アクティブなお宝の数{activeTreasureEntities.Count}");
+                return true;
+            }
+            else if (activePlayerEntities.Count == 0)
+            {
+                MyLogger.Log($"Enemy:アクティブなプレイヤーの数{activePlayerEntities.Count}");
+                return true;
+            }
+            else if (activeEnemyEntities.Count == 0)
+            {
+                MyLogger.Log($"Enemy:アクティブな敵の数{activeEnemyEntities.Count}");
+                return false;
+            }
+            return false;
         }
     }
 }

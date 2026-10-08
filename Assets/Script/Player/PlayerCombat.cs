@@ -7,7 +7,7 @@ public class PlayerCombat : MonoBehaviour
     [SerializeField] private AttackBase attack;
 
     // õ“G”ÍˆÍ
-    [SerializeField] private float searchRange = 10f;
+    [SerializeField] private float searchRange = 80f;
 
     // õ“G‚·‚é‘ÎÛ‚ÌLayer
     [SerializeField] private LayerMask enemyLayer;

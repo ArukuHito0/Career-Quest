@@ -1,8 +1,7 @@
-using CareerQuest.Core;
-using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
 using UAssert = UnityEngine.Assertions.Assert;
+using CareerQuest.Core;
 
 namespace CareerQuest.Enemy
 {
@@ -20,7 +19,7 @@ namespace CareerQuest.Enemy
         ISpatialEntity _target;
 
         public int index;
-
+        public int CurrentHp;
         public EnemyID ID { get => _id; }
         
         public int Index { get => index; set => index = value; }  // “G”Ô†

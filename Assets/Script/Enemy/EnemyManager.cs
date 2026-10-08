@@ -146,6 +146,7 @@ namespace CareerQuest.Enemy
                         activeEnemyEntities[i].SetTarget(playerHashManager.Positions[targetIndex]);
                     }
                 }
+                MyLogger.Log("敵のターゲット設定完了");
             }
 
             if (bulletManager != null || bulletManager.ActiveCount <= 0)

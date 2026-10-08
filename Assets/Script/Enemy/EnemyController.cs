@@ -44,7 +44,11 @@ namespace CareerQuest.Enemy
 
         public void SetTarget(Vector3 targetPos)
         {
-            return;
+            if (_navAgent == null || !_navAgent.enabled || !_navAgent.isOnNavMesh)
+            {
+                return;
+            }
+            _navAgent.SetDestination(targetPos);
         }
         public void Attack()
         {

@@ -2494,15 +2494,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 7215010078727082554, guid: 91738bc4260699e489dd31bd1cf5defa, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 7.49585
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7215010078727082554, guid: 91738bc4260699e489dd31bd1cf5defa, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 4.50002
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7215010078727082554, guid: 91738bc4260699e489dd31bd1cf5defa, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -46.5333
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7215010078727082554, guid: 91738bc4260699e489dd31bd1cf5defa, type: 3}
       propertyPath: m_LocalRotation.w
@@ -2536,6 +2536,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: EnemyManger
       objectReference: {fileID: 0}
+    - target: {fileID: 9174219508056468152, guid: 91738bc4260699e489dd31bd1cf5defa, type: 3}
+      propertyPath: spawnPos
+      value: 
+      objectReference: {fileID: 11400000, guid: 5d0c1cf1e5231934f8905f7c005282d3, type: 2}
     - target: {fileID: 9174219508056468152, guid: 91738bc4260699e489dd31bd1cf5defa, type: 3}
       propertyPath: testPos1
       value: 
@@ -2849,7 +2853,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 42810659197c7b34284adc595424eb87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TreasureChest1
-  carrentHealth: 1000000
+  maxHealth: 100
   nearbyEntities: 
 --- !u!195 &992934000
 NavMeshAgent:

@@ -853,6 +853,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa69ff6c181dede49b1ba915ae7143bb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCarry
+  globalCarryCooldown: 1
 --- !u!114 &3795875680954856545
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -899,9 +900,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth
   nearbyEntities: 
-  maxHealth: 10000000
+  maxHealth: 100
   ghostDuration: 10
-  IsYuokascene: 1
 --- !u!54 &332676958172209382
 Rigidbody:
   m_ObjectHideFlags: 0

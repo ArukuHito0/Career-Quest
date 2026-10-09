@@ -12,7 +12,7 @@ namespace CareerQuest.Player
     {
         public static readonly List<IBullet> ActiveBullets = new List<IBullet>();
 
-        readonly int _maxBullets = 2000; // Å‘å’e”
+        readonly int _maxBullets = 500; // Å‘å’e”
         NativeArray<BulletData> _bulletBuffer;
 
         public int ActiveCount => Mathf.Min(ActiveBullets.Count, _maxBullets);
@@ -32,8 +32,8 @@ namespace CareerQuest.Player
             for (int i = 0; i < count; i++)
             {
                 var bullet = ActiveBullets[i];
-               _bulletBuffer[i] = new BulletData
-               {
+                _bulletBuffer[i] = new BulletData
+                {
                     Position = bullet.Position,
                     Radius = bullet.Tickness,
                     Damage = bullet.Damage,

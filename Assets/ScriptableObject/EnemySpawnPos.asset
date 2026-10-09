@@ -28,7 +28,7 @@ MonoBehaviour:
     - EnemyID: 0
       SpawnInterval: 40
       Percent: 2
-  - Position: {x: -59.583916, y: 10.196037, z: -43.40189}
+  - Position: {x: -55.88889, y: 10.196037, z: -43.40189}
     Candidates:
     - EnemyID: 1
       SpawnInterval: 40
@@ -38,7 +38,7 @@ MonoBehaviour:
     - EnemyID: 1
       SpawnInterval: 40
       Percent: 2
-  - Position: {x: -66.34575, y: 9.638669, z: 3.0901165}
+  - Position: {x: -66.529884, y: 9.638669, z: 3.181524}
     Candidates:
     - EnemyID: 1
       SpawnInterval: 20
@@ -50,4 +50,64 @@ MonoBehaviour:
     Candidates:
     - EnemyID: 1
       SpawnInterval: 8
+      Percent: 50
+  - Position: {x: -45.682552, y: 17.641953, z: 32.804993}
+    Candidates:
+    - EnemyID: 0
+      SpawnInterval: 20
+      Percent: 50
+  - Position: {x: -50.711365, y: 17.641953, z: 47.426624}
+    Candidates:
+    - EnemyID: 1
+      SpawnInterval: 20
+      Percent: 50
+  - Position: {x: -0.9894942, y: 12.397175, z: 5.229972}
+    Candidates:
+    - EnemyID: 1
+      SpawnInterval: 15
+      Percent: 50
+  - Position: {x: 25.968863, y: 22.833906, z: 46.0922}
+    Candidates:
+    - EnemyID: 1
+      SpawnInterval: 15
+      Percent: 50
+  - Position: {x: 23.540533, y: 15.217201, z: 24.835823}
+    Candidates:
+    - EnemyID: 1
+      SpawnInterval: 15
+      Percent: 50
+  - Position: {x: 39.536655, y: 9.826564, z: 20.611929}
+    Candidates:
+    - EnemyID: 0
+      SpawnInterval: 7
+      Percent: 50
+  - Position: {x: 43.698074, y: 9.826564, z: 20.611929}
+    Candidates:
+    - EnemyID: 1
+      SpawnInterval: 8
+      Percent: 50
+  - Position: {x: 70.39226, y: 9.144516, z: -23.74645}
+    Candidates:
+    - EnemyID: 0
+      SpawnInterval: 8
+      Percent: 50
+  - Position: {x: 71.30523, y: 9.144516, z: -41.023476}
+    Candidates:
+    - EnemyID: 1
+      SpawnInterval: 5
+      Percent: 50
+  - Position: {x: 29.73003, y: 9.144516, z: -57.222057}
+    Candidates:
+    - EnemyID: 1
+      SpawnInterval: 3
+      Percent: 50
+  - Position: {x: 0.49660492, y: 9.144516, z: -16.047005}
+    Candidates:
+    - EnemyID: 0
+      SpawnInterval: 7
+      Percent: 50
+  - Position: {x: -8.775851, y: 9.144516, z: 0.73633575}
+    Candidates:
+    - EnemyID: 1
+      SpawnInterval: 3
       Percent: 50

@@ -131,6 +131,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CareerQuest.Enemy.EnemyController
   _id: 1
   index: 0
+  CurrentHp: 0
 --- !u!195 &7608969597134215898
 NavMeshAgent:
   m_ObjectHideFlags: 0

@@ -22,7 +22,7 @@ namespace CareerQuest.Enemy
         [SerializeField] EnemySpawnData spawnPos;
         [SerializeField] EnemyController _golemPrefab;
         [SerializeField] EnemyController _ghostPrefab;
-        [SerializeField] protected int maxEnemyCount = 20;
+        [SerializeField] protected int maxEnemyCount = 1000;
         Dictionary<EnemyID, ObjectPool<EnemyController>> _pools = new Dictionary<EnemyID, ObjectPool<EnemyController>>();
 
         protected NativeArray<EnemyData> bufferA;
@@ -72,11 +72,8 @@ namespace CareerQuest.Enemy
             _pools[EnemyID.Golem] = new ObjectPool<EnemyController>(
                 createFunc: () => Instantiate(_golemPrefab),
                 actionOnGet: e => {
-                    //var agent = e.GetComponent<UnityEngine.AI.NavMeshAgent>();
-                    //agent.enabled = false;
                     e.gameObject.SetActive(true);
                     e.Regist();
-                    
                 },
                 actionOnRelease: e => e.gameObject.SetActive(false),
                 actionOnDestroy: e => Destroy(e.gameObject),
@@ -117,12 +114,12 @@ namespace CareerQuest.Enemy
             activePlayerEntities = playerHashManager.ActiveEntities;
             activeEnemyEntities = enemyHashManager.ActiveEntities;
 
-            var wallObjects = GameObject.FindGameObjectsWithTag("Wall");
-            wallPositions = new NativeArray<Vector3>(wallObjects.Length, Allocator.Persistent);
-            for (int i = 0; i < wallObjects.Length; i++)
-            {
-                wallPositions[i] = wallObjects[i].transform.position;
-            }
+            //var wallObjects = GameObject.FindGameObjectsWithTag("Wall");
+            //wallPositions = new NativeArray<Vector3>(wallObjects.Length, Allocator.Persistent);
+            //for (int i = 0; i < wallObjects.Length; i++)
+            //{
+            //    wallPositions[i] = wallObjects[i].transform.position;
+            //}
         }
 
         protected virtual void OnDestroy()
@@ -182,6 +179,11 @@ namespace CareerQuest.Enemy
             int removeIndex = enemy.Index;
             int lastIndex = activeEnemyEntities.Count - 1;
 
+            if (_pools.TryGetValue(enemy.ID, out var targetPool))
+            {
+                targetPool.Release(enemy);
+            }
+
             if (removeIndex < lastIndex)
             {
                 var lastEnemy = activeEnemyEntities[lastIndex];
@@ -190,7 +192,6 @@ namespace CareerQuest.Enemy
                 bufferA[removeIndex] = bufferA[lastIndex];
                 bufferB[removeIndex] = bufferB[lastIndex];
             }
-
             activeEnemyEntities.RemoveAt(lastIndex);
         }
         protected EnemyID LotteryEnemy(EnemySpawnData.EnemySpawnCandidate[] candidates)

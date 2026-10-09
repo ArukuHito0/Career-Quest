@@ -1,23 +1,23 @@
-using CareerQuest.Core;
-using CareerQuest.Enemy;
-using CareerQuest.Player;
+ï»¿using System.Threading;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
+using CareerQuest.Enemy;
+using CareerQuest.Player;
 
 namespace CareerQuest.Enemy
 {
-    //  üˆÍ’Tõ
+    //  å‘¨å›²æ¢ç´¢
     [BurstCompile]
     public struct SearchTreasureJob : IJobParallelFor
     {
-        public NativeArray<EnemyData> InputDatas; // “Ç‚İæ‚è—p
-        [ReadOnly] public NativeArray<Vector3> TreasurePositions;  // ‚¨•óÀ•W
-        [ReadOnly] public NativeParallelMultiHashMap<int, int> CellToEntityMap;  // <ƒZƒ‹ID, ƒZƒ‹“à‚Ì•ó”>‚ÌMap
+        public NativeArray<EnemyData> InputDatas; // èª­ã¿å–ã‚Šç”¨
+        [ReadOnly] public NativeArray<Vector3> TreasurePositions;  // ãŠå®åº§æ¨™
+        [ReadOnly] public NativeParallelMultiHashMap<int, int> CellToEntityMap;  // <ã‚»ãƒ«ID, ã‚»ãƒ«å†…ã®å®æ•°>ã®Map
 
-        public int GridWidth;  // ƒOƒŠƒbƒh‰¡•
-        public float CellSize;  // 1‚Â‚ÌƒZƒ‹‚ÌƒTƒCƒY
+        public int GridWidth;  // ã‚°ãƒªãƒƒãƒ‰æ¨ªå¹…
+        public float CellSize;  // 1ã¤ã®ã‚»ãƒ«ã®ã‚µã‚¤ã‚º
         public float DeltaTime;
 
         public void Execute(int index)
@@ -37,7 +37,7 @@ namespace CareerQuest.Enemy
             int myZ = Mathf.FloorToInt(data.Position.z / CellSize);
             int myCellId = myX + (myZ * GridWidth);
             int sreachCell = (int)(data.GolemSearchRadius / CellSize);
-            //int sreachCell = Mathf.CeilToInt(data.GhostSearchRadius / CellSize);  //  ƒT[ƒ`˜R‚ê‚ª‚È‚­‚È‚é‚ªˆ—•‰‰×‚àã‚ª‚é‚Ì‚ÅÀ‘•‚·‚é‚Æ‚«‚ÍÅ“K‰»‚Æˆê‚É‚·‚éB
+            //int sreachCell = Mathf.CeilToInt(data.GhostSearchRadius / CellSize);  //  ã‚µãƒ¼ãƒæ¼ã‚ŒãŒãªããªã‚‹ãŒå‡¦ç†è² è·ã‚‚ä¸ŠãŒã‚‹ã®ã§å®Ÿè£…ã™ã‚‹ã¨ãã¯æœ€é©åŒ–ã¨ä¸€ç·’ã«ã™ã‚‹ã€‚
             for (int dz = -sreachCell; dz <= sreachCell; dz++)
             {
                 for (int dx = -sreachCell; dx <= sreachCell; dx++)
@@ -68,16 +68,16 @@ namespace CareerQuest.Enemy
         }
     }
 
-    //  ƒvƒŒƒCƒ„[’Tõ
+    //  ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æ¢ç´¢
     [BurstCompile]
     public struct SearchPlayerJob : IJobParallelFor
     {
-        public NativeArray<EnemyData> InputDatas; // “Ç‚İæ‚è—p
-        [ReadOnly] public NativeArray<Vector3> PlayerPositions;  // ƒvƒŒƒCƒ„[À•W
-        [ReadOnly] public NativeParallelMultiHashMap<int, int> CellToEntityMap;  // <ƒZƒ‹ID, ƒZƒ‹“à‚ÌƒvƒŒƒCƒ„[>‚ÌMap
+        public NativeArray<EnemyData> InputDatas; // èª­ã¿å–ã‚Šç”¨
+        [ReadOnly] public NativeArray<Vector3> PlayerPositions;  // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼åº§æ¨™
+        [ReadOnly] public NativeParallelMultiHashMap<int, int> CellToEntityMap;  // <ã‚»ãƒ«ID, ã‚»ãƒ«å†…ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼>ã®Map
 
-        public int GridWidth;  // ƒOƒŠƒbƒh‰¡•
-        public float CellSize;  // 1‚Â‚ÌƒZƒ‹‚ÌƒTƒCƒY
+        public int GridWidth;  // ã‚°ãƒªãƒƒãƒ‰æ¨ªå¹…
+        public float CellSize;  // 1ã¤ã®ã‚»ãƒ«ã®ã‚µã‚¤ã‚º
         public float DeltaTime;
 
         public void Execute(int index)
@@ -98,7 +98,7 @@ namespace CareerQuest.Enemy
             int myCellId = myX + (myZ * GridWidth);
 
             int sreachCell = (int)(data.GhostSearchRadius / CellSize);
-            //int sreachCell = Mathf.CeilToInt(data.GhostSearchRadius / CellSize);  //  ƒT[ƒ`˜R‚ê‚ª‚È‚­‚È‚é‚ªˆ—•‰‰×‚àã‚ª‚é‚Ì‚ÅÀ‘•‚·‚é‚Æ‚«‚ÍÅ“K‰»‚Æˆê‚É‚·‚éB
+            //int sreachCell = Mathf.CeilToInt(data.GhostSearchRadius / CellSize);  //  ã‚µãƒ¼ãƒæ¼ã‚ŒãŒãªããªã‚‹ãŒå‡¦ç†è² è·ã‚‚ä¸ŠãŒã‚‹ã®ã§å®Ÿè£…ã™ã‚‹ã¨ãã¯æœ€é©åŒ–ã¨ä¸€ç·’ã«ã™ã‚‹ã€‚
             for (int dz = -sreachCell; dz <= sreachCell; dz++)
             {
                 for (int dx = -sreachCell; dx <= sreachCell; dx++)
@@ -130,18 +130,18 @@ namespace CareerQuest.Enemy
     }
 
 
-    //  UŒ‚‚·‚é‚©”»’f
+    //  æ”»æ’ƒã™ã‚‹ã‹åˆ¤æ–­
     [BurstCompile]
     public struct AttackDecisionJob : IJobParallelFor
     {
-        [ReadOnly] public NativeArray<EnemyData> InputDatas; // “Ç‚İæ‚è—p
-        public NativeArray<EnemyData> OutputDatas;          // ‘‚«‚İ—p
-        [ReadOnly] public NativeArray<Vector3> TreasurePositions;  // ‚¨•óÀ•W
-        [ReadOnly] public NativeArray<float> TreasureTickness;  // ‚¨•ó‚ÌŒú‚İ
-        [ReadOnly] public NativeArray<Vector3> PlaeyrPositions;  // ƒvƒŒƒCƒ„[À•W
-        [ReadOnly] public NativeArray<float> PlayerTickness;  // ƒvƒŒƒCƒ„[‚ÌŒú‚İ
+        [ReadOnly] public NativeArray<EnemyData> InputDatas; // èª­ã¿å–ã‚Šç”¨
+        public NativeArray<EnemyData> OutputDatas;          // æ›¸ãè¾¼ã¿ç”¨
+        [ReadOnly] public NativeArray<Vector3> TreasurePositions;  // ãŠå®åº§æ¨™
+        [ReadOnly] public NativeArray<float> TreasureTickness;  // ãŠå®ã®åšã¿
+        [ReadOnly] public NativeArray<Vector3> PlaeyrPositions;  // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼åº§æ¨™
+        [ReadOnly] public NativeArray<float> PlayerTickness;  // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®åšã¿
 
-        public float EnemyAvoidRadius;  // “G“¯m‚Å”ğ‚¯n‚ß‚é‹——£
+        public float EnemyAvoidRadius;  // æ•µåŒå£«ã§é¿ã‘å§‹ã‚ã‚‹è·é›¢
 
         public float DeltaTime;
         public void Execute(int index)
@@ -182,7 +182,7 @@ namespace CareerQuest.Enemy
             OutputDatas[index] = data;
         }
 
-        #region ƒS[ƒŒƒ€UŒ‚”»’f
+        #region ã‚´ãƒ¼ãƒ¬ãƒ æ”»æ’ƒåˆ¤æ–­
         static void GolemDecision(
         ref EnemyData data,
         int index,
@@ -208,7 +208,7 @@ namespace CareerQuest.Enemy
         }
         #endregion
 
-        #region ƒS[ƒXƒgUŒ‚”»’f
+        #region ã‚´ãƒ¼ã‚¹ãƒˆæ”»æ’ƒåˆ¤æ–­
         static void GhostDecision(
         ref EnemyData data,
         int index,
@@ -237,14 +237,14 @@ namespace CareerQuest.Enemy
 }
 #endregion
 
-//  “–‚½‚è”»’è”»’f
+//  å½“ãŸã‚Šåˆ¤å®šåˆ¤æ–­
 [BurstCompile]
 public struct CollisionJob : IJobParallelFor
 {
+    [ReadOnly] public NativeArray<EnemyData> Enemies;
     [ReadOnly] public NativeArray<BulletData> Bullets;
-    public int BulletCount;
-    public NativeArray<EnemyData> Enemies;
 
+    public NativeList<BulletHitData>.ParallelWriter HitData;
     public void Execute(int index)
     {
         var enemy = Enemies[index];
@@ -266,30 +266,34 @@ public struct CollisionJob : IJobParallelFor
 
             if (sqrDist <= hitRadius * hitRadius)
             {
-                int newHp = enemy.CurrentHp - proj.Damage;
-                enemy.CurrentHp = (newHp < 0 ? 0 : newHp);
+                HitData.AddNoResize(new BulletHitData 
+                {
+                    BulletIndex = p,
+                    EnemyIndex = index,
+                    Damage = proj.Damage,
+                });
+
+                break;
             }
         }
-
-        Enemies[index] = enemy;
     }
 }
-//  ˆÚ“®‚ÍNavMesh‚ğ—p‚µ‚Ä‚İ‚é‚Ì‚ÅƒRƒƒ“ƒgƒAƒEƒg
-//    //  ˆÚ“®
+//  ç§»å‹•ã¯NavMeshã‚’è©¦ç”¨ã—ã¦ã¿ã‚‹ã®ã§ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆ
+//    //  ç§»å‹•
 //    [BurstCompile]
 //    public struct MoveJob : IJobParallelFor
 //    {
-//        [ReadOnly] public NativeArray<EnemyData> InputDatas; // “Ç‚İæ‚è—p
-//        public NativeArray<EnemyData> OutputDatas;          // ‘‚«‚İ—p
+//        [ReadOnly] public NativeArray<EnemyData> InputDatas; // èª­ã¿å–ã‚Šç”¨
+//        public NativeArray<EnemyData> OutputDatas;          // æ›¸ãè¾¼ã¿ç”¨
 //        public int ActiveEnmeyCount;
-//        [ReadOnly] public NativeArray<Vector3> TreasurePositions;  // ‚¨•óÀ•W
-//        [ReadOnly] public NativeArray<float> TreasureTickness;  // ‚¨•ó‚ÌŒú‚İ
-//        [ReadOnly] public NativeArray<Vector3> PlaeyrPositions;  // ƒvƒŒƒCƒ„[À•W
-//        [ReadOnly] public NativeArray<float> PlayerTickness;  // ƒvƒŒƒCƒ„[‚ÌŒú‚İ
-//        [ReadOnly] public NativeArray<Vector3> WallPositions; // •Ç‚ÌÀ•W
+//        [ReadOnly] public NativeArray<Vector3> TreasurePositions;  // ãŠå®åº§æ¨™
+//        [ReadOnly] public NativeArray<float> TreasureTickness;  // ãŠå®ã®åšã¿
+//        [ReadOnly] public NativeArray<Vector3> PlaeyrPositions;  // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼åº§æ¨™
+//        [ReadOnly] public NativeArray<float> PlayerTickness;  // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®åšã¿
+//        [ReadOnly] public NativeArray<Vector3> WallPositions; // å£ã®åº§æ¨™
 
-//        public float WallAvoidRadius;  // •Ç‚ğ”ğ‚¯n‚ß‚é‹——£
-//        public float EnemyAvoidRadius;  // “G“¯m‚Å”ğ‚¯n‚ß‚é‹——£
+//        public float WallAvoidRadius;  // å£ã‚’é¿ã‘å§‹ã‚ã‚‹è·é›¢
+//        public float EnemyAvoidRadius;  // æ•µåŒå£«ã§é¿ã‘å§‹ã‚ã‚‹è·é›¢
 
 //        public float DeltaTime;
 //        public void Execute(int index)
@@ -335,7 +339,7 @@ public struct CollisionJob : IJobParallelFor
 
 //        }
 
-//        #region ƒS[ƒŒƒ€ˆÚ“®ƒƒWƒbƒN
+//        #region ã‚´ãƒ¼ãƒ¬ãƒ ç§»å‹•ãƒ­ã‚¸ãƒƒã‚¯
 //        static void HandleGolemMovement(
 //        ref EnemyData data,
 //        int index,
@@ -408,7 +412,7 @@ public struct CollisionJob : IJobParallelFor
 //        }
 //        #endregion
 
-//        #region ƒS[ƒXƒgˆÚ“®ƒƒWƒbƒN
+//        #region ã‚´ãƒ¼ã‚¹ãƒˆç§»å‹•ãƒ­ã‚¸ãƒƒã‚¯
 //        static void HandleGhostMovement(
 //        ref EnemyData data,
 //        int index,
@@ -535,7 +539,7 @@ public struct CollisionJob : IJobParallelFor
 //    data.Position += (dir + avoidance) * data.GolemMoveSpeed * DeltaTime;
 //    data.State = (byte)EnemyState.Move;
 //    Datas[index] = data;
-//    ’Tõˆ—‚Ì‘ã‘ÖˆÄ
+//    æ¢ç´¢å‡¦ç†ã®ä»£æ›¿æ¡ˆ
 //for (int i = 0; i < PlayerPositions.Length; i++)
 //{
 //    float dist = Vector3.Distance(data.Position, PlayerPositions[i]);

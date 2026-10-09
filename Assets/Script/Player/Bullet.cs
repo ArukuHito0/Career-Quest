@@ -14,7 +14,7 @@ public class Bullet : MonoBehaviour , IBullet
 
     //  ’e‚Ì‘å‚«‚³(“–‚½‚è”»’è—p)
     [SerializeField] private float tickness = 0.5f;
-
+    bool _isActive = true;
 
     // ”­ŽË‚µ‚½ˆÊ’u
     private Vector3 startPosition;
@@ -23,7 +23,7 @@ public class Bullet : MonoBehaviour , IBullet
     private Vector3 direction;
 
     public byte Damage { get => (byte)damage;}
-    public bool IsActive { get => true; }
+    public bool IsActive { get => _isActive; set => _isActive = value; }
     public float Tickness { get => tickness; }
     //  ’e‚ÌŒú‚Ý(“–‚½‚è”»’è—p)
     public Vector3 Position { get => this.transform.position; }
@@ -47,8 +47,8 @@ public class Bullet : MonoBehaviour , IBullet
         // ”­ŽË’n“_‚©‚ç‚Ì‹——£‚ðŒvŽZ
         float distance = Vector3.Distance(startPosition, transform.position);
 
-        // Å‘å‹——£‚Ü‚Å”ò‚ñ‚¾‚çíœ
-        if (distance >= maxDistance)
+        // Å‘å‹——£‚Ü‚Å”ò‚ñ‚¾‚çíœsdd
+        if (distance >= maxDistance || _isActive == false)
         {
             Destroy(gameObject);
         }

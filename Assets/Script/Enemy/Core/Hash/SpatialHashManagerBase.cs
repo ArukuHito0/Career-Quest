@@ -1,4 +1,3 @@
-using CareerQuest.Core;
 using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
@@ -19,7 +18,7 @@ namespace CareerQuest.Enemy
 
         [Min(1)] public readonly int girdWidth = 1000;  // マップの横セルの上限
         [Min(1)] public readonly int cellSize = 10;  // 1つのセルの大きさ
-        protected int maxEntitie = 50;  // 敵の数
+        protected int maxEntitie = 500;  // 敵の数
 
         public NativeArray<Vector3> Positions { get => positions; }
         public NativeParallelMultiHashMap<int, int> CellEnemyIndexMap { get => cellEnemyIndexMap; }

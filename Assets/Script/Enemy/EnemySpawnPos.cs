@@ -10,7 +10,7 @@ namespace CareerQuest.Enemy
         public struct EnemySpawnCandidate
         {
             public EnemyID EnemyID;
-            [Min(3f)] public float SpawnInterval;
+            [Min(0.1f)] public float SpawnInterval;
             [Min(0.01f)]public float Percent;
         }
 

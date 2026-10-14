@@ -93,13 +93,13 @@ namespace CareerQuest.Enemy
                 {
                     if (point.Candidates == null || point.Candidates.Length == 0) continue;
 
-                    float interval = point.Candidates[0].SpawnInterval;
+                    float interval = point.SpawnInterval;
 
                     runtimeSpawnPoints.Add(new RuntimeSpawnPoint
                     {
                         Position = point.Position,
                         CurrentTimer = 0f,
-                        TargetInterval = interval,
+                        SpawnInterval = interval,
                         Candidates = point.Candidates
                     });
                 }

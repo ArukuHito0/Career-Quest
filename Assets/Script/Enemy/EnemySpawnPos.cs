@@ -10,7 +10,6 @@ namespace CareerQuest.Enemy
         public struct EnemySpawnCandidate
         {
             public EnemyID EnemyID;
-            [Min(0.1f)] public float SpawnInterval;
             [Min(0.01f)]public float Percent;
         }
 
@@ -18,6 +17,7 @@ namespace CareerQuest.Enemy
         public struct SpawnPointData
         {
             public Vector3 Position;  // スポーン座標
+            [Min(0.1f)] public float SpawnInterval;
             public EnemySpawnCandidate[] Candidates;  // この座標で湧く可能性がある敵たちのリスト
         }
 
@@ -28,7 +28,7 @@ namespace CareerQuest.Enemy
     {
         public Vector3 Position;
         public float CurrentTimer;
-        public float TargetInterval;
+        public float SpawnInterval;
         public EnemySpawnData.EnemySpawnCandidate[] Candidates;
     }
 }

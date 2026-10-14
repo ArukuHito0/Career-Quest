@@ -28,7 +28,7 @@ namespace CareerQuest.Enemy
                 var pointData = runtimeSpawnPoints[i];
                 pointData.CurrentTimer += deltaTime;
 
-                if (pointData.CurrentTimer >= pointData.TargetInterval)
+                if (pointData.CurrentTimer >= pointData.SpawnInterval)
                 {
                     pointData.CurrentTimer = 0f;
 

@@ -13753,6 +13753,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 513373725462831706, guid: aacec388a1b2fe349ba547ad90e335e3, type: 3}
     - target: {fileID: 9174219508056468152, guid: 91738bc4260699e489dd31bd1cf5defa, type: 3}
+      propertyPath: _golemPrefab
+      value: 
+      objectReference: {fileID: 5436271437161806311, guid: 98b684fb40f5fd647a0509e97f3392cb, type: 3}
+    - target: {fileID: 9174219508056468152, guid: 91738bc4260699e489dd31bd1cf5defa, type: 3}
       propertyPath: _enemyController
       value: 
       objectReference: {fileID: 0}

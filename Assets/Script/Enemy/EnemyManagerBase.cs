@@ -87,9 +87,9 @@ namespace CareerQuest.Enemy
                 defaultCapacity: 50
             );
 
-            if (spawnPos != null && spawnPos.SpawnPositions != null)
+            if (spawnPos != null && spawnPos.SpawnPoints != null)
             {
-                foreach (var point in spawnPos.SpawnPositions)
+                foreach (var point in spawnPos.SpawnPoints)
                 {
                     if (point.Candidates == null || point.Candidates.Length == 0) continue;
 

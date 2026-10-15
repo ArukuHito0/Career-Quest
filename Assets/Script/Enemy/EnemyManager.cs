@@ -145,7 +145,7 @@ namespace CareerQuest.Enemy
 
             if (bulletManager != null && bulletManager.ActiveCount > 0)
             {
-                int maxBullet = bulletManager.ActiveCount * 2;  //  弾が処理中に増える可能性があるので余裕を持たせた
+                int maxBullet = bulletManager.ActiveCount * 3 + activeEnemyEntities.Count;  //  弾が処理中に増える可能性があるので余裕を持たせた
                 var hitData = new NativeList<BulletHitData>(maxBullet, Allocator.TempJob);
                 hitData.Capacity = maxBullet; // 容量を固定
                 var collisionJob = new CollisionJob

@@ -216,7 +216,6 @@ namespace CareerQuest.Enemy
         NativeArray<float> playerTickness
             )
         {
-
             Vector3 toTarget = playerPositions[data.TargetIndex] - data.Position;
             float distSqToTarget = toTarget.sqrMagnitude;
 

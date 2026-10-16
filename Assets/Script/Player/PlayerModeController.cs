@@ -4,12 +4,6 @@ using UnityEngine.AI;
 
 public class PlayerModeController : MonoBehaviour
 {
-    // 護衛モードに変更するキー
-    [SerializeField] private Key escortKey = Key.Q;
-
-    // 運搬モードに変更するキー
-    [SerializeField] private Key carryKey = Key.W;
-
     // モード変更範囲
     [SerializeField] private float changeRange = 5f;
 
@@ -51,17 +45,6 @@ public class PlayerModeController : MonoBehaviour
         if (Mouse.current == null)
             return;
 
-        // 護衛モードボタン
-        if (Keyboard.current[escortKey].wasPressedThisFrame)
-        {
-            StartModeSelection(PlayerStateManager.PlayerMode.Escort);
-        }
-
-        // 運搬モードボタン
-        if (Keyboard.current[carryKey].wasPressedThisFrame)
-        {
-            StartModeSelection(PlayerStateManager.PlayerMode.Carry);
-        }
 
         // モード変更中
         if (isSelecting)
@@ -79,6 +62,19 @@ public class PlayerModeController : MonoBehaviour
                     rangeMarker.gameObject.SetActive(false);
             }
         }
+    }
+
+    // 護衛モードボタンが押された時
+    public void OnEscortButtonClicked()
+    {
+        Debug.Log("escortボタンが押された");
+        StartModeSelection(PlayerStateManager.PlayerMode.Escort);
+    }
+
+    // 運搬モードボタンが押された時
+    public void OnCarryButtonClicked()
+    {
+        StartModeSelection(PlayerStateManager.PlayerMode.Carry);
     }
 
     // モード選択を開始

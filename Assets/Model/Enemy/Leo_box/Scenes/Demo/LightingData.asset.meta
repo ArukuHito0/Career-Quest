@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 6afc4430bf2a10e40a378346ce2cf860
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 112000000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 241264
+  packageName: Leo Box
+  packageVersion: 1.0
+  assetPath: Assets/Leo_box/Scenes/Demo/LightingData.asset
+  uploadId: 548746

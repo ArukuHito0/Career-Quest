@@ -45,8 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CareerQuest.Enemy.EnemyManager
   spawnPos: {fileID: 11400000, guid: 5d0c1cf1e5231934f8905f7c005282d3, type: 2}
-  _golemPrefab: {fileID: 8423803652305188634, guid: b706007c8ebaf7f4e94981df3748c1a5, type: 3}
-  _ghostPrefab: {fileID: 8182853143163855641, guid: 190a8b3e39070d146b27d2a218d447ee, type: 3}
-  maxEnemyCount: 70
+  _golemPrefab: {fileID: 5436271437161806311, guid: 98b684fb40f5fd647a0509e97f3392cb, type: 3}
+  _ghostPrefab: {fileID: 513373725462831706, guid: aacec388a1b2fe349ba547ad90e335e3, type: 3}
+  maxEnemyCount: 700
   _enemyStatHolder: {fileID: 11400000, guid: 7f9e2c734edbed94ea356417da6829b5, type: 2}
-  testPos1: {fileID: 0}

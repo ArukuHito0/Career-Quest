@@ -1,34 +1,62 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 namespace CareerQuest.Enemy
 {
     [CreateAssetMenu(fileName = "EnemySpawnData", menuName = "Game/Enemy/SpawnData")]
     public sealed class EnemySpawnData : ScriptableObject
     {
-        //  —N‚­“G‚ÌŒó•â‚ÆŠm—¦
+        //  æ¹§ãæ•µã®å€™è£œã¨ç¢ºç‡
         [System.Serializable]
         public struct EnemySpawnCandidate
         {
             public EnemyID EnemyID;
-            [Min(3f)] public float SpawnInterval;
             [Min(0.01f)]public float Percent;
         }
 
         [System.Serializable]
-        public struct SpawnPointData
+        public struct SpawnPoint
         {
-            public Vector3 Position;  // ƒXƒ|[ƒ“À•W
-            public EnemySpawnCandidate[] Candidates;  // ‚±‚ÌÀ•W‚Å—N‚­‰Â”\«‚ª‚ ‚é“G‚½‚¿‚ÌƒŠƒXƒg
+            public Vector3 Position;  // ã‚¹ãƒãƒ¼ãƒ³åº§æ¨™
+            [Min(0.1f)] public float SpawnInterval;
+            public EnemySpawnCandidate[] Candidates;  // ã“ã®åº§æ¨™ã§æ¹§ãå¯èƒ½æ€§ãŒã‚ã‚‹æ•µãŸã¡
         }
 
-        public SpawnPointData[] SpawnPositions;
+        public SpawnPoint[] SpawnPoints;
+
+#if UNITY_EDITOR
+        void OnValidate()
+        {
+            if (SpawnPoints == null) return;
+
+            for (int i = 0; i < SpawnPoints.Length; i++)
+            {
+                if (SpawnPoints[i].SpawnInterval < 0.1f)
+                {
+                    SpawnPoints[i].SpawnInterval = 0.1f;
+                }
+
+                if (SpawnPoints[i].Candidates != null)
+                {
+                    for (int j = 0; j < SpawnPoints[i].Candidates.Length; j++)
+                    {
+                        if (SpawnPoints[i].Candidates[j].Percent < 0.01f)
+                        {
+                            var candidate = SpawnPoints[i].Candidates[j];
+                            candidate.Percent = 0.01f;
+                            SpawnPoints[i].Candidates[j] = candidate;
+                        }
+                    }
+                }
+            }
+        }
+#endif
     }
 
     public struct RuntimeSpawnPoint
     {
         public Vector3 Position;
         public float CurrentTimer;
-        public float TargetInterval;
+        public float SpawnInterval;
         public EnemySpawnData.EnemySpawnCandidate[] Candidates;
     }
 }

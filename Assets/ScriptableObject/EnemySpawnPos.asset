@@ -13,17 +13,8 @@ MonoBehaviour:
   m_Name: EnemySpawnPos
   m_EditorClassIdentifier: Assembly-CSharp::CareerQuest.Enemy.EnemySpawnPos
   SpawnPoints:
-  - Position: {x: -4.1363115, y: 6, z: -58.772274}
-    SpawnInterval: 2.05
+  - Position: {x: 0, y: 13.263888, z: -66.96295}
+    SpawnInterval: 0.1
     Candidates:
     - EnemyID: 1
-      Percent: 50
-    - EnemyID: 1
-      Percent: 50
-    - EnemyID: 1
-      Percent: 50
-  - Position: {x: 4.696968, y: 12.705996, z: -66.73736}
-    SpawnInterval: 3.78
-    Candidates:
-    - EnemyID: 0
       Percent: 0.01

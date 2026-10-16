@@ -141,8 +141,6 @@ namespace CareerQuest.Enemy
         [ReadOnly] public NativeArray<Vector3> PlaeyrPositions;  // プレイヤー座標
         [ReadOnly] public NativeArray<float> PlayerTickness;  // プレイヤーの厚み
 
-        public float EnemyAvoidRadius;  // 敵同士で避け始める距離
-
         public float DeltaTime;
         public void Execute(int index)
         {

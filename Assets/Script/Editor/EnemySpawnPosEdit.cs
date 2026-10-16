@@ -1,19 +1,42 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using System.Collections.Generic;
+using UnityEditorInternal;
 
 namespace CareerQuest.Enemy
 {
+    //  スポーンデータのSOをGUIで操作できるようにするクラス
     [CustomEditor(typeof(EnemySpawnData))]
     public sealed class EnemySpawnPosEdit : Editor
     {
-        SerializedProperty spawnPointsProp;
-        int selectedIndex = -1;
-        Dictionary<int, float> elementHeights = new Dictionary<int, float>();
+        ReorderableList _reorderableList;
 
         void OnEnable()
         {
-            spawnPointsProp = serializedObject.FindProperty("SpawnPoints");
+            _reorderableList = new ReorderableList(
+                serializedObject,
+                serializedObject.FindProperty("SpawnPoints"),
+                true, true, true, true
+                );
+
+            _reorderableList.drawHeaderCallback = (Rect rect) => {
+                EditorGUI.LabelField(rect, "Spawn Points");
+            };
+
+            _reorderableList.drawElementCallback = (Rect rect, int index, bool isActive, bool isFocused) => {
+                var element = _reorderableList.serializedProperty.GetArrayElementAtIndex(index);
+                rect.y += 2;
+                EditorGUI.PropertyField(
+                    new Rect(rect.x, rect.y, rect.width, EditorGUI.GetPropertyHeight(element, true)),
+                    element,
+                    true
+                );
+            };
+
+            _reorderableList.elementHeightCallback = (int index) => {
+                var element = _reorderableList.serializedProperty.GetArrayElementAtIndex(index);
+                return EditorGUI.GetPropertyHeight(element, true) + 6;
+            };
+
             SceneView.duringSceneGui += OnSceneGUI;
         }
 
@@ -26,47 +49,7 @@ namespace CareerQuest.Enemy
         {
             serializedObject.Update();
 
-            for (int i = 0; i < spawnPointsProp.arraySize; i++)
-            {
-                var elementProp = spawnPointsProp.GetArrayElementAtIndex(i);
-
-                if (i == selectedIndex)
-                {
-                    Rect startCursorRect = EditorGUILayout.GetControlRect(false, 0);
-
-                    float heightToDraw = elementHeights.ContainsKey(i) ? elementHeights[i] : 60f;
-                    EditorGUI.DrawRect(
-                        new Rect(startCursorRect.x - 2, startCursorRect.y, startCursorRect.width + 4, heightToDraw),
-                        new Color(0.24f, 0.48f, 0.90f, 0.3f)
-                    );
-                }
-
-                Rect totalRect = EditorGUILayout.BeginVertical();
-                EditorGUI.BeginChangeCheck();
-                EditorGUILayout.PropertyField(elementProp, true);
-                if (EditorGUI.EndChangeCheck())
-                {
-                    selectedIndex = i;
-                }
-                EditorGUILayout.EndVertical();
-
-                if (Event.current.type == EventType.Repaint)
-                {
-                    elementHeights[i] = totalRect.height;
-                }
-
-                if (
-                    Event.current != null 
-                    && Event.current.type == EventType.MouseDown
-                    && totalRect.Contains(Event.current.mousePosition)
-                    )
-                {
-                    selectedIndex = i;
-                    Repaint();
-                }
-
-                EditorGUILayout.Space(5);
-            }
+            _reorderableList.DoLayoutList();
 
             serializedObject.ApplyModifiedProperties();
         }
@@ -76,6 +59,8 @@ namespace CareerQuest.Enemy
             EnemySpawnData spawnData = (EnemySpawnData)target;
             if (spawnData == null || spawnData.SpawnPoints == null) return;
 
+            int selectedIndex = _reorderableList.index;
+
             for (int i = 0; i < spawnData.SpawnPoints.Length; i++)
             {
                 EditorGUI.BeginChangeCheck();
@@ -83,7 +68,7 @@ namespace CareerQuest.Enemy
                 bool isSelected = (i == selectedIndex);
 
                 Handles.color = isSelected ? Color.red : Color.cyan;
-                float sphereSize = isSelected ? 0.8f : 0.4f;
+                float sphereSize = isSelected ? 0.7f : 0.4f;
                 Handles.SphereHandleCap(
                     0,
                     spawnData.SpawnPoints[i].Position,
@@ -102,15 +87,13 @@ namespace CareerQuest.Enemy
                     Undo.RecordObject(spawnData, "Move Spawn Point");
                     spawnData.SpawnPoints[i].Position = newPosition;
                     EditorUtility.SetDirty(spawnData);
-
-                    selectedIndex = i;
                     Repaint();
                 }
 
                 GUIStyle style = new GUIStyle();
                 style.normal.textColor = isSelected ? Color.red : Color.white;
-                style.fontSize = isSelected ? 16 : 12;
-                style.fontStyle = FontStyle.Bold;
+                style.fontSize = isSelected ? 15 : 12;
+                style.fontStyle = isSelected ? FontStyle.Bold : FontStyle.Normal;
 
                 Handles.Label(spawnData.SpawnPoints[i].Position + Vector3.up * 1f, $"Spawn_{i}", style);
             }

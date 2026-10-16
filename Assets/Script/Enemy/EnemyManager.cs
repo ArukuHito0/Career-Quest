@@ -105,7 +105,6 @@ namespace CareerQuest.Enemy
                 TreasureTickness = treasureHashManager.Ticknesses,
                 PlaeyrPositions = playerHashManager.Positions,
                 PlayerTickness = playerHashManager.Ticknesses,
-                EnemyAvoidRadius = golemEnemyAvoidRadius,
                 DeltaTime = Time.deltaTime
             };
 
@@ -138,10 +137,18 @@ namespace CareerQuest.Enemy
                         activeEnemyEntities[i].Target = activePlayerEntities[targetIndex];
                         activeEnemyEntities[i].SetTarget(playerHashManager.Positions[targetIndex]);
                     }
+                    else if (
+                        activeEnemyEntities[i].ID == EnemyID.Swarm
+                        && targetIndex < playerHashManager.ActiveEntities.Count
+                        )
+                    {
+                        var target = activePlayerEntities[targetIndex];
+                        activeEnemyEntities[i].Target = activePlayerEntities[targetIndex];
+                        activeEnemyEntities[i].SetTarget(playerHashManager.Positions[targetIndex]);
+                    }
                 }
                 MyLogger.Log("“G‚Ìƒ^[ƒQƒbƒgÝ’èŠ®—¹");
             }
-
 
             if (bulletManager != null && bulletManager.ActiveCount > 0)
             {

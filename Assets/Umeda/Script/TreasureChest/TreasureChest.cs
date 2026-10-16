@@ -20,6 +20,9 @@ public class TreasureChest : MonoBehaviour ,ISpatialEntity
     // 最大HPを外部から取得
     public int MaxHealth => maxHealth;
 
+    // HPが0になったことを通知済みかどうか
+    private bool gameOverNotified;
+
     void Awake()
     {
         // 最大HPを現在HPに設定
@@ -31,6 +34,10 @@ public class TreasureChest : MonoBehaviour ,ISpatialEntity
     }
     void Update()
     {
+        // ゲームオーバー通知後は更新を行わない
+        if (gameOverNotified)
+            return;
+
         nearbyEntities.Clear();
 
         int myX = Mathf.FloorToInt(transform.position.x / _hashManager.cellSize);
@@ -57,15 +64,40 @@ public class TreasureChest : MonoBehaviour ,ISpatialEntity
 
             //float dist = Vector3.Distance(transform.position, otherEnemy.transform.position);
         }
+    }
 
-        if (currentHealth < 0)
+    // お宝にダメージを与える
+    public void TakeDamage(int damage)
+    {
+        // 0以下のダメージや、HPがなくなった後のダメージは無視する
+        if (damage <= 0 || currentHealth <= 0)
+            return;
+
+        // HPを減らし、0未満にならないようにする
+        currentHealth = Mathf.Max(0, currentHealth - damage);
+
+        // HPが0になったらゲームオーバーを通知する
+        if (currentHealth <= 0)
         {
-            Destroy(gameObject);
+            NotifyGameOver();
         }
     }
 
-    public void TakeDamage(int damage)
+    // ゲームオーバーを一度だけ通知する
+    private void NotifyGameOver()
     {
-        currentHealth -= damage;
+        if (gameOverNotified)
+            return;
+
+        gameOverNotified = true;
+
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.GameOver();
+        }
+        else
+        {
+            Debug.LogError("GameManagerが見つかりません。シーン内にGameManagerを配置してください。");
+        }
     }
 }

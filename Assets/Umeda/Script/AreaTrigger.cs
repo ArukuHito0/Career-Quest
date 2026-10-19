@@ -1,25 +1,38 @@
 using UnityEngine;
 
-// トリガーとなるコライダーオブジェクトに自動アタッチされる補助クラス
 public class AreaTrigger : MonoBehaviour
 {
-    private ObjectToggler objectToggler;
-    private string targetItemName;
+    private ObjectToggler toggler;
+    private string itemName;
+    private Coroutine buildCoroutine;
 
-    public void Initialize(ObjectToggler toggler, string itemName)
+    public void Initialize(ObjectToggler owner, string name)
     {
-        objectToggler = toggler;
-        targetItemName = itemName;
+        toggler = owner;
+        itemName = name;
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        // 接触したオブジェクトが PlayerInventory を持っているか判定
-        if (other.TryGetComponent<PlayerInventory>(out var playerInventory))
+        if (other.TryGetComponent(out PlayerInventory playerInventory))
         {
-            if (objectToggler != null)
+            if (toggler != null)
             {
-                objectToggler.TryActivateItem(targetItemName, playerInventory);
+                // エリアに入っている間、木材を自動で消費して組み立てるコルーチンを開始
+                buildCoroutine = StartCoroutine(toggler.StartBuildingRoutine(itemName, playerInventory));
+            }
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.GetComponent<PlayerInventory>() != null)
+        {
+            // エリアから出たら納品を停止
+            if (buildCoroutine != null)
+            {
+                StopCoroutine(buildCoroutine);
+                buildCoroutine = null;
             }
         }
     }

@@ -1,25 +1,40 @@
+
 using UnityEngine;
 
 public class GameOverUI : MonoBehaviour
 {
-    [Header("ゲームオーバー表示")]
+    [Header("ゲームオーバーUI")]
     [SerializeField] private GameObject gameOverPanel;
+
+    [Header("ゲームクリアUI")]
+    [SerializeField] private GameObject gameClearPanel;
 
     private void Awake()
     {
-        // ゲームオーバー画面を非表示にしておく
-        if ((gameOverPanel != null))
-        {
+        // 最初はゲームオーバーUIを非表示にする
+        if (gameOverPanel != null)
             gameOverPanel.SetActive(false);
-        }
+
+        // 最初はゲームクリアUIを非表示にする
+        if (gameClearPanel != null)
+            gameClearPanel.SetActive(false);
     }
 
-    // ゲームオーバー画面を表示する
-    public void Show()
+    // ゲームオーバーUIを表示する
+    public void ShowGameOver()
     {
         if (gameOverPanel != null)
         {
             gameOverPanel.SetActive(true);
+        }
+    }
+
+    // ゲームクリアUIを表示する
+    public void ShowGameClear()
+    {
+        if (gameClearPanel != null)
+        {
+            gameClearPanel.SetActive(true);
         }
     }
 }

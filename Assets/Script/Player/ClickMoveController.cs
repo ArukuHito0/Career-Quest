@@ -1,6 +1,9 @@
+
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
+using System.Collections.Generic;
 
 public class ClickMoveController : MonoBehaviour
 {
@@ -16,6 +19,9 @@ public class ClickMoveController : MonoBehaviour
     // クリック位置を表示するマーカー
     [SerializeField] private Transform clickMarker;
 
+    // UI判定用のリスト
+    private readonly List<RaycastResult> uiResults = new();
+
     private void Start()
     {
         if (mainCamera == null)
@@ -24,26 +30,53 @@ public class ClickMoveController : MonoBehaviour
 
     private void Update()
     {
-        // マウスがない場合は何もしない
         if (Mouse.current == null)
             return;
 
-        // 左クリック中
-        if (Mouse.current.leftButton.isPressed)
-            ClickMove();
+        // 左クリックした瞬間だけ判定する
+        if (!Mouse.current.leftButton.isPressed)
+            return;
+
+        // クリック位置にUIがあれば移動しない
+        if (IsPointerOverUI())
+            return;
+
+        ClickMove();
+    }
+
+    // マウス位置にUIがあるか確認
+    private bool IsPointerOverUI()
+    {
+        if (EventSystem.current == null)
+            return false;
+
+        PointerEventData pointerData = new PointerEventData(EventSystem.current);
+        pointerData.position = Mouse.current.position.ReadValue();
+
+        uiResults.Clear();
+        EventSystem.current.RaycastAll(pointerData, uiResults);
+
+        // UI上のクリックだけを判定する
+        foreach (RaycastResult result in uiResults)
+        {
+            if (result.module is UnityEngine.UI.GraphicRaycaster)
+                return true;
+        }
+
+        return false;
     }
 
     // クリックした場所を目的地にする
     private void ClickMove()
     {
-        // マウス位置からRayを飛ばす
+        if (mainCamera == null)
+            return;
+
         Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
 
-        // Rayが何にも当たらなければ何もしない
         if (!Physics.Raycast(ray, out RaycastHit hit))
             return;
 
-        // 当たった場所からNavMesh上の位置を探す
         if (!NavMesh.SamplePosition(hit.point, out NavMeshHit navHit, 2f, NavMesh.AllAreas))
             return;
 

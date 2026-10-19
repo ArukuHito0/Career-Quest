@@ -16,8 +16,14 @@ public class GameManager : MonoBehaviour
     [Header("UI設定")]
     [SerializeField] private GameOverUI gameOverUI;
 
+    // ゲームクリア処理が実行済みかどうか
+    public bool IsGameClear { get; private set; }
+
     // ゲームオーバー処理が実行済みかどうか
     public bool IsGameOver { get; private set; }
+
+    // クリアとゲームオーバーのどちらかが確定したか
+    public bool IsGameEnded => IsGameClear || IsGameOver;
 
     private void Awake()
     {
@@ -33,11 +39,11 @@ public class GameManager : MonoBehaviour
 
     public void GameOver()
     {
-        // すでにゲームオーバーなら、処理を繰り返さない
-        if (IsGameOver)
+        // すでにクリアかゲームオーバーなら、処理を繰り返さない
+        if (IsGameEnded)
             return;
 
-        // シーン名が未設定ならエラーを表示して終了
+        // シーン名が設定されているか確認する
         if (string.IsNullOrWhiteSpace(resultSceneName))
         {
             Debug.LogError("GameManager:リザルトシーン名が設定されていません");
@@ -49,30 +55,61 @@ public class GameManager : MonoBehaviour
         // ゲームオーバー画面を表示する
         if (gameOverUI != null)
         {
-            gameOverUI.Show();
+            gameOverUI.ShowGameClear();
         }
 
-        // ゲーム全体の時間を止める
-        Time.timeScale = 0;
+        EndGame();
+    }
 
-        // シーン遷移を行う
+    // ゲームクリア処理を開始
+    public void GameClear()
+    {
+        // すでにクリアかゲームオーバーなら、処理を繰り返さない
+        if (IsGameEnded)
+            return;
+
+        // シーン名が設定されているか確認する
+        if (string.IsNullOrWhiteSpace(resultSceneName))
+        {
+            Debug.LogError("GameManager:リザルトシーン名が設定されていません");
+            return;
+        }
+
+        IsGameClear = true;
+        Debug.Log("ゲームクリア");
+        
+        // ゲームクリア画面を表示する
+        if (gameOverUI != null)
+        {
+            gameOverUI.ShowGameOver();
+        }
+
+        EndGame();
+    }
+
+    // ゲームを終了し、リザルトシーンへ遷移する
+    private void EndGame()
+    {
+        // ゲーム内の時間を停止する
+        Time.timeScale = 0f;
+
+        // シーン遷移処理
         StartCoroutine(LoadResultSceneAfterDelay());
     }
 
-    // 指定秒数待ってからリザルトシーンを読み込む
     private IEnumerator LoadResultSceneAfterDelay()
     {
         // 指定した時間待機する
         yield return new WaitForSecondsRealtime(Mathf.Max(0f, resultSceneDelay));
 
-        // 次のシーンが停止状態にならないように時間を元に戻す
+        // 停止した時間を元に戻す
         Time.timeScale = 1f;
 
-        // リザルトシーンを読み込む
+        // シーンを読み込む
         SceneManager.LoadScene(resultSceneName);
     }
 
-    private void OnDestroy()
+private void OnDestroy()
     {
         // このインスタンスが登録中のものなら解除する
         if (Instance == this)

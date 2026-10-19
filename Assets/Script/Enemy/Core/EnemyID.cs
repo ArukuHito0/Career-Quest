@@ -5,5 +5,6 @@ namespace CareerQuest.Enemy
     {
         Golem = 0,  // ゴーレム
         Ghost = 1,  // ゴースト
+        Swarm = 2,  // スワーム
     }
 }

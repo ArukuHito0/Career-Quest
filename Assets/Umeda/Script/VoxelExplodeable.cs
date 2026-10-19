@@ -15,6 +15,16 @@ public class VoxelExplodeable : MonoBehaviour
     [Tooltip("縮小時間")]
     public float shrinkDuration = 0.5f;
 
+    void Start()
+    {
+        // 分裂前は動かないように、Rigidbodyがついている場合はKinematicにする
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = true;
+        }
+    }
+
     // 爆弾などの外部から呼び出される破壊トリガー用メソッド
     public void TriggerExplosion(Vector3 explosionCenter)
     {
@@ -61,7 +71,6 @@ public class VoxelExplodeable : MonoBehaviour
 
                     Rigidbody rb = part.AddComponent<Rigidbody>();
                     rb.mass = voxelSize * voxelSize * voxelSize;
-                    // 爆弾の中心位置を基準に爆発力を加える
                     rb.AddExplosionForce(explosionForce, explosionCenter, explosionRadius, 0.5f);
 
                     manager.RegisterVoxel();

@@ -7,7 +7,6 @@ public class PlayerInventory : MonoBehaviour
     public Transform stackPoint;        // 背中の積み上げ起点
     public float logHeight = 0.25f;     // 木材1本あたりの厚み
     public float flyDuration = 0.25f;   // 積み上がる時の時間
-    public GameObject logPrefab;        // ドロップ時に生成する木材プレハブ（未設定なら自動生成用）
 
     [HideInInspector]
     public List<GameObject> stackedLogs = new List<GameObject>();
@@ -23,10 +22,9 @@ public class PlayerInventory : MonoBehaviour
 
     void Update()
     {
-        // プレイヤーの状態管理が存在する場合
+        // 運搬モード（Carry）ではない、または着替え中・お化け状態などの場合、持てないため全ドロップ
         if (stateManager != null)
         {
-            // 運搬モード（Carry）ではない、または着替え中・お化け状態などの場合、木を持てないようにして全ドロップ
             if (!stateManager.IsCarryMode() || stateManager.IsChanging() || !stateManager.IsAlive())
             {
                 if (stackedLogs.Count > 0)
@@ -37,10 +35,9 @@ public class PlayerInventory : MonoBehaviour
         }
     }
 
-    // 背中に木材を追加（Carryモード中のみ呼ばれる想定）
+    // 背中に木材を追加
     public void AddStackedLog(GameObject logObj)
     {
-        // 念のためCarryモードでなければ即座にドロップ処理へ回す
         if (stateManager != null && !stateManager.IsCarryMode())
         {
             DropSingleLog(logObj);
@@ -70,6 +67,9 @@ public class PlayerInventory : MonoBehaviour
         float elapsed = 0f;
         while (elapsed < flyDuration)
         {
+            // 【重要】アニメーション中にドロップされて親が変わっていたら、即座に中断する
+            if (logObj == null || logObj.transform.parent != stackPoint) yield break;
+
             elapsed += Time.deltaTime;
             float t = elapsed / flyDuration;
 
@@ -81,8 +81,11 @@ public class PlayerInventory : MonoBehaviour
             yield return null;
         }
 
-        logObj.transform.localPosition = targetPos;
-        logObj.transform.localRotation = Quaternion.identity;
+        if (logObj != null && logObj.transform.parent == stackPoint)
+        {
+            logObj.transform.localPosition = targetPos;
+            logObj.transform.localRotation = Quaternion.identity;
+        }
     }
 
     // 保持している木材をすべて地面にドロップさせる
@@ -103,9 +106,16 @@ public class PlayerInventory : MonoBehaviour
     {
         if (logObj == null) return;
 
+        // 現在の正確なワールド座標と回転を保持
+        Vector3 currentWorldPos = logObj.transform.position;
+        Quaternion currentWorldRot = logObj.transform.rotation;
+
         // 親子関係を解除
         logObj.transform.SetParent(null);
-        logObj.transform.position = transform.position + Vector3.up * 0.5f + transform.forward * 0.5f;
+
+        // 正しいワールド座標を再適用
+        logObj.transform.position = currentWorldPos;
+        logObj.transform.rotation = currentWorldRot;
 
         // コライダーとRigidbodyを再有効化して地面に落とす
         Collider col = logObj.GetComponent<Collider>();
@@ -116,6 +126,7 @@ public class PlayerInventory : MonoBehaviour
         {
             rb = logObj.AddComponent<Rigidbody>();
         }
+        rb.isKinematic = false;
 
         // 回収済みフラグをリセット（また拾えるようにする）
         if (logObj.TryGetComponent<LogItem>(out var logItem))
@@ -123,8 +134,8 @@ public class PlayerInventory : MonoBehaviour
             logItem.isCollected = false;
         }
 
-        // 前方に少し放り出す
-        Vector3 dropForce = (transform.forward + Vector3.up * 0.5f).normalized * 3.0f;
+        // プレイヤーの前方へ放り出す
+        Vector3 dropForce = (transform.forward + Vector3.up * 0.8f).normalized * 4.0f;
         rb.AddForce(dropForce, ForceMode.Impulse);
     }
 

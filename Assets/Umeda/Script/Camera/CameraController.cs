@@ -7,6 +7,10 @@ public class CameraController : MonoBehaviour
     [Tooltip("移動速度")]
     public float moveSpeed = 10f;
 
+    [Header("ドラッグ移動設定")]
+    [Tooltip("ホイールドラッグによる移動の感度")]
+    public float dragSpeed = 0.05f;
+
     [Header("ズーム設定")]
     [Tooltip("ズーム速度")]
     public float zoomSpeed = 10f;
@@ -21,6 +25,7 @@ public class CameraController : MonoBehaviour
     void Update()
     {
         HandleMove();
+        HandleDragMove(); // 追加: ホイールドラッグ移動
         HandleZoom();
     }
 
@@ -56,12 +61,50 @@ public class CameraController : MonoBehaviour
         transform.position += moveDir * moveSpeed * Time.deltaTime;
     }
 
+    // マウスホイール押し込みドラッグによる移動
+    void HandleDragMove()
+    {
+        if (Mouse.current == null) return;
+
+        // マウス中クリック（ホイール押し込み）が押された瞬間
+        if (Mouse.current.middleButton.wasPressedThisFrame)
+        {
+            // 必要に応じてクリック開始時の処理を入えられます
+        }
+
+        // ホイールが押されている間
+        if (Mouse.current.middleButton.isPressed)
+        {
+            // マウスの移動量（デルタ値）を取得
+            Vector2 delta = Mouse.current.delta.ReadValue();
+
+            if (delta.sqrMagnitude > 0.001f)
+            {
+                // カメラの右方向・前方向を取得してY軸を固定
+                Vector3 right = cam.transform.right;
+                Vector3 forward = cam.transform.forward;
+
+                right.y = 0f;
+                forward.y = 0f;
+
+                right.Normalize();
+                forward.Normalize();
+
+                // 縦ドラッグ(delta.y)で前後移動、横ドラッグ(delta.x)で左右移動
+                // ※マウスを動かした方向と逆にカメラが動く（つかんで動かす感覚）ようにマイナスを掛けています
+                Vector3 moveDelta = (right * -delta.x + forward * -delta.y) * dragSpeed;
+
+                transform.position += moveDelta;
+            }
+        }
+    }
+
     // マウススクロールによるズーム
     void HandleZoom()
     {
         if (Mouse.current == null) return;
 
-        // New Input Systemのスクロール値を取得（環境によって値の大きさが異なるため係数を調整）
+        // New Input Systemのスクロール値を取得
         float scroll = Mouse.current.scroll.ReadValue().y;
         if (Mathf.Abs(scroll) < 0.01f) return;
 

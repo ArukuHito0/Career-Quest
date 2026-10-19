@@ -1,3 +1,4 @@
+using CareerQuest.Core;
 using Unity.VisualScripting;
 using UnityEngine;
 

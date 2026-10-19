@@ -45,7 +45,7 @@ public class PlayerHealth : MonoBehaviour, ISpatialEntity
         currentHealth = maxHealth;
         _hashManager = ServiceLocator.Resolve<PlayerHashManager>();
         _hashManager.Register(this);
-        Tickness = 0.2f;
+        Tickness = 0.7f;
     }
 
     private void Update()

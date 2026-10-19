@@ -3,42 +3,100 @@ using System.Collections;
 
 public class TreeController : MonoBehaviour
 {
-    [Header("倒れる設定")]
+    [Header("木の耐久度設定")]
+    public int maxHealth = 3;             // 倒すまでに必要な削り回数
+    public float chopInterval = 0.4f;     // 削るテンポ（秒）
+    public GameObject logPrefab;          // 飛ばす木材のプレハブ
+
+    [Header("倒れる演出設定")]
     public Transform fallTarget;
-    public float fallDuration = 1.5f;     // 倒れるまでの時間
-    public AnimationCurve fallCurve = AnimationCurve.Linear(0, 0, 1, 1); // 動きのカーブ
+    public float fallDuration = 0.8f;
+    public AnimationCurve fallCurve = AnimationCurve.Linear(0, 0, 1, 1);
+    public GameObject stumpPrefab;        // 切り株のプレハブ
 
-    public GameObject stumpPrefab;
-
+    private int currentHealth;
+    private bool isPlayerInside = false;
     private bool isFalling = false;
+    private Coroutine chopCoroutine;
+
+    void Start()
+    {
+        currentHealth = maxHealth;
+    }
 
     private void OnTriggerEnter(Collider other)
     {
         if (isFalling) return;
 
-        if (other.CompareTag("Player"))
+        // プレイヤーが触れたら削るコルーチンを開始
+        if (other.CompareTag("Player") || other.TryGetComponent<PlayerInventory>(out _))
         {
-            Debug.Log("プレイヤーが近づいたため、木が倒れます！");
-
-            // プレイヤーのインベントリーに木材を追加
-            if (other.TryGetComponent<PlayerInventory>(out var inventory))
+            isPlayerInside = true;
+            if (chopCoroutine == null)
             {
-                inventory.AddWood(1);
+                chopCoroutine = StartCoroutine(ChopRoutine());
             }
-            else
-            {
-                Debug.LogWarning("プレイヤーに PlayerInventory コンポーネントが見つかりません。");
-            }
-
-            StartCoroutine(FallSequence());
         }
     }
 
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player") || other.GetComponent<PlayerInventory>() != null)
+        {
+            isPlayerInside = false;
+            if (chopCoroutine != null)
+            {
+                StopCoroutine(chopCoroutine);
+                chopCoroutine = null;
+            }
+        }
+    }
+
+    // プレイヤーが触れている間、一定間隔で木を削って木材をドロップさせる
+    IEnumerator ChopRoutine()
+    {
+        while (isPlayerInside && currentHealth > 0 && !isFalling)
+        {
+            yield return new WaitForSeconds(chopInterval);
+
+            // 木材プレハブを生成して周囲に弾き飛ばす
+            DropLog();
+
+            currentHealth--;
+
+            // 耐久度が0になったら木を倒す
+            if (currentHealth <= 0)
+            {
+                yield return StartCoroutine(FallSequence());
+                yield break;
+            }
+        }
+        chopCoroutine = null;
+    }
+
+    void DropLog()
+    {
+        if (logPrefab != null)
+        {
+            Vector3 spawnPos = transform.position + Vector3.up * 1.0f;
+            GameObject log = Instantiate(logPrefab, spawnPos, Quaternion.identity);
+
+            Rigidbody rb = log.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                // ランダムな方向にポンと跳ね飛ばす
+                Vector3 randomDir = new Vector3(Random.Range(-1f, 1f), 1.5f, Random.Range(-1f, 1f)).normalized;
+                rb.AddForce(randomDir * 4.0f, ForceMode.Impulse);
+            }
+        }
+    }
+
+    // 木が倒れる演出
     IEnumerator FallSequence()
     {
         isFalling = true;
 
-        Vector3 directionToTarget = fallTarget != long.Equals(null, null) && fallTarget != null
+        Vector3 directionToTarget = fallTarget != null
             ? (fallTarget.position - transform.position).normalized
             : transform.forward;
 
@@ -56,12 +114,14 @@ public class TreeController : MonoBehaviour
             yield return null;
         }
 
+        // 切り株の生成
         if (stumpPrefab != null)
         {
             GameObject stump = Instantiate(stumpPrefab, transform.position, transform.rotation);
             stump.transform.localScale = transform.localScale;
         }
 
+        // 木本体を消去
         Destroy(gameObject);
     }
 }

@@ -47,5 +47,6 @@ MonoBehaviour:
   spawnPos: {fileID: 11400000, guid: 5d0c1cf1e5231934f8905f7c005282d3, type: 2}
   _golemPrefab: {fileID: 5436271437161806311, guid: 98b684fb40f5fd647a0509e97f3392cb, type: 3}
   _ghostPrefab: {fileID: 513373725462831706, guid: aacec388a1b2fe349ba547ad90e335e3, type: 3}
+  _swarmPrefab: {fileID: -8927396537888682006, guid: e7e1cbf1aec268b4da4a0de55563c476, type: 3}
   maxEnemyCount: 700
   _enemyStatHolder: {fileID: 11400000, guid: 7f9e2c734edbed94ea356417da6829b5, type: 2}

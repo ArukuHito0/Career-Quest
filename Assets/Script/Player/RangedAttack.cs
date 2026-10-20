@@ -1,3 +1,4 @@
+using CareerQuest.Core;
 using CareerQuest.Player;
 using UnityEngine;
 
@@ -12,6 +13,7 @@ public class RangedAttack : AttackBase
     // ‰“‹——£UŒ‚
     protected override bool Attack(Transform target)
     {
+        MyLogger.Log("ƒvƒŒƒCƒ„[‰“‹——£UŒ‚");
         // ’e‚â”­Ë’n“_‚ªİ’è‚³‚ê‚Ä‚¢‚È‚¯‚ê‚ÎUŒ‚‚µ‚È‚¢
         if (bulletPrefab == null || firePoint == null)
             return false;

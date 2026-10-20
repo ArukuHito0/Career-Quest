@@ -17,7 +17,7 @@ MonoBehaviour:
     Stat:
       HP: 200
       AttackPower: 5
-      AtackRange: 1
+      AtackRange: 1.5
       AtackCoolDown: 2
       MoveSpeed: 5
       SearchRadius: 30
@@ -28,7 +28,7 @@ MonoBehaviour:
     Stat:
       HP: 70
       AttackPower: 40
-      AtackRange: 1.5
+      AtackRange: 3
       AtackCoolDown: 1
       MoveSpeed: 9
       SearchRadius: 30

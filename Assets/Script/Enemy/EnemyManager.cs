@@ -1,9 +1,9 @@
-using CareerQuest.Core;
-using CareerQuest.Player;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Jobs;
+using CareerQuest.Core;
+using CareerQuest.Player;
 
 namespace CareerQuest.Enemy
 {
@@ -28,7 +28,7 @@ namespace CareerQuest.Enemy
                 var pointData = runtimeSpawnPoints[i];
                 pointData.CurrentTimer += deltaTime;
 
-                if (pointData.CurrentTimer >= pointData.TargetInterval)
+                if (pointData.CurrentTimer >= pointData.SpawnInterval)
                 {
                     pointData.CurrentTimer = 0f;
 
@@ -105,7 +105,6 @@ namespace CareerQuest.Enemy
                 TreasureTickness = treasureHashManager.Ticknesses,
                 PlaeyrPositions = playerHashManager.Positions,
                 PlayerTickness = playerHashManager.Ticknesses,
-                EnemyAvoidRadius = golemEnemyAvoidRadius,
                 DeltaTime = Time.deltaTime
             };
 
@@ -138,16 +137,24 @@ namespace CareerQuest.Enemy
                         activeEnemyEntities[i].Target = activePlayerEntities[targetIndex];
                         activeEnemyEntities[i].SetTarget(playerHashManager.Positions[targetIndex]);
                     }
+                    else if (
+                        activeEnemyEntities[i].ID == EnemyID.Swarm
+                        && targetIndex < playerHashManager.ActiveEntities.Count
+                        )
+                    {
+                        var target = activePlayerEntities[targetIndex];
+                        activeEnemyEntities[i].Target = activePlayerEntities[targetIndex];
+                        activeEnemyEntities[i].SetTarget(playerHashManager.Positions[targetIndex]);
+                    }
                 }
                 MyLogger.Log("敵のターゲット設定完了");
             }
 
-
             if (bulletManager != null && bulletManager.ActiveCount > 0)
             {
-                int maxBullet = bulletManager.ActiveCount;
+                int maxBullet = bulletManager.ActiveCount * 3 + activeEnemyEntities.Count;  //  弾が処理中に増える可能性があるので余裕を持たせた
                 var hitData = new NativeList<BulletHitData>(maxBullet, Allocator.TempJob);
-                hitData.Capacity = maxBullet; // 追加サイズを超えないように容量を固定
+                hitData.Capacity = maxBullet; // 容量を固定
                 var collisionJob = new CollisionJob
                 {
                     Enemies = writeBuffer,

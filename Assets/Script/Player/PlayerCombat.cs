@@ -122,6 +122,6 @@ public class PlayerCombat : MonoBehaviour
     // Sceneƒrƒ…[‚Åõ“G”ÍˆÍ‚ğ•\¦‚·‚é
     private void OnDrawGizmosSelected()
     {
-        Gizmos.DrawWireSphere(transform.position, searchRange);
+        //Gizmos.DrawWireSphere(transform.position, searchRange);
     }
 }

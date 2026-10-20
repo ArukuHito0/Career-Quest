@@ -1,3 +1,4 @@
+using CareerQuest.Core;
 using UnityEngine;
 
 public abstract class AttackBase : MonoBehaviour
@@ -26,6 +27,7 @@ public abstract class AttackBase : MonoBehaviour
     // 攻撃を実行
     public void TryAttack(Transform target)
     {
+
         //ターゲットが存在しない場合は何もしない
         if (target == null)
             return;

@@ -59,7 +59,9 @@ namespace CareerQuest.Enemy
             {
                 InputDatas = readBuffer,
                 TreasurePositions = treasureHashManager.Positions,
-                CellToEntityMap = treasureHashManager.CellEnemyIndexMap,
+                TreasureCellMap = treasureHashManager.CellEnemyIndexMap,
+                PlayerPositions = playerHashManager.Positions,
+                PlayerCellMap = playerHashManager.CellEnemyIndexMap,
                 CellSize = treasureHashManager.cellSize,
                 GridWidth = treasureHashManager.girdWidth,
                 DeltaTime = Time.deltaTime
@@ -80,20 +82,6 @@ namespace CareerQuest.Enemy
                 activeEnemyEntities[i].Target= treasureHashManager.ActiveEntities[readBuffer[i].TargetIndex];
             }
 
-            var searchPlayerJob = new SearchPlayerJob
-            {
-                InputDatas = readBuffer,
-                PlayerPositions = playerHashManager.Positions,
-                CellToEntityMap = playerHashManager.CellEnemyIndexMap,
-                CellSize = playerHashManager.cellSize,
-                GridWidth = playerHashManager.girdWidth,
-                DeltaTime = Time.deltaTime
-            };
-
-            JobHandle searchPlayerHandle = searchPlayerJob.Schedule(activeEnemyEntities.Count, 64, searchTreasureHandle);
-
-            JobHandle combinedSearchHandle = JobHandle.CombineDependencies(searchTreasureHandle, searchPlayerHandle);
-            combinedSearchHandle.Complete();
             MyLogger.Log("é¸àÕíTçıäÆóπ");
 
             //  çUåÇîªífÉçÉWÉbÉN
@@ -108,7 +96,7 @@ namespace CareerQuest.Enemy
                 DeltaTime = Time.deltaTime
             };
 
-            JobHandle attackDicisionHandle = attackDicisionjob.Schedule(activeEnemyEntities.Count, 64, combinedSearchHandle);
+            JobHandle attackDicisionHandle = attackDicisionjob.Schedule(activeEnemyEntities.Count, 64, searchTreasureHandle);
             attackDicisionHandle.Complete();
             
             for (int i = 0; i < activeEnemyEntities.Count; i++)

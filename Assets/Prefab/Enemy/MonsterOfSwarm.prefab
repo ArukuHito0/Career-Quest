@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 512220151032414658}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: animal_boxTail2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -41,7 +41,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 465271766611228036}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: animal_boxTail2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -73,7 +73,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7320429789600670458}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: animal_boxTail3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -104,7 +104,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7250363661505045563}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: animal_boxTail7
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -136,7 +136,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3677046217760970917}
   - component: {fileID: 8180649099892580724}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: lion
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -241,7 +241,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4723315935676063706}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: animal_box
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -272,7 +272,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4985953991717107247}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: animal_boxTail4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -304,7 +304,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1963098165543669035}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: animal_boxTail6
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -336,7 +336,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8173600763634544750}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: animal_box 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -370,7 +370,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3546580203217340550}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: animal_boxTail1 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -402,7 +402,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8780022627205578725}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: animal_boxTail3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -433,7 +433,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6122820332886489098}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: animal_boxTailear_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -465,7 +465,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1090223042267287198}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: animal_boxTail1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -500,7 +500,7 @@ GameObject:
   - component: {fileID: 9073776719276158644}
   - component: {fileID: 4189617842036963540}
   - component: {fileID: -8927396537888682006}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: MonsterOfSwarm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -594,7 +594,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4181938146770014306}
   - component: {fileID: 5577212200295392049}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: tail_lion
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -699,7 +699,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6810289705762442198}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: animal_boxTail5
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -731,7 +731,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4178954155666695286}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: animal_boxTail2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -763,7 +763,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6839473083285044087}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: animal_boxTail3
   m_TagString: Untagged
   m_Icon: {fileID: 0}

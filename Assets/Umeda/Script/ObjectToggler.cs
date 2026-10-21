@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI; // UIを使うため追加
 
 public class ObjectToggler : MonoBehaviour
 {
@@ -16,14 +17,18 @@ public class ObjectToggler : MonoBehaviour
         public int requiredWoodCount = 10;                // それぞれの橋や建築に必要な木材数
         [HideInInspector] public int currentWoodCount = 0;  // 現在納品された木材数
         public List<Collider> triggerColliders = new List<Collider>();
-        public Transform dropPoint;                       // 納品された木材が吸い込まれる（またはドロップする）位置（未設定ならトリガー中心）
+        public Transform dropPoint;                       // 納品された木材が吸い込まれる位置
+
+        [Header("円形UI設定")]
+        public Image radialFillImage;                     // Image Type が Filled になっている円形バーのImage
+        public GameObject sliderCanvasObject;             // スライダーを含むCanvasオブジェクト（ビルボード用スクリプトを推奨）
     }
 
     public List<ToggleItem> items = new List<ToggleItem>();
 
     [Header("納品・演出設定")]
     public float buildInterval = 0.08f;       // 木材を消費して構築していくテンポ（秒）
-    public GameObject flyingLogPrefab;        // 納品時に背中から飛んでいく木材のプレハブ（省略可）
+    public GameObject flyingLogPrefab;        // 納品時に背中から飛んでいく木材のプレハブ
 
     private void Start()
     {
@@ -62,6 +67,9 @@ public class ObjectToggler : MonoBehaviour
                     item.currentWoodCount = item.requiredWoodCount;
                 }
             }
+
+            // 円形UIの初期化
+            UpdateRadialUI(item);
         }
     }
 
@@ -83,7 +91,10 @@ public class ObjectToggler : MonoBehaviour
                 {
                     targetItem.currentWoodCount++;
 
-                    // 納品位置の決定（dropPointが未設定ならトリガーやターゲットの位置を基準にする）
+                    // 円形UIの進捗を更新
+                    UpdateRadialUI(targetItem);
+
+                    // 納品位置の決定
                     Vector3 targetPos = targetItem.dropPoint != null
                         ? targetItem.dropPoint.position
                         : (targetItem.targetObject != null ? targetItem.targetObject.transform.position : transform.position);
@@ -98,6 +109,12 @@ public class ObjectToggler : MonoBehaviour
                         if (targetItem.targetObject != null)
                         {
                             targetItem.targetObject.SetActive(true);
+                        }
+
+                        // 完成したら円形UIを非表示にする
+                        if (targetItem.sliderCanvasObject != null)
+                        {
+                            targetItem.sliderCanvasObject.SetActive(false);
                         }
 
                         // NavMeshの再計算
@@ -120,13 +137,28 @@ public class ObjectToggler : MonoBehaviour
         }
     }
 
-    // 背中から持っていた木材が、指定した納品場所へ飛んでいって消える（またはドロップする）演出
+    // 円形UI（Fill Amount）を更新するヘルパーメソッド
+    private void UpdateRadialUI(ToggleItem item)
+    {
+        if (item.radialFillImage != null)
+        {
+            // 0〜1の割合に変換してFill Amountに代入
+            float progress = (float)item.currentWoodCount / item.requiredWoodCount;
+            item.radialFillImage.fillAmount = Mathf.Clamp01(progress);
+        }
+
+        // すでに完成している場合はUIを非表示にする
+        if (item.isActive && item.sliderCanvasObject != null)
+        {
+            item.sliderCanvasObject.SetActive(false);
+        }
+    }
+
+    // 背中から持っていた木材が、指定した納品場所へ飛んでいって消える演出
     private IEnumerator FlyLogToBuildPoint(GameObject logObj, Vector3 targetPos, ToggleItem item)
     {
-        // 親子関係を解除してワールド座標で動かす
         logObj.transform.SetParent(null);
 
-        // 当たり判定や物理挙動を無効化
         Rigidbody rb = logObj.GetComponent<Rigidbody>();
         if (rb != null) Destroy(rb);
         Collider col = logObj.GetComponent<Collider>();
@@ -141,7 +173,6 @@ public class ObjectToggler : MonoBehaviour
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
 
-            // 放物線を描きながらターゲット位置へ吸い込まれる
             Vector3 currentPos = Vector3.Lerp(startPos, targetPos, t);
             currentPos.y += Mathf.Sin(t * Mathf.PI) * 1.0f;
 
@@ -149,7 +180,6 @@ public class ObjectToggler : MonoBehaviour
             yield return null;
         }
 
-        // 到着したら木材を消去（またはその場所に積んでいくことも可能）
         Destroy(logObj);
     }
 

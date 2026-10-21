@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: ce90bd3f3b1c536429300eb9c034ab6a
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 241264
+  packageName: Leo Box
+  packageVersion: 1.0
+  assetPath: Assets/Leo_box/Animators/Lion.controller
+  uploadId: 548746

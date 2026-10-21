@@ -47,6 +47,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef2b89151753e6e4a9c1507fba6592ee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TreeController
+  maxHealth: 3
+  chopInterval: 0.4
+  logPrefab: {fileID: 1689035228287724069, guid: a537ece1b10c9b84d987b88135b115b5, type: 3}
   fallTarget: {fileID: 0}
   fallDuration: 1
   fallCurve:
@@ -73,7 +76,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  stumpPrefab: {fileID: 5754130687328390673, guid: cb430bce653aa374a92217da31432f08, type: 3}
+  stumpPrefab: {fileID: 0}
 --- !u!54 &6143471261619189387
 Rigidbody:
   m_ObjectHideFlags: 0

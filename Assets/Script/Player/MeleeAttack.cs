@@ -59,6 +59,6 @@ public class MeleeAttack : AttackBase
     // Sceneƒrƒ…[‚Å‹ßÚUŒ‚”ÍˆÍ‚ğ•\¦‚·‚é
     private void OnDrawGizmosSelected()
     {
-        Gizmos.DrawWireSphere(transform.position, attackRange);
+        //Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 }

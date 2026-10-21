@@ -19,7 +19,6 @@ namespace CareerQuest.Enemy
         ISpatialEntity _target;
 
         public int index;
-        public int CurrentHp;
         public EnemyID ID { get => _id; }
         
         public int Index { get => index; set => index = value; }  // “G”Ô†

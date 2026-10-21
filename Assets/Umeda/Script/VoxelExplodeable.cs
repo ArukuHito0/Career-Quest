@@ -1,9 +1,7 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 using System.Collections;
 
-// 1. メインのクリック処理用クラス
-public class ClickToVoxelize : MonoBehaviour
+public class VoxelExplodeable : MonoBehaviour
 {
     [Header("分割設定")]
     [Tooltip("各ボクセル（破片）の一辺の長さ")]
@@ -17,50 +15,23 @@ public class ClickToVoxelize : MonoBehaviour
     [Tooltip("縮小時間")]
     public float shrinkDuration = 0.5f;
 
-    [Header("プレイヤー検知設定")]
-    public Transform player;             // 手動設定用（空でもタグで自動取得します）
-    public float detectionDistance = 3f; // プレイヤーが近づいたと判定する距離
-
-
-    void Update()
+    void Start()
     {
-        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+        // 分裂前は動かないように、Rigidbodyがついている場合はKinematicにする
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
         {
-            Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit))
-            {
-                if (hit.transform == this.transform)
-                {
-                    DivideIntoVoxels();
-                }
-            }
-        }
-
-        // player変数にアサインされていない、またはシーン内で見つからない場合に備えてタグから取得
-        Transform targetPlayer = player;
-        if (targetPlayer == null)
-        {
-
-            GameObject playerObj = GameObject.FindWithTag("Player");
-            if (playerObj != null)
-            {
-                targetPlayer = playerObj.transform;
-            }
-        }
-
-        // プレイヤーが見つかっていれば距離を測定
-        if (targetPlayer != null)
-        {
-            float distanceToPlayer = Vector3.Distance(transform.position, targetPlayer.position);
-            if (distanceToPlayer <= detectionDistance)
-            {
-                DivideIntoVoxels();
-            }
+            rb.isKinematic = true;
         }
     }
 
-    private void DivideIntoVoxels()
+    // 爆弾などの外部から呼び出される破壊トリガー用メソッド
+    public void TriggerExplosion(Vector3 explosionCenter)
+    {
+        DivideIntoVoxels(explosionCenter);
+    }
+
+    private void DivideIntoVoxels(Vector3 explosionCenter)
     {
         Bounds bounds = GetComponent<Renderer>().bounds;
         Vector3 size = bounds.size;
@@ -100,7 +71,7 @@ public class ClickToVoxelize : MonoBehaviour
 
                     Rigidbody rb = part.AddComponent<Rigidbody>();
                     rb.mass = voxelSize * voxelSize * voxelSize;
-                    rb.AddExplosionForce(explosionForce, transform.position, explosionRadius, 0.5f);
+                    rb.AddExplosionForce(explosionForce, explosionCenter, explosionRadius, 0.5f);
 
                     manager.RegisterVoxel();
                     part.AddComponent<VoxelSelfDestruct>().Initialize(destroyTime, shrinkDuration, manager);
@@ -111,7 +82,7 @@ public class ClickToVoxelize : MonoBehaviour
     }
 }
 
-// 2. 親オブジェクトの管理クラス (ClickToVoxelizeの外側)
+// 親オブジェクトの管理クラス
 public class VoxelContainerManager : MonoBehaviour
 {
     private int activeVoxels = 0;
@@ -123,7 +94,7 @@ public class VoxelContainerManager : MonoBehaviour
     }
 }
 
-// 3. 破片の自律消滅クラス (ClickToVoxelizeの外側)
+// 破片の自律消滅クラス
 public class VoxelSelfDestruct : MonoBehaviour
 {
     private VoxelContainerManager manager;

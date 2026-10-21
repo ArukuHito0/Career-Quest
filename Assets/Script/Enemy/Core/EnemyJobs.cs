@@ -1,7 +1,6 @@
-﻿using System.Threading;
-using Unity.Burst;
-using Unity.Collections;
+﻿using Unity.Collections;
 using Unity.Jobs;
+using Unity.Burst;
 using UnityEngine;
 using CareerQuest.Enemy;
 using CareerQuest.Player;
@@ -14,67 +13,10 @@ namespace CareerQuest.Enemy
     {
         public NativeArray<EnemyData> InputDatas; // 読み取り用
         [ReadOnly] public NativeArray<Vector3> TreasurePositions;  // お宝座標
-        [ReadOnly] public NativeParallelMultiHashMap<int, int> CellToEntityMap;  // <セルID, セル内の宝数>のMap
+        [ReadOnly] public NativeParallelMultiHashMap<int, int> TreasureCellMap;  // <セルID, セル内の宝数>のMap
 
-        public int GridWidth;  // グリッド横幅
-        public float CellSize;  // 1つのセルのサイズ
-        public float DeltaTime;
-
-        public void Execute(int index)
-        {
-            var data = InputDatas[index];
-
-            if (
-                data.ID != EnemyID.Golem ||
-                data.State == (byte)EnemyState.Attack
-                )
-                return;
-
-            float minDistance = float.MaxValue;
-            int nearestIndex = -1;
-
-            int myX = Mathf.FloorToInt(data.Position.x / CellSize);
-            int myZ = Mathf.FloorToInt(data.Position.z / CellSize);
-            int myCellId = myX + (myZ * GridWidth);
-            int sreachCell = (int)(data.GolemSearchRadius / CellSize);
-            //int sreachCell = Mathf.CeilToInt(data.GhostSearchRadius / CellSize);  //  サーチ漏れがなくなるが処理負荷も上がるので実装するときは最適化と一緒にする。
-            for (int dz = -sreachCell; dz <= sreachCell; dz++)
-            {
-                for (int dx = -sreachCell; dx <= sreachCell; dx++)
-                {
-                    int targetCellId = (myX + dx) + ((myZ + dz) * GridWidth);
-
-                    if (CellToEntityMap.TryGetFirstValue(targetCellId, out int entityIndex, out var iterator))
-                    {
-                        do
-                        {
-                            if (entityIndex < 0 || entityIndex >= TreasurePositions.Length)
-                                continue;
-                            float dist = Vector3.Distance(data.Position, TreasurePositions[entityIndex]);
-
-                            if (dist < data.GolemSearchRadius && dist < minDistance)
-                            {
-                                minDistance = dist;
-                                nearestIndex = entityIndex;
-                            }
-
-                        } while (CellToEntityMap.TryGetNextValue(out entityIndex, ref iterator));
-                    }
-                }
-            }
-            data.TargetIndex = nearestIndex;
-            data.State = (byte)EnemyState.Search;
-            InputDatas[index] = data;
-        }
-    }
-
-    //  プレイヤー探索
-    [BurstCompile]
-    public struct SearchPlayerJob : IJobParallelFor
-    {
-        public NativeArray<EnemyData> InputDatas; // 読み取り用
         [ReadOnly] public NativeArray<Vector3> PlayerPositions;  // プレイヤー座標
-        [ReadOnly] public NativeParallelMultiHashMap<int, int> CellToEntityMap;  // <セルID, セル内のプレイヤー>のMap
+        [ReadOnly] public NativeParallelMultiHashMap<int, int> PlayerCellMap;  // <セルID, セル内のプレイヤー>のMap
 
         public int GridWidth;  // グリッド横幅
         public float CellSize;  // 1つのセルのサイズ
@@ -85,50 +27,134 @@ namespace CareerQuest.Enemy
             var data = InputDatas[index];
 
             if (
-                data.ID != EnemyID.Ghost ||
                 data.State == (byte)EnemyState.Attack
                 )
                 return;
 
+            int nearestIndex = -1;
+
+            switch (data.ID)
+            {
+                case EnemyID.Golem:
+                    nearestIndex = SearchTreasure(
+                        data.Position,
+                        data.GolemSearchRadius,
+                        TreasurePositions,
+                        TreasureCellMap,
+                        GridWidth,
+                        CellSize
+                    );
+                    break;
+
+                case EnemyID.Ghost:
+                    nearestIndex = SearchPlayer(
+                        data.Position,
+                        data.GhostSearchRadius,
+                        PlayerPositions,
+                        PlayerCellMap,
+                        GridWidth,
+                        CellSize
+                    );
+                    break;
+            }
+
+            data.TargetIndex = nearestIndex;
+            data.State = (byte)EnemyState.Search;
+            InputDatas[index] = data;
+            
+        }
+
+        static int SearchTreasure(
+                Vector3 myPosition,
+                float searchRadius,
+                NativeArray<Vector3> targetPositions,
+                NativeParallelMultiHashMap<int, int> cellMap,
+                int gridWidth,
+                float cellSize
+                )
+        {
+
+            int myX = Mathf.FloorToInt(myPosition.x / cellSize);
+            int myZ = Mathf.FloorToInt(myPosition.z / cellSize);
+            int myCellId = myX + (myZ * gridWidth);
+            int sreachCell = (int)(searchRadius / cellSize);
+            //int sreachCell = Mathf.CeilToInt(data.GhostSearchRadius / CellSize);  //  サーチ漏れがなくなるが処理負荷も上がるので実装するときは最適化と一緒にする。
+
             float minDistance = float.MaxValue;
             int nearestIndex = -1;
 
-            int myX = Mathf.FloorToInt(data.Position.x / CellSize);
-            int myZ = Mathf.FloorToInt(data.Position.z / CellSize);
-            int myCellId = myX + (myZ * GridWidth);
-
-            int sreachCell = (int)(data.GhostSearchRadius / CellSize);
-            //int sreachCell = Mathf.CeilToInt(data.GhostSearchRadius / CellSize);  //  サーチ漏れがなくなるが処理負荷も上がるので実装するときは最適化と一緒にする。
             for (int dz = -sreachCell; dz <= sreachCell; dz++)
             {
                 for (int dx = -sreachCell; dx <= sreachCell; dx++)
                 {
-                    int targetCellId = (myX + dx) + ((myZ + dz) * GridWidth);
+                    int targetCellId = (myX + dx) + ((myZ + dz) * gridWidth);
 
-                    if (CellToEntityMap.TryGetFirstValue(targetCellId, out int entityIndex, out var iterator))
+                    if (cellMap.TryGetFirstValue(targetCellId, out int entityIndex, out var iterator))
                     {
                         do
                         {
-                            if (entityIndex < 0 || entityIndex >= PlayerPositions.Length)
+                            if (entityIndex < 0 || entityIndex >= targetPositions.Length)
                                 continue;
+                            float dist = Vector3.Distance(myPosition, targetPositions[entityIndex]);
 
-                            float dist = Vector3.Distance(data.Position, PlayerPositions[entityIndex]);
-                            if (dist < data.GhostSearchRadius && dist < minDistance)
+                            if (dist < searchRadius && dist < minDistance)
                             {
                                 minDistance = dist;
                                 nearestIndex = entityIndex;
                             }
 
-                        } while (CellToEntityMap.TryGetNextValue(out entityIndex, ref iterator));
+                        } while (cellMap.TryGetNextValue(out entityIndex, ref iterator));
                     }
                 }
             }
-            data.TargetIndex = nearestIndex;
-            data.State = (byte)EnemyState.Search;
-            InputDatas[index] = data;
+            return nearestIndex;
+        }
+        static int SearchPlayer(
+            Vector3 myPosition,
+            float searchRadius,
+            NativeArray<Vector3> targetPositions,
+            NativeParallelMultiHashMap<int, int> cellMap,
+            int gridWidth,
+            float cellSize
+            )
+        {
+
+            int myX = Mathf.FloorToInt(myPosition.x / cellSize);
+            int myZ = Mathf.FloorToInt(myPosition.z / cellSize);
+            int myCellId = myX + (myZ * gridWidth);
+            int sreachCell = (int)(searchRadius / cellSize);
+            //int sreachCell = Mathf.CeilToInt(data.GhostSearchRadius / CellSize);  //  サーチ漏れがなくなるが処理負荷も上がるので実装するときは最適化と一緒にする。
+
+            float minDistance = float.MaxValue;
+            int nearestIndex = -1;
+
+            for (int dz = -sreachCell; dz <= sreachCell; dz++)
+            {
+                for (int dx = -sreachCell; dx <= sreachCell; dx++)
+                {
+                    int targetCellId = (myX + dx) + ((myZ + dz) * gridWidth);
+
+                    if (cellMap.TryGetFirstValue(targetCellId, out int entityIndex, out var iterator))
+                    {
+                        do
+                        {
+                            if (entityIndex < 0 || entityIndex >= targetPositions.Length)
+                                continue;
+                            float dist = Vector3.Distance(myPosition, targetPositions[entityIndex]);
+
+                            if (dist < searchRadius && dist < minDistance)
+                            {
+                                minDistance = dist;
+                                nearestIndex = entityIndex;
+                            }
+
+                        } while (cellMap.TryGetNextValue(out entityIndex, ref iterator));
+                    }
+                }
+            }
+            return nearestIndex;
         }
     }
-
 
     //  攻撃するか判断
     [BurstCompile]
@@ -140,8 +166,6 @@ namespace CareerQuest.Enemy
         [ReadOnly] public NativeArray<float> TreasureTickness;  // お宝の厚み
         [ReadOnly] public NativeArray<Vector3> PlaeyrPositions;  // プレイヤー座標
         [ReadOnly] public NativeArray<float> PlayerTickness;  // プレイヤーの厚み
-
-        public float EnemyAvoidRadius;  // 敵同士で避け始める距離
 
         public float DeltaTime;
         public void Execute(int index)
@@ -216,7 +240,6 @@ namespace CareerQuest.Enemy
         NativeArray<float> playerTickness
             )
         {
-
             Vector3 toTarget = playerPositions[data.TargetIndex] - data.Position;
             float distSqToTarget = toTarget.sqrMagnitude;
 

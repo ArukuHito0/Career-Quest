@@ -15,6 +15,7 @@ namespace CareerQuest.Enemy
         EnemyHashManager _hashManager;
         
         [SerializeField] EnemyID _id = EnemyID.Golem;
+        public EnemyTarget _tg;
         public EnemyData EnemyData;
         ISpatialEntity _target;
 
@@ -48,6 +49,7 @@ namespace CareerQuest.Enemy
             }
             _navAgent.SetDestination(targetPos);
         }
+
         public void Attack()
         {
             if (_id == EnemyID.Golem)

@@ -1,9 +1,10 @@
+using CareerQuest.Core;
+using CareerQuest.Player;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Jobs;
-using CareerQuest.Core;
-using CareerQuest.Player;
+using static CareerQuest.Enemy.SearchTargetJob;
 
 namespace CareerQuest.Enemy
 {
@@ -55,7 +56,7 @@ namespace CareerQuest.Enemy
                 readBuffer[i] = data;
             };
 
-            var searchTreasureJob = new SearchTreasureJob
+            var searchTargetJob = new SearchTargetJob
             {
                 InputDatas = readBuffer,
                 TreasurePositions = treasureHashManager.Positions,
@@ -67,20 +68,9 @@ namespace CareerQuest.Enemy
                 DeltaTime = Time.deltaTime
             };
 
-            JobHandle searchTreasureHandle = searchTreasureJob.Schedule(activeEnemyEntities.Count, 64);
+            JobHandle searchTargetHandle = searchTargetJob.Schedule(activeEnemyEntities.Count, 64);
 
-            searchTreasureHandle.Complete();
-
-            for (int i = 0; i < activeEnemyEntities.Count; i++)
-            {
-                if (
-                    readBuffer[i].TargetIndex <= -1 ||
-                    readBuffer[i].TargetIndex >= treasureHashManager.ActiveEntities.Count
-                    )
-                    continue;
-
-                activeEnemyEntities[i].Target= treasureHashManager.ActiveEntities[readBuffer[i].TargetIndex];
-            }
+            searchTargetHandle.Complete();
 
             MyLogger.Log("周囲探索完了");
 
@@ -96,18 +86,20 @@ namespace CareerQuest.Enemy
                 DeltaTime = Time.deltaTime
             };
 
-            JobHandle attackDicisionHandle = attackDicisionjob.Schedule(activeEnemyEntities.Count, 64, searchTreasureHandle);
+            JobHandle attackDicisionHandle = attackDicisionjob.Schedule(activeEnemyEntities.Count, 64, searchTargetHandle);
             attackDicisionHandle.Complete();
             
             for (int i = 0; i < activeEnemyEntities.Count; i++)
             {
                 activeEnemyEntities[i].EnemyData = writeBuffer[i];
 
+
                 int targetIndex = writeBuffer[i].TargetIndex;  // 可読性のためのにintに移してます。
+
                 if (targetIndex >= 0)
                 {
                     if (
-                        activeEnemyEntities[i].ID == EnemyID.Golem
+                        activeEnemyEntities[i].EnemyData.Target == EnemyTarget.Treasure
                         && targetIndex < treasureHashManager.ActiveEntities.Count
                         && treasureHashManager.ActiveEntities[targetIndex] != null
                         )
@@ -117,7 +109,7 @@ namespace CareerQuest.Enemy
                         activeEnemyEntities[i].SetTarget(target.transform.position);
                     }
                     else if (
-                        activeEnemyEntities[i].ID == EnemyID.Ghost
+                        activeEnemyEntities[i].EnemyData.Target == EnemyTarget.Players
                         && targetIndex < playerHashManager.ActiveEntities.Count
                         )
                     {
@@ -125,17 +117,8 @@ namespace CareerQuest.Enemy
                         activeEnemyEntities[i].Target = activePlayerEntities[targetIndex];
                         activeEnemyEntities[i].SetTarget(playerHashManager.Positions[targetIndex]);
                     }
-                    else if (
-                        activeEnemyEntities[i].ID == EnemyID.Swarm
-                        && targetIndex < playerHashManager.ActiveEntities.Count
-                        )
-                    {
-                        var target = activePlayerEntities[targetIndex];
-                        activeEnemyEntities[i].Target = activePlayerEntities[targetIndex];
-                        activeEnemyEntities[i].SetTarget(playerHashManager.Positions[targetIndex]);
-                    }
+                    MyLogger.Log("ターゲット設定完了");
                 }
-                MyLogger.Log("敵のターゲット設定完了");
             }
 
             if (bulletManager != null && bulletManager.ActiveCount > 0)

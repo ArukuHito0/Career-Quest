@@ -271,11 +271,11 @@ namespace CareerQuest.Enemy
                     TargetIndex = -1,
 
                     //GhostMoveSpeed = ghostMoveSpeed, 今はNavmeshのスピードを使ってる
-                    GhostAttackPower = stat.AttackPower,
-                    GhostAttackCoolDown = stat.AtackCoolDown,
-                    GhostAttackRange = stat.AtackRange,
-                    GhostSearchRadius = stat.SearchRadius,
-                    GhostTickness = stat.BodyTickness,
+                    SwarmAttackPower = stat.AttackPower,
+                    SwarmAttackCoolDown = stat.AtackCoolDown,
+                    SwarmAttackRange = stat.AtackRange,
+                    SwarmSearchRadius = stat.SearchRadius,
+                    SwarmTickness = stat.BodyTickness,
                 };
             }
 

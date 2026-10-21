@@ -33,7 +33,7 @@ namespace CareerQuest.Enemy
         public float GhostAttackCoolDown;    // UŒ‚ŠÔŠu
         public float GhostEnemyAvoidRadius;  // “G‚ğ”ğ‚¯‚é”ÍˆÍ
 
-        //  -- GhostStatus
+        //  -- SwarmStatus
         public float SwarmMaxHp;             // Å‘å‘Ì—Í
         public float SwarmMoveSpeed;         // ˆÚ“®‘¬“x  ¡‚ÍNavmesh‚ÌmoveSpd‚ğg‚Á‚Ä‚é
         public float SwarmTickness;          // ‘Ì‚ÌŒú‚³

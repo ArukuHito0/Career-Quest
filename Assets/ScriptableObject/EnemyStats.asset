@@ -35,3 +35,14 @@ MonoBehaviour:
       WallAvoidRadius: 2
       EnmeyAvoidRadius: 2
       BodyTickness: 1
+  - ID: 2
+    Stat:
+      HP: 40
+      AttackPower: 20
+      AtackRange: 2.2
+      AtackCoolDown: 0.2
+      MoveSpeed: 9
+      SearchRadius: 30
+      WallAvoidRadius: 2
+      EnmeyAvoidRadius: 2
+      BodyTickness: 1

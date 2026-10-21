@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using CareerQuest.Core;
 
 public class SceneLoader : MonoBehaviour
 {
@@ -8,6 +9,18 @@ public class SceneLoader : MonoBehaviour
 
     public float LoadProgress {  get; private set; }
     public bool IsLoading { get; private set; }
+
+    private void Awake()
+    {
+        ServiceLocator.Register(this);
+
+        DontDestroyOnLoad(this);
+    }
+
+    private void OnDestroy()
+    {
+        ServiceLocator.Unregister(this);
+    }
 
     public void Load(SceneType type)
     {

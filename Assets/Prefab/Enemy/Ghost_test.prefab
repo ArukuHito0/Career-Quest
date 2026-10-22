@@ -316,6 +316,7 @@ GameObject:
   - component: {fileID: 7514827477362739239}
   - component: {fileID: 2268884984197782197}
   - component: {fileID: 513373725462831706}
+  - component: {fileID: 5907018954908045266}
   m_Layer: 8
   m_Name: Ghost_test
   m_TagString: Untagged
@@ -423,6 +424,29 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CareerQuest.Enemy.EnemyController
   _id: 1
   index: 0
+--- !u!136 &5907018954908045266
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3712709169080652455}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.5
+  m_Height: 1
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.5, z: 0}
 --- !u!1 &5632128404631517208
 GameObject:
   m_ObjectHideFlags: 0

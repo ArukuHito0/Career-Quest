@@ -220,7 +220,7 @@ namespace CareerQuest.Enemy
         protected EnemyData CreateInitialEnemyData(EnemyController entity)
         {
             var stat = _enemyStatHolder.GetStat(entity.ID);
-            
+
             if (entity.ID == EnemyID.Golem)
             {
                 return new EnemyData
@@ -240,7 +240,7 @@ namespace CareerQuest.Enemy
                     GolemTickness = stat.BodyTickness,
                 };
             }
-            else if(entity.ID == EnemyID.Golem)
+            else if(entity.ID == EnemyID.Ghost)
             {
                 return new EnemyData
                 {
@@ -278,7 +278,6 @@ namespace CareerQuest.Enemy
                     SwarmTickness = stat.BodyTickness,
                 };
             }
-
         }
     }
 }

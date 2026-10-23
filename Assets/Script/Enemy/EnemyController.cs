@@ -15,7 +15,6 @@ namespace CareerQuest.Enemy
         EnemyHashManager _hashManager;
         
         [SerializeField] EnemyID _id = EnemyID.Golem;
-        public EnemyTarget _tg;
         public EnemyData EnemyData;
         ISpatialEntity _target;
 

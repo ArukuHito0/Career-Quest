@@ -1,4 +1,5 @@
-﻿using CareerQuest.Enemy;
+﻿using CareerQuest.Core;
+using CareerQuest.Enemy;
 using CareerQuest.Player;
 using Unity.Burst;
 using Unity.Collections;

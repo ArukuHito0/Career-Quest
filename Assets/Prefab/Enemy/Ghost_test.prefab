@@ -422,6 +422,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CareerQuest.Enemy.EnemyController
   _id: 1
+  _tg: 0
   index: 0
 --- !u!1 &5632128404631517208
 GameObject:

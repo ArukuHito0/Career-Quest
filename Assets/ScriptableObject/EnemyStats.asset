@@ -21,6 +21,7 @@ MonoBehaviour:
       AtackCoolDown: 2
       MoveSpeed: 5
       SearchRadius: 30
+      GroupVolume: 1
       WallAvoidRadius: 2
       EnmeyAvoidRadius: 0.1
       BodyTickness: 1
@@ -28,10 +29,23 @@ MonoBehaviour:
     Stat:
       HP: 70
       AttackPower: 40
-      AtackRange: 3
+      AtackRange: 1.4
       AtackCoolDown: 1
       MoveSpeed: 9
       SearchRadius: 30
+      GroupVolume: 1
+      WallAvoidRadius: 2
+      EnmeyAvoidRadius: 2
+      BodyTickness: 1
+  - ID: 2
+    Stat:
+      HP: 40
+      AttackPower: 20
+      AtackRange: 1
+      AtackCoolDown: 1
+      MoveSpeed: 9
+      SearchRadius: 30
+      GroupVolume: 5
       WallAvoidRadius: 2
       EnmeyAvoidRadius: 2
       BodyTickness: 1

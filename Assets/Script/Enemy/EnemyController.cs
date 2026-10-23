@@ -51,11 +51,11 @@ namespace CareerQuest.Enemy
 
         public void Attack()
         {
-            if (_id == EnemyID.Golem)
+            if (EnemyData.Target == EnemyTarget.Treasure)
             {
                 AttackTreasure();
             }
-            else if (_id == EnemyID.Ghost)
+            else if (EnemyData.Target == EnemyTarget.Player)
             {
                 AttackPlayer();
             }

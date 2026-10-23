@@ -83,7 +83,6 @@ namespace CareerQuest.Enemy
                 PlayerTickness = playerHashManager.Ticknesses,
                 DeltaTime = Time.deltaTime
             };
-
             JobHandle attackDicisionHandle = attackDicisionjob.Schedule(activeEnemyEntities.Count, 64, searchTargetHandle);
             attackDicisionHandle.Complete();
             
@@ -91,9 +90,7 @@ namespace CareerQuest.Enemy
             {
                 activeEnemyEntities[i].EnemyData = writeBuffer[i];
 
-
-                int targetIndex = writeBuffer[i].TargetIndex;  // ‰Â“Ç«‚Ì‚½‚ß‚Ì‚Éint‚ÉˆÚ‚µ‚Ä‚Ü‚·B
-
+                int targetIndex = writeBuffer[i].TargetIndex;
                 if (targetIndex >= 0)
                 {
                     if (
@@ -107,7 +104,7 @@ namespace CareerQuest.Enemy
                         activeEnemyEntities[i].SetTarget(target.transform.position);
                     }
                     else if (
-                        activeEnemyEntities[i].EnemyData.Target == EnemyTarget.Players
+                        activeEnemyEntities[i].EnemyData.Target == EnemyTarget.Player
                         && targetIndex < playerHashManager.ActiveEntities.Count
                         )
                     {

@@ -134,7 +134,7 @@ namespace CareerQuest.Enemy
                                 {
                                     minDistanceSq = distSq;
                                     nearestIndex = pIndex;
-                                    targetType = EnemyTarget.Players;
+                                    targetType = EnemyTarget.Player;
                                 }
                             } while (playerCellMap.TryGetNextValue(out pIndex, ref pIter));
                         }
@@ -212,7 +212,7 @@ namespace CareerQuest.Enemy
                     }
                 }
                 //  プレイヤー攻撃判断ロジック
-                else if (data.Target == EnemyTarget.Players)
+                else if (data.Target == EnemyTarget.Player)
                 {
                     Vector3 toTarget = PlaeyrPositions[data.TargetIndex] - data.Position;
                     float distSqToTarget = toTarget.sqrMagnitude;

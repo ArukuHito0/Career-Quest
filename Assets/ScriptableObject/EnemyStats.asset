@@ -39,8 +39,8 @@ MonoBehaviour:
     Stat:
       HP: 40
       AttackPower: 20
-      AtackRange: 2.2
-      AtackCoolDown: 0.2
+      AtackRange: 3
+      AtackCoolDown: 1
       MoveSpeed: 9
       SearchRadius: 30
       WallAvoidRadius: 2

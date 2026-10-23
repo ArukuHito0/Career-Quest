@@ -8,40 +8,18 @@ namespace CareerQuest.Enemy
         public EnemyID ID;          // “G‚ÌID
         public EnemyTarget Target;  // –Ú•WID
         public byte State;          // “G‚Ìó‘Ô(EnemyState)
-        public int CurrentHp;       // Œ»İ‚Ì‘Ì—Í
+
+        public int CurrentHp;                // Œ»İ‚Ì‘Ì—Í
+        public int AttackPower;            // UŒ‚—Í
+        public float AttackRange;            // UŒ‚”ÍˆÍ
         public float AttackCoolDown;         // UŒ‚ŠÔŠu
         public float CurrentAttackCoolDown;  // Œ»İ‚ÌUŒ‚ŠÔŠu
-        public Vector3 Position;    // À•W
-        public int TargetIndex;     // ƒ^[ƒQƒbƒg‚ÌIndex
 
-        //  -- GolemStatus
-        public int   GolemMaxHp;             // Å‘å‘Ì—Í
-        public float GolemMoveSpeed;         // ˆÚ“®‘¬“x ¡‚ÍNavmesh‚ÌmoveSpd‚ğg‚Á‚Ä‚é
-        public float GolemSearchRadius;      // ’T’m”ÍˆÍ
-        public float GolemTickness;          // ‘Ì‚ÌŒú‚³
-        public int   GolemAttackPower;       // UŒ‚—Í
-        public float GolemAttackRange;       // UŒ‚”ÍˆÍ
-        public float GolemAttackCoolDown;    // UŒ‚ŠÔŠu
-        public float GolemEnemyAvoidRadius;  // “G‚ğ”ğ‚¯‚é”ÍˆÍ
+        public Vector3 Position;             // À•W
+        public int TargetIndex;              // ƒ^[ƒQƒbƒg‚ÌIndex
+        public float SearchRadius;           // ƒ^[ƒQƒbƒg’Tõ”ÍˆÍ
+        public float BodyTickness;           // ‘Ì‚ÌŒú‚³  
 
-        //  -- GhostStatus
-        public float GhostMaxHp;             // Å‘å‘Ì—Í
-        public float GhostMoveSpeed;         // ˆÚ“®‘¬“x  ¡‚ÍNavmesh‚ÌmoveSpd‚ğg‚Á‚Ä‚é
-        public float GhostTickness;          // ‘Ì‚ÌŒú‚³
-        public float GhostSearchRadius;      // ’T’m”ÍˆÍ
-        public int   GhostAttackPower;       // UŒ‚—Í
-        public float GhostAttackRange;       // ’T’m”ÍˆÍ
-        public float GhostAttackCoolDown;    // UŒ‚ŠÔŠu
-        public float GhostEnemyAvoidRadius;  // “G‚ğ”ğ‚¯‚é”ÍˆÍ
-
-        //  -- SwarmStatus
-        public float SwarmMaxHp;             // Å‘å‘Ì—Í
-        public float SwarmMoveSpeed;         // ˆÚ“®‘¬“x  ¡‚ÍNavmesh‚ÌmoveSpd‚ğg‚Á‚Ä‚é
-        public float SwarmTickness;          // ‘Ì‚ÌŒú‚³
-        public float SwarmSearchRadius;      // ’T’m”ÍˆÍ
-        public int   SwarmAttackPower;       // UŒ‚—Í
-        public float SwarmAttackRange;       // ’T’m”ÍˆÍ
-        public float SwarmAttackCoolDown;    // UŒ‚ŠÔŠu
-        public float SawrmEnemyAvoidRadius;  // “G‚ğ”ğ‚¯‚é”ÍˆÍ
+        public float EnemyDistance;  // “G“¯m‚Ç‚Ì‚­‚ç‚¢‹——£‚ğæ‚é‚©
     }
 }

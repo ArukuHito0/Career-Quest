@@ -226,19 +226,19 @@ namespace CareerQuest.Enemy
                 return new EnemyData
                 {
                     ID = entity.ID,
+                    Target = EnemyTarget.None,
                     State = (byte)EnemyState.Search,
+                    
                     CurrentHp = stat.HP,
+                    AttackPower = stat.AttackPower,
+                    AttackRange = stat.AtackRange,
                     AttackCoolDown = stat.AtackCoolDown,
                     CurrentAttackCoolDown = 0f,
+                    
                     Position = entity.transform.position,
                     TargetIndex = -1,
-
-                    //GolemMoveSpeed = golemMoveSpeed, 今はNavmeshのスピードを使ってる
-                    GolemAttackPower = stat.AttackPower,
-                    GolemAttackCoolDown = stat.AtackCoolDown,
-                    GolemAttackRange = stat.AtackRange,
-                    GolemSearchRadius = stat.SearchRadius,
-                    GolemTickness = stat.BodyTickness,
+                    SearchRadius = stat.SearchRadius,
+                    BodyTickness = stat.BodyTickness,
                 };
             }
             else if(entity.ID == EnemyID.Ghost)
@@ -246,19 +246,19 @@ namespace CareerQuest.Enemy
                 return new EnemyData
                 {
                     ID = entity.ID,
+                    Target = EnemyTarget.None,
                     State = (byte)EnemyState.Search,
+
                     CurrentHp = stat.HP,
+                    AttackPower = stat.AttackPower,
+                    AttackRange = stat.AtackRange,
                     AttackCoolDown = stat.AtackCoolDown,
                     CurrentAttackCoolDown = 0f,
+
                     Position = entity.transform.position,
                     TargetIndex = -1,
-
-                    //GhostMoveSpeed = ghostMoveSpeed, 今はNavmeshのスピードを使ってる
-                    GhostAttackPower = stat.AttackPower,
-                    GhostAttackCoolDown = stat.AtackCoolDown,
-                    GhostAttackRange = stat.AtackRange,
-                    GhostSearchRadius = stat.SearchRadius,
-                    GhostTickness = stat.BodyTickness,
+                    SearchRadius = stat.SearchRadius,
+                    BodyTickness = stat.BodyTickness,
                 };
             }
             else  // Swarm型のステータス
@@ -266,19 +266,19 @@ namespace CareerQuest.Enemy
                 return new EnemyData
                 {
                     ID = entity.ID,
+                    Target = EnemyTarget.None,
                     State = (byte)EnemyState.Search,
+
                     CurrentHp = stat.HP,
+                    AttackPower = stat.AttackPower,
+                    AttackRange = stat.AtackRange,
                     AttackCoolDown = stat.AtackCoolDown,
                     CurrentAttackCoolDown = 0f,
+
                     Position = entity.transform.position,
                     TargetIndex = -1,
-
-                    //GhostMoveSpeed = ghostMoveSpeed, 今はNavmeshのスピードを使ってる
-                    SwarmAttackPower = stat.AttackPower,
-                    SwarmAttackCoolDown = stat.AtackCoolDown,
-                    SwarmAttackRange = stat.AtackRange,
-                    SwarmSearchRadius = stat.SearchRadius,
-                    SwarmTickness = stat.BodyTickness,
+                    SearchRadius = stat.SearchRadius,
+                    BodyTickness = stat.BodyTickness,
                 };
             }
         }

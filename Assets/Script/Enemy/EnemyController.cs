@@ -65,14 +65,14 @@ namespace CareerQuest.Enemy
         {
             MyLogger.Log("お宝攻撃開始");
             TreasureChest treasure = _target as TreasureChest;
-            treasure?.TakeDamage(EnemyData.GolemAttackPower);
+            treasure?.TakeDamage(EnemyData.AttackPower);
         }
 
         void AttackPlayer()
         {
             MyLogger.Log("プレイヤー攻撃開始");
             PlayerHealth playerHelth = _target as PlayerHealth;
-            playerHelth?.TakeDamage(EnemyData.GhostAttackPower);
+            playerHelth?.TakeDamage(EnemyData.AttackPower);
         }
     }
 }

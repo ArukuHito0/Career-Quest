@@ -47,18 +47,10 @@ namespace CareerQuest.Enemy
 
             SearchResult searchResult = new(-1, EnemyTarget.None);
 
-            float serachRadius = 0f;
-            if (data.ID == EnemyID.Golem)
-            { serachRadius = data.GolemSearchRadius; }
-            else if(data.ID == EnemyID.Ghost)
-            { serachRadius = data.GhostSearchRadius; }
-            else if (data.ID == EnemyID.Swarm)
-            { serachRadius = data.SwarmSearchRadius; }
-
             searchResult = SearchNearest(
                 data.ID,
                 data.Position,
-                serachRadius,
+                data.SearchRadius,
                 TreasurePositions,
                 TreasureCellMap,
                 PlayerPositions,
@@ -172,26 +164,6 @@ namespace CareerQuest.Enemy
                     return;
                 }
 
-                #region 攻撃半径などを代入
-                float attackRange = 0f;
-                float bodyTick = 0f;
-                if (data.ID == EnemyID.Golem)
-                {
-                    attackRange = data.GolemAttackRange;
-                    bodyTick = data.GolemTickness;
-                }
-                else if (data.ID == EnemyID.Ghost)
-                {
-                    attackRange = data.GhostEnemyAvoidRadius;
-                    bodyTick = data.GhostTickness;
-                }
-                else if (data.ID == EnemyID.Swarm)
-                {
-                    attackRange = data.SwarmAttackRange;
-                    bodyTick = data.SwarmTickness;
-                }
-                #endregion
-
                 //  宝物攻撃判断ロジック
                 if (data.Target == EnemyTarget.Treasure)
                 {
@@ -199,7 +171,7 @@ namespace CareerQuest.Enemy
                     float distSqToTarget = toTarget.sqrMagnitude;
 
                     float targetTick = TreasureTickness[data.TargetIndex];
-                    float effectiveAttackRange = attackRange + bodyTick + targetTick;
+                    float effectiveAttackRange = data.AttackRange + data.BodyTickness + targetTick;
 
                     if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
                     {
@@ -218,7 +190,7 @@ namespace CareerQuest.Enemy
                     float distSqToTarget = toTarget.sqrMagnitude;
 
                     float targetRadius = PlayerTickness[data.TargetIndex];
-                    float effectiveAttackRange = attackRange + bodyTick + targetRadius;
+                    float effectiveAttackRange = data.AttackRange + data.BodyTickness + targetRadius;
 
                     if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
                     {
@@ -255,13 +227,7 @@ namespace CareerQuest.Enemy
                 if (!proj.IsActive) continue;
 
                 float sqrDist = (enemy.Position - proj.Position).sqrMagnitude;
-                float tickness = enemy.ID switch
-                {
-                    EnemyID.Golem => enemy.GolemTickness,
-                    EnemyID.Ghost => enemy.GhostTickness,
-                    _ => 0f
-                };
-                float hitRadius = proj.Radius + tickness;
+                float hitRadius = proj.Radius + enemy.BodyTickness;
 
                 if (sqrDist <= hitRadius * hitRadius)
                 {

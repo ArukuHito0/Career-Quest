@@ -9,6 +9,7 @@ namespace CareerQuest.Enemy
         public EnemyTarget Target;  // –Ú•WID
         public byte State;          // “G‚Ìó‘Ô(EnemyState)
         public int CurrentHp;       // Œ»İ‚Ì‘Ì—Í
+        public float AttackCoolDown;         // UŒ‚ŠÔŠu
         public float CurrentAttackCoolDown;  // Œ»İ‚ÌUŒ‚ŠÔŠu
         public Vector3 Position;    // À•W
         public int TargetIndex;     // ƒ^[ƒQƒbƒg‚ÌIndex

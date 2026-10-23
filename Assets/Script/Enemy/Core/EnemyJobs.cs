@@ -50,9 +50,9 @@ namespace CareerQuest.Enemy
             float serachRadius = 0f;
             if (data.ID == EnemyID.Golem)
             { serachRadius = data.GolemSearchRadius; }
-            if(data.ID == EnemyID.Ghost)
+            else if(data.ID == EnemyID.Ghost)
             { serachRadius = data.GhostSearchRadius; }
-            if (data.ID == EnemyID.Swarm)
+            else if (data.ID == EnemyID.Swarm)
             { serachRadius = data.SwarmSearchRadius; }
 
             searchResult = SearchNearest(
@@ -165,7 +165,6 @@ namespace CareerQuest.Enemy
                     OutputDatas[index] = data;
                     return;
                 }
-
                 if ((data.CurrentAttackCoolDown -= DeltaTime) > 0)
                 {
                     data.State = (byte)EnemyState.Move;
@@ -173,81 +172,69 @@ namespace CareerQuest.Enemy
                     return;
                 }
 
-                switch (data.ID)
+                #region 攻撃半径などを代入
+                float attackRange = 0f;
+                float bodyTick = 0f;
+                if (data.ID == EnemyID.Golem)
                 {
-                    case EnemyID.Golem:
-                        GolemDecision(
-                            ref data,
-                            index,
-                            TreasurePositions,
-                            TreasureTickness
-                       );
-                        break;
-                    case EnemyID.Ghost:
-                        GhostDecision(
-                            ref data,
-                            index,
-                            PlaeyrPositions,
-                            PlayerTickness
-                       );
-                        break;
+                    attackRange = data.GolemAttackRange;
+                    bodyTick = data.GolemTickness;
                 }
+                else if (data.ID == EnemyID.Ghost)
+                {
+                    attackRange = data.GhostEnemyAvoidRadius;
+                    bodyTick = data.GhostTickness;
+                }
+                else if (data.ID == EnemyID.Swarm)
+                {
+                    attackRange = data.SwarmAttackRange;
+                    bodyTick = data.SwarmTickness;
+                }
+                #endregion
+
+                //  宝物攻撃判断ロジック
+                if (data.Target == EnemyTarget.Treasure)
+                {
+                    Vector3 toTarget = TreasurePositions[data.TargetIndex] - data.Position;
+                    float distSqToTarget = toTarget.sqrMagnitude;
+
+                    float targetTick = TreasureTickness[data.TargetIndex];
+                    float effectiveAttackRange = attackRange + bodyTick + targetTick;
+
+                    if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
+                    {
+                        data.State = (byte)EnemyState.Attack;
+                        data.CurrentAttackCoolDown = data.AttackCoolDown;
+                    }
+                    else
+                    {
+                        data.State = (byte)EnemyState.Move;
+                    }
+                }
+                //  プレイヤー攻撃判断ロジック
+                else if (data.Target == EnemyTarget.Players)
+                {
+                    Vector3 toTarget = PlaeyrPositions[data.TargetIndex] - data.Position;
+                    float distSqToTarget = toTarget.sqrMagnitude;
+
+                    float targetRadius = PlayerTickness[data.TargetIndex];
+                    float effectiveAttackRange = attackRange + bodyTick + targetRadius;
+
+                    if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
+                    {
+                        data.State = (byte)EnemyState.Attack;
+                        data.CurrentAttackCoolDown = data.AttackCoolDown;
+                    }
+                    else
+                    {
+                        data.State = (byte)EnemyState.Move;
+                    }
+                }
+
                 OutputDatas[index] = data;
-            }
-
-            #region ゴーレム攻撃判断
-            static void GolemDecision(
-            ref EnemyData data,
-            int index,
-            NativeArray<Vector3> treasurePositions,
-            NativeArray<float> treasureTickness
-                )
-            {
-                Vector3 toTarget = treasurePositions[data.TargetIndex] - data.Position;
-                float distSqToTarget = toTarget.sqrMagnitude;
-
-                float targetRadius = treasureTickness[data.TargetIndex];
-                float effectiveAttackRange = data.GolemAttackRange + data.GhostTickness + targetRadius;
-
-                if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
-                {
-                    data.State = (byte)EnemyState.Attack;
-                    data.CurrentAttackCoolDown = data.GolemAttackCoolDown;
-                }
-                else
-                {
-                    data.State = (byte)EnemyState.Move;
-                }
-            }
-            #endregion
-
-            #region ゴースト攻撃判断
-            static void GhostDecision(
-            ref EnemyData data,
-            int index,
-            NativeArray<Vector3> playerPositions,
-            NativeArray<float> playerTickness
-                )
-            {
-                Vector3 toTarget = playerPositions[data.TargetIndex] - data.Position;
-                float distSqToTarget = toTarget.sqrMagnitude;
-
-                float targetRadius = playerTickness[data.TargetIndex];
-                float effectiveAttackRange = data.GolemAttackRange + data.GhostTickness + targetRadius;
-
-                if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
-                {
-                    data.State = (byte)EnemyState.Attack;
-                    data.CurrentAttackCoolDown = data.GhostAttackCoolDown;
-                }
-                else
-                {
-                    data.State = (byte)EnemyState.Move;
-                }
             }
         }
     }
-    #endregion
 
     //  当たり判定判断
     [BurstCompile]

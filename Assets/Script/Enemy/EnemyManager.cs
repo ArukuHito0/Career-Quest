@@ -69,9 +69,7 @@ namespace CareerQuest.Enemy
             };
 
             JobHandle searchTargetHandle = searchTargetJob.Schedule(activeEnemyEntities.Count, 64);
-
             searchTargetHandle.Complete();
-
             MyLogger.Log("üˆÍ’TõŠ®—¹");
 
             //  UŒ‚”»’fƒƒWƒbƒN

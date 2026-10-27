@@ -14,6 +14,8 @@ namespace CareerQuest.Enemy
         public float MoveSpeed = 5;
         public float SearchRadius = 20f;
         public int GroupVolume = 1;
+
+        public float MoveEffectTime_1 = 3;
         [Header("衝突回避パラメーター")]
         [Tooltip("壁を回避し始める距離")]
         public float WallAvoidRadius = 10f;

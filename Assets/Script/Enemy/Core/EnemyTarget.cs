@@ -3,6 +3,7 @@ namespace CareerQuest
     public enum EnemyTarget : byte
     {
         Treasure = 0,  // お宝
-        Players  = 1,   // プレイヤー
+        Player   = 1,  // プレイヤー
+        None     = 99  // なし
     }
 }

@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8b807d96475995843be9e8d82e11104d, type: 3}
-  m_Name: EnemySpawnPos
+  m_Name: EnemySpawnPoint
   m_EditorClassIdentifier: Assembly-CSharp::CareerQuest.Enemy.EnemySpawnPos
   SpawnPoints:
   - Position: {x: 0, y: 13.263888, z: -66.96295}
-    SpawnInterval: 10
+    SpawnInterval: 1
     Candidates:
     - EnemyID: 1
       Percent: 0.01

@@ -19,7 +19,9 @@ namespace CareerQuest.Enemy
         public float AttackCoolDown;         // 攻撃間隔
         public float CurrentAttackCoolDown;  // 現在の攻撃間隔
 
-        public float MoveEffectTime_1;  // 移動エフェクト再生時間
+        public uint UniqueMoveFlag;           // 敵ごとの独自処理
+        public float UniqueMoveTimer;         // 独自処理の時間
+        public float CurrentUniqueMoveTimer;  // 現在の独自処理用タイマー  
 
         public Vector3 Position;             // 座標
         public int TargetIndex;              // ターゲットのIndex

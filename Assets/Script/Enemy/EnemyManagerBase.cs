@@ -104,7 +104,7 @@ namespace CareerQuest.Enemy
                 {
                     ID = id,
                     Target = EnemyTarget.None,
-                    State = (byte)EnemyState.Search,
+                    State = (byte)EnemyState.Invincible,
                     GroupVolume = stat.GroupVolume,
 
                     Hp = stat.HP,
@@ -187,6 +187,7 @@ namespace CareerQuest.Enemy
 
                 var enemyData = CreateInitialEnemyData(enemy);
                 enemyData.IsLeader = (cnt == 0) ? (byte)1 : (byte)0;
+                enemy.EnemyData = enemyData;
 
                 if (isUsingBufferA)
                 {
@@ -270,7 +271,7 @@ namespace CareerQuest.Enemy
             {
                 ID = entity.ID,
                 Target = EnemyTarget.None,
-                State = (byte)EnemyState.Search,
+                State = (byte)EnemyState.Invincible,
                 GroupVolume = stat.GroupVolume,
                 Hp = stat.Hp,
                 CurrentHp = stat.Hp,

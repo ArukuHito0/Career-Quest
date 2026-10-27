@@ -158,7 +158,10 @@ namespace CareerQuest.Enemy
             {
                 var enemyData = writeBuffer[i];
 
-                if (enemyData.CurrentHp <= 0)
+                if (
+                    enemyData.CurrentHp <= 0 
+                    && enemyData.State != (byte)EnemyState.Invincible
+                    )
                 {
                     DespawnEnemy(activeEnemyEntities[i]);
                 }
@@ -169,9 +172,6 @@ namespace CareerQuest.Enemy
             }
 
             isUsingBufferA = !isUsingBufferA;
-            if (isUsingBufferA)
-            { bufferA = writeBuffer; }
-            else { bufferB = writeBuffer; }
             MyLogger.Log("敵行動サイクル通った");
         }
 
@@ -184,7 +184,7 @@ namespace CareerQuest.Enemy
         bool CheckActiveCount()
         {
             if (activeTreasureEntities.Count == 0)
-            {
+            { 
                 MyLogger.Log($"Enemy:アクティブなお宝の数{activeTreasureEntities.Count}");
                 return true;
             }

@@ -15,7 +15,8 @@ namespace CareerQuest.Enemy
         public float SearchRadius = 20f;
         public int GroupVolume = 1;
 
-        public float MoveEffectTime_1 = 3;
+        [Tooltip("敵一体一体の固有処理のタイマー")]
+        public float UniqueMoveTimer;  // 独自処理の時間
         [Header("衝突回避パラメーター")]
         [Tooltip("壁を回避し始める距離")]
         public float WallAvoidRadius = 10f;

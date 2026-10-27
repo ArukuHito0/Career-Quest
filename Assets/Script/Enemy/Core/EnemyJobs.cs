@@ -1,10 +1,9 @@
-﻿using CareerQuest.Core;
-using CareerQuest.Enemy;
-using CareerQuest.Player;
-using Unity.Burst;
+﻿using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
+using CareerQuest.Player;
+using CareerQuest.Core;
 
 namespace CareerQuest.Enemy
 {
@@ -208,6 +207,32 @@ namespace CareerQuest.Enemy
         }
     }
 
+    [BurstCompile]
+    public struct UniqueMoveJob : IJobParallelFor
+    {
+        public NativeArray<EnemyData> InputDatas;
+        public NativeArray<EnemyData> OutputDatas;
+        public float DeltaTime;
+
+        public void Execute(int index)
+        {
+            var data = InputDatas[index];
+            if (data.CurrentHp <= 0) return;
+
+            if ((data.UniqueMoveFlag & (uint)EnemyUniqueMoveFlag.Warping) != 0)
+            {
+                data.CurrentUniqueMoveTimer -= DeltaTime;
+                if (data.UniqueMoveTimer <= 0f)
+                {
+                    data.State = (byte)EnemyState.Vanishing;
+                    data.CurrentUniqueMoveTimer = data.UniqueMoveTimer;
+                }
+            }
+
+            OutputDatas[index] = data;
+        }
+    }
+
     //  当たり判定判断
     [BurstCompile]
     public struct CollisionJob : IJobParallelFor
@@ -219,7 +244,11 @@ namespace CareerQuest.Enemy
         public void Execute(int index)
         {
             var enemy = Enemies[index];
-            if (enemy.CurrentHp <= 0) return;
+            if (
+                enemy.CurrentHp <= 0
+                || enemy.State == (byte)EnemyState.Invincible
+                ) 
+                return;
 
             for (int p = 0; p < Bullets.Length; p++)
             {
@@ -237,6 +266,7 @@ namespace CareerQuest.Enemy
                         EnemyIndex = index,
                         Damage = proj.Damage,
                     });
+                    MyLogger.ErrorLog("HitBullet");
 
                     break;
                 }

@@ -383,7 +383,7 @@ GameObject:
   - component: {fileID: 5436271437161806311}
   - component: {fileID: 5947040553194998745}
   m_Layer: 8
-  m_Name: Golem_test
+  m_Name: Golem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

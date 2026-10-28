@@ -12,8 +12,8 @@ public class PlayerHealth : MonoBehaviour, ISpatialEntity
     PlayerHashManager _hashManager;
     public List<int> nearbyEntities = new List<int>(64);
 
-    // 最大HP
-    [SerializeField] private int maxHealth = 100;
+    // UnitStatsから取得した最大HP
+    private int maxHealth = 100;
 
     // お化け状態になっている時間
     [SerializeField] private float ghostDuration = 5f;
@@ -41,8 +41,17 @@ public class PlayerHealth : MonoBehaviour, ISpatialEntity
     {
         stateManager = GetComponent<PlayerStateManager>();
 
+        // クラス設定から最大HPを取得する
+        UnitStats unitStats = GetComponent<UnitStats>();
+
+        if (unitStats != null && unitStats.ClassData != null)
+        {
+            maxHealth = unitStats.MaxHealth;
+        }
+
         // ゲーム開始時は最大HP
         currentHealth = maxHealth;
+
         _hashManager = ServiceLocator.Resolve<PlayerHashManager>();
         _hashManager.Register(this);
         Tickness = 0.7f;

@@ -1,5 +1,4 @@
 using CareerQuest.Core;
-using CareerQuest.Player;
 using UnityEngine;
 
 public class RangedAttack : AttackBase

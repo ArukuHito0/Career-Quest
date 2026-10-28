@@ -1,5 +1,5 @@
-using CareerQuest.Player;
 using UnityEngine;
+using CareerQuest.Player;
 
 public class Bullet : MonoBehaviour , IBullet
 {
@@ -23,9 +23,6 @@ public class Bullet : MonoBehaviour , IBullet
     private Vector3 direction;
 
     public byte Damage { get => (byte)damage;}
-    public bool IsActive { get => _isActive; set => _isActive = value; }
-    public float Tickness { get => tickness; }
-    //  弾の厚み(当たり判定用)
     public Vector3 Position { get => this.transform.position; }
 
     private void Start()
@@ -34,29 +31,15 @@ public class Bullet : MonoBehaviour , IBullet
         startPosition = transform.position;
     }
 
-    void OnEnable()
+    void Update()
     {
-        BulletManager.ActiveBullets.Add(this);
-    }
-
-    private void Update()
-    {
-        // 移動
         transform.position += direction * speed * Time.deltaTime;
 
-        // 発射地点からの距離を計算
         float distance = Vector3.Distance(startPosition, transform.position);
-
-        // 最大距離まで飛んだら削除sdd
-        if (distance >= maxDistance || _isActive == false)
+        if (distance >= maxDistance)
         {
-            Destroy(gameObject);
+            Destroy(this.gameObject);
         }
-    }
-
-    void OnDisable()
-    {
-        BulletManager.ActiveBullets.Remove(this);
     }
 
     // 発射方向を設定
@@ -75,7 +58,12 @@ public class Bullet : MonoBehaviour , IBullet
         }
     }
 
-    // 何かに当たった時
+    public void Destroy()
+    {
+        Destroy(this.gameObject);
+    }
+
+    //何かに当たった時
     private void OnTriggerEnter(Collider other)
     {
         // Enemyタグの敵に当たった

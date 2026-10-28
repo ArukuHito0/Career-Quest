@@ -135,90 +135,30 @@ namespace CareerQuest.Enemy
 
             return new SearchResult(nearestIndex, targetType);
         }
-
-        //  攻撃するか判断
-        [BurstCompile]
-        public struct AttackDecisionJob : IJobParallelFor
-        {
-            [ReadOnly] public NativeArray<EnemyData> InputDatas; // 読み取り用
-            public NativeArray<EnemyData> OutputDatas;          // 書き込み用
-            [ReadOnly] public NativeArray<Vector3> TreasurePositions;  // お宝座標
-            [ReadOnly] public NativeArray<float> TreasureTickness;  // お宝の厚み
-            [ReadOnly] public NativeArray<Vector3> PlaeyrPositions;  // プレイヤー座標
-            [ReadOnly] public NativeArray<float> PlayerTickness;  // プレイヤーの厚み
-
-            public float DeltaTime;
-            public void Execute(int index)
-            {
-                var data = InputDatas[index];
-                if (data.TargetIndex < 0)
-                {
-                    OutputDatas[index] = data;
-                    return;
-                }
-                if ((data.CurrentAttackCoolDown -= DeltaTime) > 0)
-                {
-                    data.State = (byte)EnemyState.Move;
-                    OutputDatas[index] = data;
-                    return;
-                }
-
-                //  宝物攻撃判断ロジック
-                if (data.Target == EnemyTarget.Treasure)
-                {
-                    Vector3 toTarget = TreasurePositions[data.TargetIndex] - data.Position;
-                    float distSqToTarget = toTarget.sqrMagnitude;
-
-                    float targetTick = TreasureTickness[data.TargetIndex];
-                    float effectiveAttackRange = data.AttackRange + data.BodyTickness + targetTick;
-
-                    if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
-                    {
-                        data.State = (byte)EnemyState.Attack;
-                        data.CurrentAttackCoolDown = data.AttackCoolDown;
-                    }
-                    else
-                    {
-                        data.State = (byte)EnemyState.Move;
-                    }
-                }
-                //  プレイヤー攻撃判断ロジック
-                else if (data.Target == EnemyTarget.Player)
-                {
-                    Vector3 toTarget = PlaeyrPositions[data.TargetIndex] - data.Position;
-                    float distSqToTarget = toTarget.sqrMagnitude;
-
-                    float targetRadius = PlayerTickness[data.TargetIndex];
-                    float effectiveAttackRange = data.AttackRange + data.BodyTickness + targetRadius;
-
-                    if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
-                    {
-                        data.State = (byte)EnemyState.Attack;
-                        data.CurrentAttackCoolDown = data.AttackCoolDown;
-                    }
-                    else
-                    {
-                        data.State = (byte)EnemyState.Move;
-                    }
-                }
-
-                OutputDatas[index] = data;
-            }
-        }
     }
 
+    //  攻撃するか判断
     [BurstCompile]
-    public struct UniqueMoveJob : IJobParallelFor
+    public struct AttackDecisionJob : IJobParallelFor
     {
-        public NativeArray<EnemyData> InputDatas;
-        public NativeArray<EnemyData> OutputDatas;
+        [ReadOnly] public NativeArray<EnemyData> InputDatas; // 読み取り用
+        public NativeArray<EnemyData> OutputDatas;          // 書き込み用
+        [ReadOnly] public NativeArray<Vector3> TreasurePositions;  // お宝座標
+        [ReadOnly] public NativeArray<float> TreasureTickness;  // お宝の厚み
+        [ReadOnly] public NativeArray<Vector3> PlaeyrPositions;  // プレイヤー座標
+        [ReadOnly] public NativeArray<float> PlayerTickness;  // プレイヤーの厚み
         public float DeltaTime;
 
         public void Execute(int index)
         {
             var data = InputDatas[index];
-            if (data.CurrentHp <= 0) return;
+            if (data.TargetIndex < 0)
+            {
+                OutputDatas[index] = data;
+                return;
+            }
 
+            //  キャラごとの固有処理
             if ((data.UniqueMoveFlag & (uint)EnemyUniqueMoveFlag.Warping) != 0)
             {
                 data.CurrentUniqueMoveTimer -= DeltaTime;
@@ -226,6 +166,52 @@ namespace CareerQuest.Enemy
                 {
                     data.State = (byte)EnemyState.Vanishing;
                     data.CurrentUniqueMoveTimer = data.UniqueMoveTimer;
+                }
+            }
+
+            if ((data.CurrentAttackCoolDown -= DeltaTime) > 0)
+            {
+                data.State = (byte)EnemyState.Move;
+                OutputDatas[index] = data;
+                return;
+            }
+
+            //  宝物攻撃判断ロジック
+            if (data.Target == EnemyTarget.Treasure)
+            {
+                Vector3 toTarget = TreasurePositions[data.TargetIndex] - data.Position;
+                float distSqToTarget = toTarget.sqrMagnitude;
+
+                float targetTick = TreasureTickness[data.TargetIndex];
+                float effectiveAttackRange = data.AttackRange + data.BodyTickness + targetTick;
+
+                if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
+                {
+                    data.State = (byte)EnemyState.Attack;
+                    data.CurrentAttackCoolDown = data.AttackCoolDown;
+                }
+                else
+                {
+                    data.State = (byte)EnemyState.Move;
+                }
+            }
+            //  プレイヤー攻撃判断ロジック
+            else if (data.Target == EnemyTarget.Player)
+            {
+                Vector3 toTarget = PlaeyrPositions[data.TargetIndex] - data.Position;
+                float distSqToTarget = toTarget.sqrMagnitude;
+
+                float targetRadius = PlayerTickness[data.TargetIndex];
+                float effectiveAttackRange = data.AttackRange + data.BodyTickness + targetRadius;
+
+                if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
+                {
+                    data.State = (byte)EnemyState.Attack;
+                    data.CurrentAttackCoolDown = data.AttackCoolDown;
+                }
+                else
+                {
+                    data.State = (byte)EnemyState.Move;
                 }
             }
 
@@ -255,18 +241,23 @@ namespace CareerQuest.Enemy
                 var proj = Bullets[p];
                 if (!proj.IsActive) continue;
 
+
+                Vector3 tmpE = enemy.Position;
+                Vector3 tmpP = proj.Position;
                 float sqrDist = (enemy.Position - proj.Position).sqrMagnitude;
                 float hitRadius = proj.Radius + enemy.BodyTickness;
 
                 if (sqrDist <= hitRadius * hitRadius)
                 {
+                    //float actualDist = Mathf.Sqrt(sqrDist);
+                    //MyLogger.ErrorLog($"【判定確認】 実測距離: {actualDist:F2} / 許容半径: {hitRadius} (設定値のミスがないかチェック)");
+                    //MyLogger.ErrorLog($" 敵座標: {tmpE:F2}  弾座標: {tmpP}");
                     HitData.AddNoResize(new BulletHitData
                     {
                         BulletIndex = p,
                         EnemyIndex = index,
                         Damage = proj.Damage,
                     });
-                    MyLogger.ErrorLog("HitBullet");
 
                     break;
                 }

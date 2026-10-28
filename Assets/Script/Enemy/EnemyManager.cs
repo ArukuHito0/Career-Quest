@@ -1,15 +1,12 @@
-using CareerQuest.Core;
-using CareerQuest.Player;
-using Unity.Collections;
-using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Jobs;
-using static CareerQuest.Enemy.SearchTargetJob;
+using Unity.Jobs;
+using CareerQuest.Core;
 
 namespace CareerQuest.Enemy
 {
     //  敵の挙動を制御するクラス
-    public sealed class EnemyManager : EnemyManagerBase<TreasureChest>
+    public sealed class EnemyManager : EnemyManagerBase
     {
         protected override void Awake()
         {
@@ -116,58 +113,44 @@ namespace CareerQuest.Enemy
                 }
             }
 
-            if (bulletManager != null && bulletManager.ActiveCount > 0)
+            for (int i = 0; i < pendingDamages.Count; i++)
             {
-                int maxBullet = bulletManager.ActiveCount * 3 + activeEnemyEntities.Count;  //  弾が処理中に増える可能性があるので余裕を持たせた
-                var hitData = new NativeList<BulletHitData>(maxBullet, Allocator.TempJob);
-                hitData.Capacity = maxBullet; // 容量を固定
-                var collisionJob = new CollisionJob
+                var dmg = pendingDamages[i];
+                if (dmg.Index >= 0 && dmg.Index < writeBuffer.Length)
                 {
-                    Enemies = writeBuffer,
-                    Bullets = bulletManager.BulletBuffer,
-                    HitData = hitData.AsParallelWriter()
-                };
-
-                var collisionHandle = collisionJob.Schedule(activeEnemyEntities.Count, 64, attackDicisionHandle);
-                collisionHandle.Complete();
-
-                for (int i = 0; i < hitData.Length; i++)
-                {
-                    var hd = hitData[i];
-
-                    var enemy = writeBuffer[hd.EnemyIndex];
-                    if (enemy.CurrentHp > 0)
+                    var enemy = writeBuffer[dmg.Index];
+                    if (enemy.State != (byte)EnemyState.Invincible)
                     {
-                        enemy.CurrentHp -= hd.Damage;
-                        writeBuffer[hd.EnemyIndex] = enemy;
-                    }
-
-                    if (hd.BulletIndex >= 0 && hd.BulletIndex < BulletManager.ActiveBullets.Count)
-                    {
-                        var targetBullet = BulletManager.ActiveBullets[hd.BulletIndex];
-                        if (targetBullet != null && targetBullet.IsActive)
+                        if ((enemy.CurrentHp -= dmg.Damage) <= 0)
                         {
-                            targetBullet.IsActive = false;
+                            enemy.State = (byte)EnemyState.Dead;
                         }
+                        writeBuffer[dmg.Index] = enemy;
                     }
                 }
-                hitData.Dispose();
             }
+            pendingDamages.Clear();
 
             for (int i = activeEnemyEntities.Count - 1; i >= 0; i--)
             {
                 var enemyData = writeBuffer[i];
 
+                if(enemyData.State == (byte)EnemyState.Attack)
+                {
+                    activeEnemyEntities[i].Attack();
+                }
+            }
+            for (int i = activeEnemyEntities.Count - 1; i >= 0; i--)
+            {
+                if (i >= writeBuffer.Length) continue;
+
+                var enemyData = writeBuffer[i];
                 if (
-                    enemyData.CurrentHp <= 0 
+                    enemyData.State == (byte)EnemyState.Dead
                     && enemyData.State != (byte)EnemyState.Invincible
                     )
                 {
                     DespawnEnemy(activeEnemyEntities[i]);
-                }
-                else if(enemyData.State == (byte)EnemyState.Attack)
-                {
-                    activeEnemyEntities[i].Attack();
                 }
             }
 
@@ -178,6 +161,11 @@ namespace CareerQuest.Enemy
         protected override void OnDestroy()
         {
             base.OnDestroy();
+        }
+
+        public void ChangeHP(int hp, int index)
+        {
+
         }
 
         //  マップの要素のアクティブ数を検査数r
@@ -218,3 +206,47 @@ namespace CareerQuest.Enemy
 //    EnemyAvoidRadius = golemEnemyAvoidRadius,
 //    DeltaTime = Time.deltaTime
 //};
+
+/*  配列の中身が動的に変化して安定しなかったのでCO */
+//if (bulletManager != null && bulletManager.ActiveCount > 0)
+//{
+//    int maxBullet = bulletManager.ActiveCount * 3 + activeEnemyEntities.Count;  //  弾が処理中に増える可能性があるので余裕を持たせた
+//    var hitData = new NativeList<BulletHitData>(maxBullet, Allocator.TempJob);
+//    hitData.Capacity = maxBullet; // 容量を固定
+//    var collisionJob = new CollisionJob
+//    {
+//        Enemies = writeBuffer,
+//        Bullets = bulletManager.BulletBuffer,
+//        HitData = hitData.AsParallelWriter()
+//    };
+
+//    var collisionHandle = collisionJob.Schedule(activeEnemyEntities.Count, 64, attackDicisionHandle);
+//    collisionHandle.Complete();
+
+//    for (int i = 0; i < hitData.Length; i++)
+//    {
+//        var hd = hitData[i];
+//        if (hd.EnemyIndex < 0 || hd.EnemyIndex >= writeBuffer.Length) continue;
+
+//        var enemy = writeBuffer[hd.EnemyIndex];
+//        if (
+//            enemy.CurrentHp <= 0
+//            || enemy.State == (byte)EnemyState.Invincible
+//            )
+//            continue;
+
+//        if (hd.BulletIndex >= 0 && hd.BulletIndex < BulletManager.ActiveBullets.Count)
+//        {
+//            var targetBullet = BulletManager.ActiveBullets[hd.BulletIndex];
+//            if (targetBullet != null && targetBullet.IsActive)
+//            {
+//                targetBullet.IsActive = false;
+//                targetBullet.Destroy();
+//            }
+//        }
+
+//        enemy.CurrentHp -= hd.Damage;
+//        writeBuffer[hd.EnemyIndex] = enemy;
+//    }
+//    hitData.Dispose();
+//}

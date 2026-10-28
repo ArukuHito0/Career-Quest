@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 3857615043930996569}
   m_Layer: 0
   m_Name: Bullet
-  m_TagString: Untagged
+  m_TagString: Bullet
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -126,7 +126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1762106a9dd0ca4cbc1c75450d589d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bullet
-  damage: 70
+  damage: 80
   speed: 10
   maxDistance: 20
   tickness: 0.1

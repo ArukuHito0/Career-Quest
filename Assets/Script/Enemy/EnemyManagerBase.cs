@@ -1,5 +1,4 @@
 using CareerQuest.Core;
-using CareerQuest.Player;
 using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
@@ -9,7 +8,7 @@ using UnityEngine.Pool;
 namespace CareerQuest.Enemy
 {
     [DisallowMultipleComponent]
-    public abstract class EnemyManagerBase<T> : MonoBehaviour where T : Component
+    public abstract class EnemyManagerBase : MonoBehaviour
     {
         protected TreasureHashManager treasureHashManager;  // 宝物のグリッドマップ管理
         protected PlayerHashManager playerHashManager; // プレイヤーのグリッドマップ管理
@@ -31,11 +30,12 @@ namespace CareerQuest.Enemy
         protected NativeArray<EnemyData> bufferB;
         protected bool isUsingBufferA = true;
 
-        protected BulletManager bulletManager;
+        //protected BulletManager bulletManager; Unityの当たり判定を使うためCO
 
         [SerializeField] EnemyStatHolder _enemyStatHolder;  // ステータス保持SO
         NativeArray<EnemyData> _statCache;
-        
+
+        protected readonly List<DamageInfo> pendingDamages = new List<DamageInfo>(128);
         protected List<RuntimeSpawnPoint> runtimeSpawnPoints = new List<RuntimeSpawnPoint>();
 
         protected virtual void Awake()
@@ -44,7 +44,7 @@ namespace CareerQuest.Enemy
             playerHashManager = ServiceLocator.Resolve<PlayerHashManager>();
             enemyHashManager = ServiceLocator.Resolve<EnemyHashManager>();
 
-            bulletManager = ServiceLocator.Resolve<BulletManager>();
+            //bulletManager = ServiceLocator.Resolve<BulletManager>();
 
             bufferA = new NativeArray<EnemyData>(maxEnemyCount, Allocator.Persistent);
             bufferB = new NativeArray<EnemyData>(maxEnemyCount, Allocator.Persistent);
@@ -54,6 +54,7 @@ namespace CareerQuest.Enemy
                 actionOnGet: e => {
                     e.gameObject.SetActive(true);
                     e.Regist();
+                    e.EnemyMgrBase = this;
                 },
                 actionOnRelease: e => e.gameObject.SetActive(false),
                 actionOnDestroy: e => Destroy(e.gameObject),
@@ -61,14 +62,22 @@ namespace CareerQuest.Enemy
             );
             _pools[EnemyID.Ghost] = new ObjectPool<EnemyController>(
                 createFunc: () => Instantiate(_ghostPrefab),
-                actionOnGet: e => { e.gameObject.SetActive(true); e.Regist(); },
+                actionOnGet: e => {
+                    e.gameObject.SetActive(true);
+                    e.Regist();
+                    e.EnemyMgrBase = this;
+                },
                 actionOnRelease: e => e.gameObject.SetActive(false),
                 actionOnDestroy: e => Destroy(e.gameObject),
                 defaultCapacity: 50
             );
             _pools[EnemyID.Swarm] = new ObjectPool<EnemyController>(
                 createFunc: () => Instantiate(_swarmPrefab),
-                actionOnGet: e => { e.gameObject.SetActive(true); e.Regist(); },
+                actionOnGet: e => {
+                    e.gameObject.SetActive(true);
+                    e.Regist();
+                    e.EnemyMgrBase = this;
+                },
                 actionOnRelease: e => e.gameObject.SetActive(false),
                 actionOnDestroy: e => Destroy(e.gameObject),
                 defaultCapacity: 50
@@ -198,6 +207,12 @@ namespace CareerQuest.Enemy
                     bufferB[newIndex] = enemyData;
                 }
             }
+        }
+
+        //  受けたダメージを記録(処理競合防止)
+        public void EnqueueDamage(int index, byte dmg)
+        {
+            pendingDamages.Add(new DamageInfo { Index = index, Damage = dmg });
         }
 
         //  削除

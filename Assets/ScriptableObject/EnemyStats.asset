@@ -22,21 +22,23 @@ MonoBehaviour:
       MoveSpeed: 5
       SearchRadius: 30
       GroupVolume: 1
+      UniqueMoveTimer: 5
       WallAvoidRadius: 2
       EnmeyAvoidRadius: 0.1
-      BodyTickness: 1
+      BodyTickness: 0.3
   - ID: 1
     Stat:
       HP: 70
-      AttackPower: 40
+      AttackPower: 2
       AtackRange: 1.4
       AtackCoolDown: 1
       MoveSpeed: 9
       SearchRadius: 30
       GroupVolume: 1
+      UniqueMoveTimer: 5
       WallAvoidRadius: 2
       EnmeyAvoidRadius: 2
-      BodyTickness: 1
+      BodyTickness: 0.3
   - ID: 2
     Stat:
       HP: 40
@@ -46,6 +48,7 @@ MonoBehaviour:
       MoveSpeed: 9
       SearchRadius: 30
       GroupVolume: 5
+      UniqueMoveTimer: 5
       WallAvoidRadius: 2
       EnmeyAvoidRadius: 2
-      BodyTickness: 1
+      BodyTickness: 0.3

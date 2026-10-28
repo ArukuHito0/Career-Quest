@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: EnemySpawnPoint
   m_EditorClassIdentifier: Assembly-CSharp::CareerQuest.Enemy.EnemySpawnPos
   SpawnPoints:
-  - Position: {x: 0, y: 13.263888, z: -66.96295}
+  - Position: {x: 6.9144425, y: 13.263888, z: -62.604454}
     SpawnInterval: 0.8
     Candidates:
     - EnemyID: 1

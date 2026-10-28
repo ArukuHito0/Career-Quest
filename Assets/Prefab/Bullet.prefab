@@ -127,7 +127,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bullet
   damage: 70
-  speed: 1
+  speed: 10
   maxDistance: 20
   tickness: 0.1
 --- !u!54 &3857615043930996569

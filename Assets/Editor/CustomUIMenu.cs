@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public static class CustomUIMenu
 {
     // 作成したいプレファブのパス
-    const string CustomButtonPath = "Assets/Prefabs/CustomButton.prefab";
+    const string CustomButtonPath = "Assets/Prefab/CustomButton.prefab";
 
     // 第3引数(priority)を10台にすると、標準UIの項目より上にまとまる
     [MenuItem("GameObject/Custom UI/CustomButton", false, 0)]

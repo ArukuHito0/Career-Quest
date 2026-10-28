@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -14,7 +13,7 @@ public enum SceneType
     Shop
 }
 
-[Serializable]
+[System.Serializable]
 public class SceneData : ISerializationCallbackReceiver
 {
     public SceneType sceneType;

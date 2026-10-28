@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SceneDatabase
   sceneDatas:
   - sceneType: 0
-    scene: {fileID: 0}
-    sceneName: 
+    scene: {fileID: 102900000, guid: 658f08121414df843a3bfef44e363e4e, type: 3}
+    sceneName: Title
   - sceneType: 1
-    scene: {fileID: 0}
-    sceneName: 
+    scene: {fileID: 102900000, guid: 33d1876c6afa2ef49a844caf66958656, type: 3}
+    sceneName: TestScene
   - sceneType: 2
     scene: {fileID: 0}
     sceneName: 

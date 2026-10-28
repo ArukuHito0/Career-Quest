@@ -1,10 +1,9 @@
-using CareerQuest.Core;
 using UnityEngine;
 
 public abstract class AttackBase : MonoBehaviour
 {
     // UŒ‚ŠÔŠu
-    [SerializeField] protected float attackInterval = 1f;
+    [SerializeField] protected float attackInterval = 0.2f;
 
     // ÅŒã‚ÉUŒ‚‚µ‚Ä‚©‚ç‚ÌŒo‰ßŠÔ
     protected float attackTimer;

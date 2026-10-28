@@ -1,14 +1,14 @@
 using CareerQuest.Core;
-using CareerQuest.Player;
 using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Pool;
 
+
 namespace CareerQuest.Enemy
 {
     [DisallowMultipleComponent]
-    public abstract class EnemyManagerBase<T> : MonoBehaviour where T : Component
+    public abstract class EnemyManagerBase : MonoBehaviour
     {
         protected TreasureHashManager treasureHashManager;  // 宝物のグリッドマップ管理
         protected PlayerHashManager playerHashManager; // プレイヤーのグリッドマップ管理
@@ -30,20 +30,21 @@ namespace CareerQuest.Enemy
         protected NativeArray<EnemyData> bufferB;
         protected bool isUsingBufferA = true;
 
-        protected BulletManager bulletManager;
+        //protected BulletManager bulletManager; Unityの当たり判定を使うためCO
 
         [SerializeField] EnemyStatHolder _enemyStatHolder;  // ステータス保持SO
+        NativeArray<EnemyData> _statCache;
 
-        EnemyStat enemyStat;  // 敵のパラメーター(キャッシュ用)
+        protected readonly List<DamageInfo> pendingDamages = new List<DamageInfo>(128);
         protected List<RuntimeSpawnPoint> runtimeSpawnPoints = new List<RuntimeSpawnPoint>();
-        
+
         protected virtual void Awake()
         {
             treasureHashManager = ServiceLocator.Resolve<TreasureHashManager>();
             playerHashManager = ServiceLocator.Resolve<PlayerHashManager>();
             enemyHashManager = ServiceLocator.Resolve<EnemyHashManager>();
 
-            bulletManager = ServiceLocator.Resolve<BulletManager>();
+            //bulletManager = ServiceLocator.Resolve<BulletManager>();
 
             bufferA = new NativeArray<EnemyData>(maxEnemyCount, Allocator.Persistent);
             bufferB = new NativeArray<EnemyData>(maxEnemyCount, Allocator.Persistent);
@@ -53,6 +54,7 @@ namespace CareerQuest.Enemy
                 actionOnGet: e => {
                     e.gameObject.SetActive(true);
                     e.Regist();
+                    e.EnemyMgrBase = this;
                 },
                 actionOnRelease: e => e.gameObject.SetActive(false),
                 actionOnDestroy: e => Destroy(e.gameObject),
@@ -60,14 +62,22 @@ namespace CareerQuest.Enemy
             );
             _pools[EnemyID.Ghost] = new ObjectPool<EnemyController>(
                 createFunc: () => Instantiate(_ghostPrefab),
-                actionOnGet: e => { e.gameObject.SetActive(true); e.Regist(); },
+                actionOnGet: e => {
+                    e.gameObject.SetActive(true);
+                    e.Regist();
+                    e.EnemyMgrBase = this;
+                },
                 actionOnRelease: e => e.gameObject.SetActive(false),
                 actionOnDestroy: e => Destroy(e.gameObject),
                 defaultCapacity: 50
             );
             _pools[EnemyID.Swarm] = new ObjectPool<EnemyController>(
                 createFunc: () => Instantiate(_swarmPrefab),
-                actionOnGet: e => { e.gameObject.SetActive(true); e.Regist(); },
+                actionOnGet: e => {
+                    e.gameObject.SetActive(true);
+                    e.Regist();
+                    e.EnemyMgrBase = this;
+                },
                 actionOnRelease: e => e.gameObject.SetActive(false),
                 actionOnDestroy: e => Destroy(e.gameObject),
                 defaultCapacity: 50
@@ -90,6 +100,32 @@ namespace CareerQuest.Enemy
                     });
                 }
             }
+
+            int enumLength = System.Enum.GetValues(typeof(EnemyID)).Length;
+            _statCache = new NativeArray<EnemyData>(enumLength, Allocator.Persistent);
+
+            foreach (EnemyID id in System.Enum.GetValues(typeof(EnemyID)))
+            {
+                var stat = _enemyStatHolder.GetStat(id);
+                int index = (int)id;
+
+                _statCache[index] = new EnemyData
+                {
+                    ID = id,
+                    Target = EnemyTarget.None,
+                    State = (byte)EnemyState.Invincible,
+                    GroupVolume = stat.GroupVolume,
+
+                    Hp = stat.HP,
+                    AttackPower = stat.AttackPower,
+                    AttackRange = stat.AtackRange,
+                    AttackCoolDown = stat.AtackCoolDown,
+
+                    TargetIndex = -1,
+                    SearchRadius = stat.SearchRadius,
+                    BodyTickness = stat.BodyTickness,
+                };
+            }
         }
 
         protected virtual void Start()
@@ -110,49 +146,73 @@ namespace CareerQuest.Enemy
         {
             if (bufferA.IsCreated) bufferA.Dispose();
             if (bufferB.IsCreated) bufferB.Dispose();
+
+            if (_statCache.IsCreated) _statCache.Dispose();
         }
 
         //  生成
         public void SpawnEnemy(Vector3 position, EnemyID id)
         {
+            if (!_pools.TryGetValue(id, out var targetPool))
+                return;
+
+            int volume = _statCache[(int)id].GroupVolume;
+            if (volume <= 0)
+            { volume = 1; }
+            
+            if (activeEnemyEntities.Count + volume > maxEnemyCount)
+            {
+                return;
+            }
+            EnsureBufferSize(activeEnemyEntities.Count + volume);
+
             if (UnityEngine.AI.NavMesh.SamplePosition(position, out var hit, 10f, UnityEngine.AI.NavMesh.AllAreas))
             {
                 position = hit.position;
             }
 
-            EnsureBufferSize(activeEnemyEntities.Count + 1);
-            
-            if (!_pools.TryGetValue(id, out var targetPool))
-                return;
+            for (int cnt = 0; cnt < volume; cnt++)
+            {
+                var enemy = targetPool.Get();
+                
+                var agent = enemy.GetComponent<UnityEngine.AI.NavMeshAgent>();
+                if (agent != null)
+                {
+                    agent.enabled = false;
+                    enemy.transform.position = position;
+                    agent.enabled = true;
+                    agent.Warp(position);
+                }
+                else
+                {
+                    enemy.transform.position = position;
+                }
 
-            var enemy = targetPool.Get();
+                int newIndex = activeEnemyEntities.Count - 1;
+                if (newIndex < 0)
+                {
+                    newIndex = 0;
+                }
 
-            var agent = enemy.GetComponent<UnityEngine.AI.NavMeshAgent>();
-            if (agent != null)
-            {
-                agent.enabled = false;
-                enemy.transform.position = position;
-                agent.enabled = true;
-                agent.Warp(position);
-            }
-            else
-            {
-                enemy.transform.position = position;
-            }
+                var enemyData = CreateInitialEnemyData(enemy);
+                enemyData.IsLeader = (cnt == 0) ? (byte)1 : (byte)0;
+                enemy.EnemyData = enemyData;
 
-            int newIndex = activeEnemyEntities.Count - 1;
-            if(newIndex < 0)
-            {
-                newIndex = 0;
+                if (isUsingBufferA)
+                {
+                    bufferA[newIndex] = enemyData;
+                }
+                else
+                {
+                    bufferB[newIndex] = enemyData;
+                }
             }
-            if (isUsingBufferA)
-            {
-                bufferA[newIndex] = CreateInitialEnemyData(enemy);
-            }
-            else
-            {
-                bufferB[newIndex] = CreateInitialEnemyData(enemy);
-            }
+        }
+
+        //  受けたダメージを記録(処理競合防止)
+        public void EnqueueDamage(int index, byte dmg)
+        {
+            pendingDamages.Add(new DamageInfo { Index = index, Damage = dmg });
         }
 
         //  削除
@@ -219,66 +279,26 @@ namespace CareerQuest.Enemy
 
         protected EnemyData CreateInitialEnemyData(EnemyController entity)
         {
-            var stat = _enemyStatHolder.GetStat(entity.ID);
-            
-            if (entity.ID == EnemyID.Golem)
+            int index = (int)entity.ID;
+            var stat = _statCache[index];
+
+            return new EnemyData
             {
-                return new EnemyData
-                {
-                    ID = entity.ID,
-                    State = (byte)EnemyState.Search,
-                    CurrentHp = stat.HP,
-                    CurrentAttackCoolDown = 0f,
-                    Position = entity.transform.position,
-                    TargetIndex = -1,
-
-                    //GolemMoveSpeed = golemMoveSpeed, 今はNavmeshのスピードを使ってる
-                    GolemAttackPower = stat.AttackPower,
-                    GolemAttackCoolDown = stat.AtackCoolDown,
-                    GolemAttackRange = stat.AtackRange,
-                    GolemSearchRadius = stat.SearchRadius,
-                    GolemTickness = stat.BodyTickness,
-                };
-            }
-            else if(entity.ID == EnemyID.Golem)
-            {
-                return new EnemyData
-                {
-                    ID = entity.ID,
-                    State = (byte)EnemyState.Search,
-                    CurrentHp = stat.HP,
-                    CurrentAttackCoolDown = 0f,
-                    Position = entity.transform.position,
-                    TargetIndex = -1,
-
-                    //GhostMoveSpeed = ghostMoveSpeed, 今はNavmeshのスピードを使ってる
-                    GhostAttackPower = stat.AttackPower,
-                    GhostAttackCoolDown = stat.AtackCoolDown,
-                    GhostAttackRange = stat.AtackRange,
-                    GhostSearchRadius = stat.SearchRadius,
-                    GhostTickness = stat.BodyTickness,
-                };
-            }
-            else  // Swarm型のステータス
-            {
-                return new EnemyData
-                {
-                    ID = entity.ID,
-                    State = (byte)EnemyState.Search,
-                    CurrentHp = stat.HP,
-                    CurrentAttackCoolDown = 0f,
-                    Position = entity.transform.position,
-                    TargetIndex = -1,
-
-                    //GhostMoveSpeed = ghostMoveSpeed, 今はNavmeshのスピードを使ってる
-                    GhostAttackPower = stat.AttackPower,
-                    GhostAttackCoolDown = stat.AtackCoolDown,
-                    GhostAttackRange = stat.AtackRange,
-                    GhostSearchRadius = stat.SearchRadius,
-                    GhostTickness = stat.BodyTickness,
-                };
-            }
-
+                ID = entity.ID,
+                Target = EnemyTarget.None,
+                State = (byte)EnemyState.Invincible,
+                GroupVolume = stat.GroupVolume,
+                Hp = stat.Hp,
+                CurrentHp = stat.Hp,
+                AttackPower = stat.AttackPower,
+                AttackRange = stat.AttackRange,
+                AttackCoolDown = stat.AttackCoolDown,
+                CurrentAttackCoolDown = 0f,
+                Position = entity.transform.position,
+                TargetIndex = -1,
+                SearchRadius = stat.SearchRadius,
+                BodyTickness = stat.BodyTickness
+            };
         }
     }
 }

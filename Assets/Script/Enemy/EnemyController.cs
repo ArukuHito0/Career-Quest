@@ -1,22 +1,27 @@
+using CareerQuest.Core;
+using CareerQuest.Player;
 using UnityEngine;
 using UnityEngine.AI;
 using UAssert = UnityEngine.Assertions.Assert;
-using CareerQuest.Core;
 
 namespace CareerQuest.Enemy
 {
     //  EnemyMgrでしにくい所をするクラス
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NavMeshAgent))]
+    [RequireComponent(typeof(NavMeshAgent))]
     public sealed class EnemyController : MonoBehaviour, ISpatialEntity
     {
         NavMeshAgent _navAgent;
 
-        EnemyHashManager _hashManager;
+        EnemyHashManager _hashMgr;
+        EnemyManagerBase _enemyMgr;
         
         [SerializeField] EnemyID _id = EnemyID.Golem;
         public EnemyData EnemyData;
         ISpatialEntity _target;
+
+        public EnemyManagerBase EnemyMgrBase { private get => _enemyMgr; set => _enemyMgr = value; }
 
         public int index;
         public EnemyID ID { get => _id; }
@@ -29,7 +34,7 @@ namespace CareerQuest.Enemy
 
         void Awake()
         {
-            _hashManager = ServiceLocator.Resolve<EnemyHashManager>();
+            _hashMgr = ServiceLocator.Resolve<EnemyHashManager>();
 
             _navAgent = GetComponent<NavMeshAgent>();
             UAssert.IsNotNull(_navAgent, "NavMeshAgentの参照がありません");
@@ -37,7 +42,7 @@ namespace CareerQuest.Enemy
 
         public void Regist()
         {
-            _hashManager.Register(this);
+            _hashMgr.Register(this);
         }
 
         public void SetTarget(Vector3 targetPos)
@@ -48,13 +53,19 @@ namespace CareerQuest.Enemy
             }
             _navAgent.SetDestination(targetPos);
         }
+
         public void Attack()
         {
-            if (_id == EnemyID.Golem)
+            if(_id == EnemyID.Ghost)
+            {
+                
+            }
+
+            if (EnemyData.Target == EnemyTarget.Treasure)
             {
                 AttackTreasure();
             }
-            else if (_id == EnemyID.Ghost)
+            else if (EnemyData.Target == EnemyTarget.Player)
             {
                 AttackPlayer();
             }
@@ -64,14 +75,41 @@ namespace CareerQuest.Enemy
         {
             MyLogger.Log("お宝攻撃開始");
             TreasureChest treasure = _target as TreasureChest;
-            treasure?.TakeDamage(EnemyData.GolemAttackPower);
+            treasure?.TakeDamage(EnemyData.AttackPower);
         }
 
         void AttackPlayer()
         {
             MyLogger.Log("プレイヤー攻撃開始");
             PlayerHealth playerHelth = _target as PlayerHealth;
-            playerHelth?.TakeDamage(EnemyData.GhostAttackPower);
+            playerHelth?.TakeDamage(EnemyData.AttackPower);
+        }
+
+        public void ApplyDamage(byte damage)
+        {
+            if (EnemyData.State == (byte)EnemyState.Invincible) return;
+
+            EnemyData.CurrentHp -= damage;
+
+            if (EnemyData.CurrentHp <= 0)
+            {
+
+            }
+        }
+
+        void OnTriggerEnter(Collider other)
+        {
+            if (other.CompareTag("Bullet"))
+            {
+                if (other.TryGetComponent<IBullet>(out var bullet))
+                {
+                    MyLogger.ErrorLog("123");
+                    if (_enemyMgr != null)
+                    {
+                        _enemyMgr.EnqueueDamage(index, bullet.Damage);
+                    }
+                }
+            }
         }
     }
 }

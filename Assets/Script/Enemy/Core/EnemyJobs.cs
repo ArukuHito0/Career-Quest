@@ -1,15 +1,28 @@
-﻿using Unity.Collections;
+﻿using Unity.Burst;
+using Unity.Collections;
 using Unity.Jobs;
-using Unity.Burst;
 using UnityEngine;
-using CareerQuest.Enemy;
 using CareerQuest.Player;
+using CareerQuest.Core;
 
 namespace CareerQuest.Enemy
 {
+    //  サーチ結果返す用の構造体
+    public struct SearchResult
+    {
+        public int Index;
+        public EnemyTarget TargetType;
+
+        public SearchResult(int index, EnemyTarget type)
+        {
+            Index = index;
+            TargetType = type;
+        }
+    }
+
     //  周囲探索
     [BurstCompile]
-    public struct SearchTreasureJob : IJobParallelFor
+    public struct SearchTargetJob : IJobParallelFor
     {
         public NativeArray<EnemyData> InputDatas; // 読み取り用
         [ReadOnly] public NativeArray<Vector3> TreasurePositions;  // お宝座標
@@ -31,128 +44,96 @@ namespace CareerQuest.Enemy
                 )
                 return;
 
-            int nearestIndex = -1;
+            SearchResult searchResult = new(-1, EnemyTarget.None);
 
-            switch (data.ID)
-            {
-                case EnemyID.Golem:
-                    nearestIndex = SearchTreasure(
-                        data.Position,
-                        data.GolemSearchRadius,
-                        TreasurePositions,
-                        TreasureCellMap,
-                        GridWidth,
-                        CellSize
-                    );
-                    break;
+            searchResult = SearchNearest(
+                data.ID,
+                data.Position,
+                data.SearchRadius,
+                TreasurePositions,
+                TreasureCellMap,
+                PlayerPositions,
+                PlayerCellMap,
+                GridWidth,
+                CellSize
+            );
 
-                case EnemyID.Ghost:
-                    nearestIndex = SearchPlayer(
-                        data.Position,
-                        data.GhostSearchRadius,
-                        PlayerPositions,
-                        PlayerCellMap,
-                        GridWidth,
-                        CellSize
-                    );
-                    break;
-            }
-
-            data.TargetIndex = nearestIndex;
+            data.TargetIndex = searchResult.Index;
+            data.Target = searchResult.TargetType;
             data.State = (byte)EnemyState.Search;
             InputDatas[index] = data;
-            
+
         }
+        
 
-        static int SearchTreasure(
-                Vector3 myPosition,
-                float searchRadius,
-                NativeArray<Vector3> targetPositions,
-                NativeParallelMultiHashMap<int, int> cellMap,
-                int gridWidth,
-                float cellSize
-                )
-        {
-
-            int myX = Mathf.FloorToInt(myPosition.x / cellSize);
-            int myZ = Mathf.FloorToInt(myPosition.z / cellSize);
-            int myCellId = myX + (myZ * gridWidth);
-            int sreachCell = (int)(searchRadius / cellSize);
-            //int sreachCell = Mathf.CeilToInt(data.GhostSearchRadius / CellSize);  //  サーチ漏れがなくなるが処理負荷も上がるので実装するときは最適化と一緒にする。
-
-            float minDistance = float.MaxValue;
-            int nearestIndex = -1;
-
-            for (int dz = -sreachCell; dz <= sreachCell; dz++)
-            {
-                for (int dx = -sreachCell; dx <= sreachCell; dx++)
-                {
-                    int targetCellId = (myX + dx) + ((myZ + dz) * gridWidth);
-
-                    if (cellMap.TryGetFirstValue(targetCellId, out int entityIndex, out var iterator))
-                    {
-                        do
-                        {
-                            if (entityIndex < 0 || entityIndex >= targetPositions.Length)
-                                continue;
-                            float dist = Vector3.Distance(myPosition, targetPositions[entityIndex]);
-
-                            if (dist < searchRadius && dist < minDistance)
-                            {
-                                minDistance = dist;
-                                nearestIndex = entityIndex;
-                            }
-
-                        } while (cellMap.TryGetNextValue(out entityIndex, ref iterator));
-                    }
-                }
-            }
-            return nearestIndex;
-        }
-        static int SearchPlayer(
+        static SearchResult SearchNearest(
+            EnemyID enemyId,
             Vector3 myPosition,
             float searchRadius,
-            NativeArray<Vector3> targetPositions,
-            NativeParallelMultiHashMap<int, int> cellMap,
+            NativeArray<Vector3> treasurePositions,
+            NativeParallelMultiHashMap<int, int> treasureCellMap,
+            NativeArray<Vector3> playerPositions,
+            NativeParallelMultiHashMap<int, int> playerCellMap,
             int gridWidth,
             float cellSize
-            )
+        )
         {
-
             int myX = Mathf.FloorToInt(myPosition.x / cellSize);
             int myZ = Mathf.FloorToInt(myPosition.z / cellSize);
-            int myCellId = myX + (myZ * gridWidth);
-            int sreachCell = (int)(searchRadius / cellSize);
-            //int sreachCell = Mathf.CeilToInt(data.GhostSearchRadius / CellSize);  //  サーチ漏れがなくなるが処理負荷も上がるので実装するときは最適化と一緒にする。
+            int searchCell = (int)(searchRadius / cellSize);
+            float searchRadiusSq = searchRadius * searchRadius;
 
-            float minDistance = float.MaxValue;
+            float minDistanceSq = float.MaxValue;
             int nearestIndex = -1;
+            EnemyTarget targetType = EnemyTarget.None;
 
-            for (int dz = -sreachCell; dz <= sreachCell; dz++)
+            for (int dz = -searchCell; dz <= searchCell; dz++)
             {
-                for (int dx = -sreachCell; dx <= sreachCell; dx++)
+                for (int dx = -searchCell; dx <= searchCell; dx++)
                 {
                     int targetCellId = (myX + dx) + ((myZ + dz) * gridWidth);
 
-                    if (cellMap.TryGetFirstValue(targetCellId, out int entityIndex, out var iterator))
+                    if (enemyId == EnemyID.Golem || enemyId == EnemyID.Swarm)
                     {
-                        do
+                        if (treasureCellMap.TryGetFirstValue(targetCellId, out int tIndex, out var tIter))
                         {
-                            if (entityIndex < 0 || entityIndex >= targetPositions.Length)
-                                continue;
-                            float dist = Vector3.Distance(myPosition, targetPositions[entityIndex]);
-
-                            if (dist < searchRadius && dist < minDistance)
+                            do
                             {
-                                minDistance = dist;
-                                nearestIndex = entityIndex;
-                            }
+                                if (tIndex < 0 || tIndex >= treasurePositions.Length) continue;
 
-                        } while (cellMap.TryGetNextValue(out entityIndex, ref iterator));
+                                float distSq = (treasurePositions[tIndex] - myPosition).sqrMagnitude;
+                                if (distSq <= searchRadiusSq && distSq < minDistanceSq)
+                                {
+                                    minDistanceSq = distSq;
+                                    nearestIndex = tIndex;
+                                    targetType = EnemyTarget.Treasure;
+                                }
+                            } while (treasureCellMap.TryGetNextValue(out tIndex, ref tIter));
+                        }
+                    }
+
+                    if (enemyId == EnemyID.Ghost || enemyId == EnemyID.Swarm)
+                    {
+                        if (playerCellMap.TryGetFirstValue(targetCellId, out int pIndex, out var pIter))
+                        {
+                            do
+                            {
+                                if (pIndex < 0 || pIndex >= playerPositions.Length) continue;
+
+                                float distSq = (playerPositions[pIndex] - myPosition).sqrMagnitude;
+                                if (distSq <= searchRadiusSq && distSq < minDistanceSq)
+                                {
+                                    minDistanceSq = distSq;
+                                    nearestIndex = pIndex;
+                                    targetType = EnemyTarget.Player;
+                                }
+                            } while (playerCellMap.TryGetNextValue(out pIndex, ref pIter));
+                        }
                     }
                 }
             }
-            return nearestIndex;
+
+            return new SearchResult(nearestIndex, targetType);
         }
     }
 
@@ -166,8 +147,8 @@ namespace CareerQuest.Enemy
         [ReadOnly] public NativeArray<float> TreasureTickness;  // お宝の厚み
         [ReadOnly] public NativeArray<Vector3> PlaeyrPositions;  // プレイヤー座標
         [ReadOnly] public NativeArray<float> PlayerTickness;  // プレイヤーの厚み
-
         public float DeltaTime;
+
         public void Execute(int index)
         {
             var data = InputDatas[index];
@@ -177,6 +158,17 @@ namespace CareerQuest.Enemy
                 return;
             }
 
+            //  キャラごとの固有処理
+            if ((data.UniqueMoveFlag & (uint)EnemyUniqueMoveFlag.Warping) != 0)
+            {
+                data.CurrentUniqueMoveTimer -= DeltaTime;
+                if (data.UniqueMoveTimer <= 0f)
+                {
+                    data.State = (byte)EnemyState.Vanishing;
+                    data.CurrentUniqueMoveTimer = data.UniqueMoveTimer;
+                }
+            }
+
             if ((data.CurrentAttackCoolDown -= DeltaTime) > 0)
             {
                 data.State = (byte)EnemyState.Move;
@@ -184,119 +176,91 @@ namespace CareerQuest.Enemy
                 return;
             }
 
-            switch (data.ID)
+            //  宝物攻撃判断ロジック
+            if (data.Target == EnemyTarget.Treasure)
             {
-                case EnemyID.Golem:
-                    GolemDecision(
-                        ref data,
-                        index,
-                        TreasurePositions,
-                        TreasureTickness
-                   );
-                    break;
-                case EnemyID.Ghost:
-                    GhostDecision(
-                        ref data,
-                        index,
-                        PlaeyrPositions,
-                        PlayerTickness
-                   );
-                    break;
+                Vector3 toTarget = TreasurePositions[data.TargetIndex] - data.Position;
+                float distSqToTarget = toTarget.sqrMagnitude;
+
+                float targetTick = TreasureTickness[data.TargetIndex];
+                float effectiveAttackRange = data.AttackRange + data.BodyTickness + targetTick;
+
+                if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
+                {
+                    data.State = (byte)EnemyState.Attack;
+                    data.CurrentAttackCoolDown = data.AttackCoolDown;
+                }
+                else
+                {
+                    data.State = (byte)EnemyState.Move;
+                }
             }
+            //  プレイヤー攻撃判断ロジック
+            else if (data.Target == EnemyTarget.Player)
+            {
+                Vector3 toTarget = PlaeyrPositions[data.TargetIndex] - data.Position;
+                float distSqToTarget = toTarget.sqrMagnitude;
+
+                float targetRadius = PlayerTickness[data.TargetIndex];
+                float effectiveAttackRange = data.AttackRange + data.BodyTickness + targetRadius;
+
+                if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
+                {
+                    data.State = (byte)EnemyState.Attack;
+                    data.CurrentAttackCoolDown = data.AttackCoolDown;
+                }
+                else
+                {
+                    data.State = (byte)EnemyState.Move;
+                }
+            }
+
             OutputDatas[index] = data;
         }
-
-        #region ゴーレム攻撃判断
-        static void GolemDecision(
-        ref EnemyData data,
-        int index,
-        NativeArray<Vector3> treasurePositions,
-        NativeArray<float> treasureTickness
-            )
-        {
-            Vector3 toTarget = treasurePositions[data.TargetIndex] - data.Position;
-            float distSqToTarget = toTarget.sqrMagnitude;
-
-            float targetRadius = treasureTickness[data.TargetIndex];
-            float effectiveAttackRange = data.GolemAttackRange + data.GhostTickness + targetRadius;
-
-            if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
-            {
-                data.State = (byte)EnemyState.Attack;
-                data.CurrentAttackCoolDown = data.GolemAttackCoolDown;
-            }
-            else 
-            {
-                data.State = (byte)EnemyState.Move;
-            }
-        }
-        #endregion
-
-        #region ゴースト攻撃判断
-        static void GhostDecision(
-        ref EnemyData data,
-        int index,
-        NativeArray<Vector3> playerPositions,
-        NativeArray<float> playerTickness
-            )
-        {
-            Vector3 toTarget = playerPositions[data.TargetIndex] - data.Position;
-            float distSqToTarget = toTarget.sqrMagnitude;
-
-            float targetRadius = playerTickness[data.TargetIndex];
-            float effectiveAttackRange = data.GolemAttackRange + data.GhostTickness + targetRadius;
-
-            if (distSqToTarget < effectiveAttackRange * effectiveAttackRange)
-            {
-                data.State = (byte)EnemyState.Attack;
-                data.CurrentAttackCoolDown = data.GhostAttackCoolDown;
-            }
-            else
-            {
-                data.State = (byte)EnemyState.Move;
-            }
-        }
     }
-}
-#endregion
 
-//  当たり判定判断
-[BurstCompile]
-public struct CollisionJob : IJobParallelFor
-{
-    [ReadOnly] public NativeArray<EnemyData> Enemies;
-    [ReadOnly] public NativeArray<BulletData> Bullets;
-
-    public NativeList<BulletHitData>.ParallelWriter HitData;
-    public void Execute(int index)
+    //  当たり判定判断
+    [BurstCompile]
+    public struct CollisionJob : IJobParallelFor
     {
-        var enemy = Enemies[index];
-        if (enemy.CurrentHp <= 0) return;
+        [ReadOnly] public NativeArray<EnemyData> Enemies;
+        [ReadOnly] public NativeArray<BulletData> Bullets;
 
-        for (int p = 0; p < Bullets.Length; p++)
+        public NativeList<BulletHitData>.ParallelWriter HitData;
+        public void Execute(int index)
         {
-            var proj = Bullets[p];
-            if (!proj.IsActive) continue;
+            var enemy = Enemies[index];
+            if (
+                enemy.CurrentHp <= 0
+                || enemy.State == (byte)EnemyState.Invincible
+                ) 
+                return;
 
-            float sqrDist = (enemy.Position - proj.Position).sqrMagnitude;
-            float tickness = enemy.ID switch
+            for (int p = 0; p < Bullets.Length; p++)
             {
-                EnemyID.Golem => enemy.GolemTickness,
-                EnemyID.Ghost => enemy.GhostTickness,
-                _ => 0f
-            };
-            float hitRadius = proj.Radius + tickness;
+                var proj = Bullets[p];
+                if (!proj.IsActive) continue;
 
-            if (sqrDist <= hitRadius * hitRadius)
-            {
-                HitData.AddNoResize(new BulletHitData 
+
+                Vector3 tmpE = enemy.Position;
+                Vector3 tmpP = proj.Position;
+                float sqrDist = (enemy.Position - proj.Position).sqrMagnitude;
+                float hitRadius = proj.Radius + enemy.BodyTickness;
+
+                if (sqrDist <= hitRadius * hitRadius)
                 {
-                    BulletIndex = p,
-                    EnemyIndex = index,
-                    Damage = proj.Damage,
-                });
+                    //float actualDist = Mathf.Sqrt(sqrDist);
+                    //MyLogger.ErrorLog($"【判定確認】 実測距離: {actualDist:F2} / 許容半径: {hitRadius} (設定値のミスがないかチェック)");
+                    //MyLogger.ErrorLog($" 敵座標: {tmpE:F2}  弾座標: {tmpP}");
+                    HitData.AddNoResize(new BulletHitData
+                    {
+                        BulletIndex = p,
+                        EnemyIndex = index,
+                        Damage = proj.Damage,
+                    });
 
-                break;
+                    break;
+                }
             }
         }
     }

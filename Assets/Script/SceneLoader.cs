@@ -13,7 +13,6 @@ public class SceneLoader : MonoBehaviour
     private void Awake()
     {
         ServiceLocator.Register(this);
-
         DontDestroyOnLoad(this);
     }
 

@@ -4,16 +4,9 @@ using UnityEngine;
 
 public class PlayerCombat : MonoBehaviour
 {
-    // 仕様する攻撃方法
-    [SerializeField] private AttackBase attack;
-
-    // 索敵範囲
+    [Header("索敵設定")]
     [SerializeField] private float searchRange = 80f;
-
-    // 索敵する対象のLayer
     [SerializeField] private LayerMask enemyLayer;
-
-    // 索敵を実行する間隔
     [SerializeField] private float searchInterval = 0.2f;
 
     // 現在攻撃対象になっている敵
@@ -25,9 +18,20 @@ public class PlayerCombat : MonoBehaviour
     // プレイヤーの状態管理
     private PlayerStateManager stateManager;
 
+    // クラス別ステータス
+    private UnitStats unitStats;
+
+    // 攻撃コンポーネント
+    private MeleeAttack meleeAttack;
+    private RangedAttack rangedAttack;
+
     private void Awake()
     {
         stateManager = GetComponent<PlayerStateManager>();
+        unitStats = GetComponent<UnitStats>();
+
+        meleeAttack = GetComponent<MeleeAttack>();
+        rangedAttack = GetComponent<RangedAttack>();
     }
 
     private void Update()
@@ -47,6 +51,12 @@ public class PlayerCombat : MonoBehaviour
         if (stateManager.IsCarryMode())
         {
             target = null;
+            return;
+        }
+
+        // クラス設定がなければ攻撃しない
+        if (unitStats == null || unitStats.ClassData == null)
+        {
             return;
         }
 
@@ -76,14 +86,27 @@ public class PlayerCombat : MonoBehaviour
             return;
         }
 
-        // 設定されている攻撃方法で攻撃
-        if (attack != null)
+        // クラス設定に応じて攻撃方法を切り替える
+        switch (unitStats.AttackType)
         {
-            attack.TryAttack(target);
+            case UnitAttackType.Melee:
+                if (meleeAttack != null)
+                {
+                    meleeAttack.TryAttack(target);
+                }
+                break;
+
+            case UnitAttackType.Ranged:
+                if (rangedAttack != null)
+                {
+                    rangedAttack.TryAttack(target);
+                }
+                break;
         }
+
     }
 
-    
+
     // 索敵範囲内から一番近い敵を探す
     private void SearchEnemy()
     {
@@ -105,8 +128,9 @@ public class PlayerCombat : MonoBehaviour
 
         foreach (Collider enemy in enemies)
         {
-            // プレイヤーから敵までの距離を計算
-            float distance = Vector3.SqrMagnitude(enemy.transform.position - transform.position);
+            if (enemy == null) continue;
+
+            float distance = (enemy.transform.position - transform.position).sqrMagnitude;
 
             // 今まで見つけた敵より近ければ更新
             if (distance < nearestDistance)

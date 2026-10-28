@@ -85,25 +85,12 @@ namespace CareerQuest.Enemy
             playerHelth?.TakeDamage(EnemyData.AttackPower);
         }
 
-        public void ApplyDamage(byte damage)
-        {
-            if (EnemyData.State == (byte)EnemyState.Invincible) return;
-
-            EnemyData.CurrentHp -= damage;
-
-            if (EnemyData.CurrentHp <= 0)
-            {
-
-            }
-        }
-
         void OnTriggerEnter(Collider other)
         {
             if (other.CompareTag("Bullet"))
             {
                 if (other.TryGetComponent<IBullet>(out var bullet))
                 {
-                    MyLogger.ErrorLog("123");
                     if (_enemyMgr != null)
                     {
                         _enemyMgr.EnqueueDamage(index, bullet.Damage);

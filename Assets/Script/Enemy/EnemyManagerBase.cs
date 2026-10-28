@@ -1,8 +1,8 @@
-using CareerQuest.Core;
-using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Pool;
+using System.Collections.Generic;
+using CareerQuest.Core;
 
 
 namespace CareerQuest.Enemy
@@ -36,10 +36,12 @@ namespace CareerQuest.Enemy
         NativeArray<EnemyData> _statCache;
 
         protected readonly List<DamageInfo> pendingDamages = new List<DamageInfo>(128);
+        protected readonly List<StateInfo> pendingStates = new List<StateInfo>(128);
         protected List<RuntimeSpawnPoint> runtimeSpawnPoints = new List<RuntimeSpawnPoint>();
 
         protected virtual void Awake()
         {
+            ServiceLocator.Register(this);
             treasureHashManager = ServiceLocator.Resolve<TreasureHashManager>();
             playerHashManager = ServiceLocator.Resolve<PlayerHashManager>();
             enemyHashManager = ServiceLocator.Resolve<EnemyHashManager>();
@@ -148,6 +150,8 @@ namespace CareerQuest.Enemy
             if (bufferB.IsCreated) bufferB.Dispose();
 
             if (_statCache.IsCreated) _statCache.Dispose();
+
+            ServiceLocator.Unregister(this);
         }
 
         //  生成
@@ -213,6 +217,10 @@ namespace CareerQuest.Enemy
         public void EnqueueDamage(int index, byte dmg)
         {
             pendingDamages.Add(new DamageInfo { Index = index, Damage = dmg });
+        }
+        public void ChangeState(int index, EnemyState state)
+        {
+            pendingStates.Add(new StateInfo { Index = index, State = state });
         }
 
         //  削除

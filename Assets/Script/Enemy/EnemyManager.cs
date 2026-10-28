@@ -131,6 +131,19 @@ namespace CareerQuest.Enemy
             }
             pendingDamages.Clear();
 
+
+            for (int i = 0; i < pendingStates.Count; i++)
+            {
+                var state = pendingStates[i];
+                if (state.Index >= 0 && state.Index < writeBuffer.Length)
+                {
+                    var enemy = writeBuffer[state.Index];
+                    enemy.State = (byte)state.State;
+                    writeBuffer[state.Index] = enemy;
+                }
+            }
+            pendingStates.Clear();
+
             for (int i = activeEnemyEntities.Count - 1; i >= 0; i--)
             {
                 var enemyData = writeBuffer[i];
@@ -161,11 +174,6 @@ namespace CareerQuest.Enemy
         protected override void OnDestroy()
         {
             base.OnDestroy();
-        }
-
-        public void ChangeHP(int hp, int index)
-        {
-
         }
 
         //  マップの要素のアクティブ数を検査数r

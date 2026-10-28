@@ -318,7 +318,7 @@ GameObject:
   - component: {fileID: 513373725462831706}
   - component: {fileID: 5907018954908045266}
   m_Layer: 8
-  m_Name: Ghost_test
+  m_Name: Ghost
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -423,6 +423,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CareerQuest.Enemy.EnemyController
   _id: 1
+  _tg: 0
   index: 0
 --- !u!136 &5907018954908045266
 CapsuleCollider:

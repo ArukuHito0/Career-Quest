@@ -18,12 +18,16 @@ public class MeleeAttack : AttackBase
         if (target == null)
             return false;
 
+        // ƒNƒ‰ƒXİ’è‚©‚çUŒ‚”ÍˆÍ‚ğæ“¾‚·‚é
+        UnitStats unitStats = GetComponent<UnitStats>();
+
+        float currentAttackRange = unitStats != null ? unitStats.AttackRange : attackRange;
 
         // ƒvƒŒƒCƒ„[‚©‚ç“G‚Ü‚Å‚Ì‹——£‚ğŒvZ
         float distance = Vector3.Distance(transform.position, target.position);
 
         // UŒ‚”ÍˆÍŠO‚È‚çUŒ‚‚µ‚È‚¢
-        if (distance > attackRange)
+        if (distance > currentAttackRange)
             return false;
 
         // UŒ‚”ÍˆÍ‚ğ•\¦

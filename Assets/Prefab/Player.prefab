@@ -702,6 +702,7 @@ GameObject:
   - component: {fileID: 666047968267801402}
   - component: {fileID: 3178684515671260290}
   - component: {fileID: 935936343727488596}
+  - component: {fileID: 1601167039819378928}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -1006,6 +1007,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f3914f4abb9014140b5e20577fda588d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerLogCollector
+--- !u!114 &1601167039819378928
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7774153936240716589}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10200ab7a8c47c64cac91f8b8c108985, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnitStats
+  classData: {fileID: 11400000, guid: e5f349bbf1c86f34194cef9815e907eb, type: 2}
 --- !u!1 &7834810437445244640
 GameObject:
   m_ObjectHideFlags: 0
@@ -1629,7 +1643,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5967547302286870029, guid: 66d5d6f005f2b4143a14c0a790f36bfa, type: 3}
       propertyPath: m_Enabled
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6327033506565122323, guid: 66d5d6f005f2b4143a14c0a790f36bfa, type: 3}
       propertyPath: m_Name

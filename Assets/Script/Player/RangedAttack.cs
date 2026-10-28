@@ -1,6 +1,5 @@
 using CareerQuest.Core;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 public class RangedAttack : AttackBase
 {
@@ -31,11 +30,12 @@ public class RangedAttack : AttackBase
         }
 
         // ’ePrefab‚ªİ’è‚³‚ê‚Ä‚¢‚È‚¯‚ê‚ÎUŒ‚‚µ‚È‚¢
-        if (currentBulletPrefab != null)
+        if (currentBulletPrefab == null)
         {
             return false;
         }
 
+        // ’e‚ğ¶¬‚·‚é
         GameObject bulletObject = Instantiate(currentBulletPrefab, firePoint.position, firePoint.rotation);
 
         // ’e‚ÉUŒ‚‘ÎÛ‚ğ“n‚·

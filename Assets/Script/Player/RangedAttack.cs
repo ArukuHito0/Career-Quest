@@ -1,5 +1,6 @@
 using CareerQuest.Core;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class RangedAttack : AttackBase
 {
@@ -13,21 +14,36 @@ public class RangedAttack : AttackBase
     protected override bool Attack(Transform target)
     {
         MyLogger.Log("ƒvƒŒƒCƒ„[‰“‹——£UŒ‚");
-        // ’e‚â”­Ë’n“_‚ªİ’è‚³‚ê‚Ä‚¢‚È‚¯‚ê‚ÎUŒ‚‚µ‚È‚¢
-        if (bulletPrefab == null || firePoint == null)
+
+        if (target == null || firePoint == null)
             return false;
 
-        // ’e‚ğ¶¬
-        GameObject bulletObject = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+        // ƒNƒ‰ƒXİ’è‚©‚ç’ePrefab‚ğæ“¾‚·‚é
+        UnitStats unitStats = GetComponent<UnitStats>();
 
-        // ¶¬‚µ‚½’e‚ÌBulletƒXƒNƒŠƒvƒg‚ğæ“¾
-        Bullet bullet = bulletObject.GetComponent<Bullet>();
+        GameObject currentBulletPrefab = bulletPrefab;
+
+        if (unitStats != null &&
+            unitStats.ClassData != null &&
+            unitStats.ClassData.projectilePrefab != null)
+        {
+            currentBulletPrefab = unitStats.ClassData.projectilePrefab;
+        }
+
+        // ’ePrefab‚ªİ’è‚³‚ê‚Ä‚¢‚È‚¯‚ê‚ÎUŒ‚‚µ‚È‚¢
+        if (currentBulletPrefab != null)
+        {
+            return false;
+        }
+
+        GameObject bulletObject = Instantiate(currentBulletPrefab, firePoint.position, firePoint.rotation);
 
         // ’e‚ÉUŒ‚‘ÎÛ‚ğ“n‚·
+        Bullet bullet = bulletObject.GetComponent<Bullet>();
+
         if (bullet != null)
         {
             bullet.SetTarget(target);
-            return true;
         }
 
         return true;

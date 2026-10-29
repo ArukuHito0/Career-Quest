@@ -1,8 +1,8 @@
-using CareerQuest.Core;
-using CareerQuest.Player;
 using UnityEngine;
 using UnityEngine.AI;
 using UAssert = UnityEngine.Assertions.Assert;
+using CareerQuest.Core;
+using CareerQuest.Player;
 
 namespace CareerQuest.Enemy
 {
@@ -16,7 +16,7 @@ namespace CareerQuest.Enemy
 
         EnemyHashManager _hashMgr;
         EnemyManagerBase _enemyMgr;
-        
+
         [SerializeField] EnemyID _id = EnemyID.Golem;
         public EnemyData EnemyData;
         ISpatialEntity _target;
@@ -30,6 +30,7 @@ namespace CareerQuest.Enemy
         public float Tickness { get; set; }  // オブジェクトの厚さ
 
         public ISpatialEntity Target { get => _target; set => _target = value; }
+
 
         void Awake()
         {

@@ -4,7 +4,6 @@ using UnityEngine.Pool;
 using System.Collections.Generic;
 using CareerQuest.Core;
 
-
 namespace CareerQuest.Enemy
 {
     [DisallowMultipleComponent]

@@ -21,16 +21,15 @@ namespace CareerQuest.Enemy
         public EnemyData EnemyData;
         ISpatialEntity _target;
 
+        public NavMeshAgent NavAgent { get => _navAgent; private set => _navAgent = value; }
         public EnemyManagerBase EnemyMgrBase { private get => _enemyMgr; set => _enemyMgr = value; }
 
         public int index;
         public EnemyID ID { get => _id; }
-        
         public int Index { get => index; set => index = value; }  // 敵番号
         public float Tickness { get; set; }  // オブジェクトの厚さ
 
         public ISpatialEntity Target { get => _target; set => _target = value; }
-
 
         void Awake()
         {

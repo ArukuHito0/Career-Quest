@@ -113,36 +113,36 @@ namespace CareerQuest.Enemy
                 }
             }
 
-            for (int i = 0; i < pendingDamages.Count; i++)
+            for (int i = 0; i < pendingInfo.Count; i++)
             {
-                var dmg = pendingDamages[i];
-                if (dmg.Index >= 0 && dmg.Index < writeBuffer.Length)
+                var info = pendingInfo[i];
+                if (info.Index >= 0 && info.Index < writeBuffer.Length)
                 {
-                    var enemy = writeBuffer[dmg.Index];
-                    if (enemy.State != (byte)EnemyState.Invincible)
+                    var enemy = writeBuffer[info.Index];
+                    if (
+                        info.InfoType == InfoType.Damage
+                        && enemy.State != (byte)EnemyState.Invincible
+                        && enemy.CurrentHp > 0
+                        )
                     {
-                        if ((enemy.CurrentHp -= dmg.Damage) <= 0)
+                        enemy.CurrentHp -= info.Damage;
+                        if(enemy.CurrentHp <= 0)
                         {
                             enemy.State = (byte)EnemyState.Dead;
                         }
-                        writeBuffer[dmg.Index] = enemy;
                     }
+                    else if (info.InfoType == InfoType.State)
+                    {
+                        enemy.State = (byte)info.State;
+                    }
+                    else if (info.InfoType == InfoType.Speed)
+                    {
+                        activeEnemyEntities[info.Index].NavAgent.speed = info.MoveSpd;
+                    }
+                    writeBuffer[info.Index] = enemy;
                 }
             }
-            pendingDamages.Clear();
-
-
-            for (int i = 0; i < pendingStates.Count; i++)
-            {
-                var state = pendingStates[i];
-                if (state.Index >= 0 && state.Index < writeBuffer.Length)
-                {
-                    var enemy = writeBuffer[state.Index];
-                    enemy.State = (byte)state.State;
-                    writeBuffer[state.Index] = enemy;
-                }
-            }
-            pendingStates.Clear();
+            pendingInfo.Clear();
 
             for (int i = activeEnemyEntities.Count - 1; i >= 0; i--)
             {

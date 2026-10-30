@@ -1,8 +1,8 @@
-using CareerQuest.Core;
-using CareerQuest.Player;
 using UnityEngine;
 using UnityEngine.AI;
 using UAssert = UnityEngine.Assertions.Assert;
+using CareerQuest.Core;
+using CareerQuest.Player;
 
 namespace CareerQuest.Enemy
 {
@@ -16,16 +16,16 @@ namespace CareerQuest.Enemy
 
         EnemyHashManager _hashMgr;
         EnemyManagerBase _enemyMgr;
-        
+
         [SerializeField] EnemyID _id = EnemyID.Golem;
         public EnemyData EnemyData;
         ISpatialEntity _target;
 
+        public NavMeshAgent NavAgent { get => _navAgent; private set => _navAgent = value; }
         public EnemyManagerBase EnemyMgrBase { private get => _enemyMgr; set => _enemyMgr = value; }
 
         public int index;
         public EnemyID ID { get => _id; }
-        
         public int Index { get => index; set => index = value; }  // 敵番号
         public float Tickness { get; set; }  // オブジェクトの厚さ
 
@@ -85,25 +85,12 @@ namespace CareerQuest.Enemy
             playerHelth?.TakeDamage(EnemyData.AttackPower);
         }
 
-        public void ApplyDamage(byte damage)
-        {
-            if (EnemyData.State == (byte)EnemyState.Invincible) return;
-
-            EnemyData.CurrentHp -= damage;
-
-            if (EnemyData.CurrentHp <= 0)
-            {
-
-            }
-        }
-
         void OnTriggerEnter(Collider other)
         {
             if (other.CompareTag("Bullet"))
             {
                 if (other.TryGetComponent<IBullet>(out var bullet))
                 {
-                    MyLogger.ErrorLog("123");
                     if (_enemyMgr != null)
                     {
                         _enemyMgr.EnqueueDamage(index, bullet.Damage);

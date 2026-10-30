@@ -60,7 +60,6 @@ namespace CareerQuest.Enemy
 
             data.TargetIndex = searchResult.Index;
             data.Target = searchResult.TargetType;
-            data.State = (byte)EnemyState.Search;
             InputDatas[index] = data;
 
         }
@@ -171,7 +170,7 @@ namespace CareerQuest.Enemy
 
             if ((data.CurrentAttackCoolDown -= DeltaTime) > 0)
             {
-                data.State = (byte)EnemyState.Move;
+                data.State = (byte)EnemyState.Idle;
                 OutputDatas[index] = data;
                 return;
             }
@@ -190,10 +189,6 @@ namespace CareerQuest.Enemy
                     data.State = (byte)EnemyState.Attack;
                     data.CurrentAttackCoolDown = data.AttackCoolDown;
                 }
-                else
-                {
-                    data.State = (byte)EnemyState.Move;
-                }
             }
             //  プレイヤー攻撃判断ロジック
             else if (data.Target == EnemyTarget.Player)
@@ -208,10 +203,6 @@ namespace CareerQuest.Enemy
                 {
                     data.State = (byte)EnemyState.Attack;
                     data.CurrentAttackCoolDown = data.AttackCoolDown;
-                }
-                else
-                {
-                    data.State = (byte)EnemyState.Move;
                 }
             }
 

@@ -397,6 +397,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CareerQuest.Enemy.EnemyController
   _id: 1
+  Models: []
   index: 0
 --- !u!136 &5907018954908045266
 CapsuleCollider:

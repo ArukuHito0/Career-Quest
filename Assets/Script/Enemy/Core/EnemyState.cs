@@ -3,11 +3,11 @@ namespace CareerQuest.Enemy
     //  “G‚Ìó‘Ô
     public enum EnemyState : byte
     {
-        Invincible = 0,  // –³“Gó‘Ô
-        Search     = 1,  // üˆÍ‚Ì’Tõ’†
-        Move       = 2,  // ˆÚ“®’†
-        Attack     = 3,  // UŒ‚’†
-        Vanishing  = 4,  // Á–Å’†
+        Idle @@@= 0,  // ’Êí
+        Invincible = 1,  // –³“Gó‘Ô
+        Attack     = 2,  // UŒ‚’†
+        Vanishing  = 3,  // Á–Å’†
+        Stack      = 4,  // ƒnƒ}‚è’†
         Dead       = 5,  // €–S
     }
 }

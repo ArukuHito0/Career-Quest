@@ -1,9 +1,8 @@
-using CareerQuest.Core;
-using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Pool;
-
+using System.Collections.Generic;
+using CareerQuest.Core;
 
 namespace CareerQuest.Enemy
 {
@@ -35,11 +34,12 @@ namespace CareerQuest.Enemy
         [SerializeField] EnemyStatHolder _enemyStatHolder;  // ステータス保持SO
         NativeArray<EnemyData> _statCache;
 
-        protected readonly List<DamageInfo> pendingDamages = new List<DamageInfo>(128);
+        protected readonly List<pendingInfo> pendingInfo = new List<pendingInfo>(128);
         protected List<RuntimeSpawnPoint> runtimeSpawnPoints = new List<RuntimeSpawnPoint>();
 
         protected virtual void Awake()
         {
+            ServiceLocator.Register(this);
             treasureHashManager = ServiceLocator.Resolve<TreasureHashManager>();
             playerHashManager = ServiceLocator.Resolve<PlayerHashManager>();
             enemyHashManager = ServiceLocator.Resolve<EnemyHashManager>();
@@ -117,6 +117,7 @@ namespace CareerQuest.Enemy
                     GroupVolume = stat.GroupVolume,
 
                     Hp = stat.HP,
+                    MoveSpd = stat.MoveSpeed,
                     AttackPower = stat.AttackPower,
                     AttackRange = stat.AtackRange,
                     AttackCoolDown = stat.AtackCoolDown,
@@ -148,6 +149,8 @@ namespace CareerQuest.Enemy
             if (bufferB.IsCreated) bufferB.Dispose();
 
             if (_statCache.IsCreated) _statCache.Dispose();
+
+            ServiceLocator.Unregister(this);
         }
 
         //  生成
@@ -197,6 +200,7 @@ namespace CareerQuest.Enemy
                 var enemyData = CreateInitialEnemyData(enemy);
                 enemyData.IsLeader = (cnt == 0) ? (byte)1 : (byte)0;
                 enemy.EnemyData = enemyData;
+                enemy.NavAgent.speed = enemyData.MoveSpd;
 
                 if (isUsingBufferA)
                 {
@@ -212,7 +216,31 @@ namespace CareerQuest.Enemy
         //  受けたダメージを記録(処理競合防止)
         public void EnqueueDamage(int index, byte dmg)
         {
-            pendingDamages.Add(new DamageInfo { Index = index, Damage = dmg });
+            pendingInfo.Add(new pendingInfo {
+                Index = index,
+                InfoType = InfoType.Damage,
+                Damage = dmg 
+            });
+        }
+        //  状態変化を記録(処理競合防止)
+        public void ChangeState(int index, EnemyState state)
+        {
+            pendingInfo.Add(new pendingInfo
+            {
+                Index = index,
+                InfoType = InfoType.State,
+                State = state
+            });
+        }
+        //  移動速度変化を記録(処理競合防止)
+        public void ChangeSpd(int index, float spd)
+        {
+            pendingInfo.Add(new pendingInfo
+            {
+                Index = index,
+                InfoType = InfoType.Speed,
+                MoveSpd = spd
+            });
         }
 
         //  削除
@@ -290,6 +318,7 @@ namespace CareerQuest.Enemy
                 GroupVolume = stat.GroupVolume,
                 Hp = stat.Hp,
                 CurrentHp = stat.Hp,
+                MoveSpd = stat.MoveSpd,
                 AttackPower = stat.AttackPower,
                 AttackRange = stat.AttackRange,
                 AttackCoolDown = stat.AttackCoolDown,

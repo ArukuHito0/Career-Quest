@@ -32,7 +32,7 @@ MonoBehaviour:
       AttackPower: 2
       AtackRange: 1.4
       AtackCoolDown: 1
-      MoveSpeed: 9
+      MoveSpeed: 5
       SearchRadius: 30
       GroupVolume: 1
       UniqueMoveTimer: 5
@@ -42,7 +42,7 @@ MonoBehaviour:
   - ID: 2
     Stat:
       HP: 40
-      AttackPower: 20
+      AttackPower: 15
       AtackRange: 1
       AtackCoolDown: 1
       MoveSpeed: 9

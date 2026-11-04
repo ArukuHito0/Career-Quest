@@ -14,6 +14,7 @@ namespace CareerQuest.Enemy
 
         public int Hp;                       // ‘Ì—Í
         public int CurrentHp;                // Œ»İ‚Ì‘Ì—Í
+        public float MoveSpd;                // ˆÚ“®‘¬“x
         public int AttackPower;              // UŒ‚—Í
         public float AttackRange;            // UŒ‚”ÍˆÍ
         public float AttackCoolDown;         // UŒ‚ŠÔŠu

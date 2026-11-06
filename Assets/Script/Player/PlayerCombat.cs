@@ -5,7 +5,6 @@ using UnityEngine;
 public class PlayerCombat : MonoBehaviour
 {
     [Header("索敵設定")]
-    [SerializeField] private float searchRange = 80f;
     [SerializeField] private LayerMask enemyLayer;
     [SerializeField] private float searchInterval = 0.2f;
 
@@ -24,6 +23,8 @@ public class PlayerCombat : MonoBehaviour
     // 攻撃コンポーネント
     private MeleeAttack meleeAttack;
     private RangedAttack rangedAttack;
+
+    private float searchRange => unitStats != null ? unitStats.AttackRange : 0f;
 
     private void Awake()
     {

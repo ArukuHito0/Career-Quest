@@ -113,23 +113,36 @@ namespace CareerQuest.Enemy
                 }
             }
 
-            for (int i = 0; i < pendingDamages.Count; i++)
+            for (int i = 0; i < pendingInfo.Count; i++)
             {
-                var dmg = pendingDamages[i];
-                if (dmg.Index >= 0 && dmg.Index < writeBuffer.Length)
+                var info = pendingInfo[i];
+                if (info.Index >= 0 && info.Index < writeBuffer.Length)
                 {
-                    var enemy = writeBuffer[dmg.Index];
-                    if (enemy.State != (byte)EnemyState.Invincible)
+                    var enemy = writeBuffer[info.Index];
+                    if (
+                        info.InfoType == InfoType.Damage
+                        && enemy.State != (byte)EnemyState.Invincible
+                        && enemy.CurrentHp > 0
+                        )
                     {
-                        if ((enemy.CurrentHp -= dmg.Damage) <= 0)
+                        enemy.CurrentHp -= info.Damage;
+                        if(enemy.CurrentHp <= 0)
                         {
                             enemy.State = (byte)EnemyState.Dead;
                         }
-                        writeBuffer[dmg.Index] = enemy;
                     }
+                    else if (info.InfoType == InfoType.State)
+                    {
+                        enemy.State = (byte)info.State;
+                    }
+                    else if (info.InfoType == InfoType.Speed)
+                    {
+                        activeEnemyEntities[info.Index].NavAgent.speed = info.MoveSpd;
+                    }
+                    writeBuffer[info.Index] = enemy;
                 }
             }
-            pendingDamages.Clear();
+            pendingInfo.Clear();
 
             for (int i = activeEnemyEntities.Count - 1; i >= 0; i--)
             {
@@ -161,11 +174,6 @@ namespace CareerQuest.Enemy
         protected override void OnDestroy()
         {
             base.OnDestroy();
-        }
-
-        public void ChangeHP(int hp, int index)
-        {
-
         }
 
         //  マップの要素のアクティブ数を検査数r

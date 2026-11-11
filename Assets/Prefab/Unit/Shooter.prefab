@@ -703,6 +703,7 @@ GameObject:
   - component: {fileID: 3178684515671260290}
   - component: {fileID: 935936343727488596}
   - component: {fileID: 1601167039819378928}
+  - component: {fileID: 8535296497608896320}
   m_Layer: 0
   m_Name: Shooter
   m_TagString: Player
@@ -1018,6 +1019,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnitStats
   classData: {fileID: 11400000, guid: e5f349bbf1c86f34194cef9815e907eb, type: 2}
+--- !u!114 &8535296497608896320
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7774153936240716589}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3062ff8c33aa514387ee0abdb469e00, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerUnitRegister
 --- !u!1 &7834810437445244640
 GameObject:
   m_ObjectHideFlags: 0

@@ -277,7 +277,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1550812088799921615
 Transform:
   m_ObjectHideFlags: 0
@@ -473,6 +473,7 @@ GameObject:
   - component: {fileID: 3178684515671260290}
   - component: {fileID: 935936343727488596}
   - component: {fileID: 1601167039819378928}
+  - component: {fileID: 26935033662235227}
   m_Layer: 0
   m_Name: Fighter
   m_TagString: Player
@@ -787,6 +788,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnitStats
   classData: {fileID: 11400000, guid: 34e4aaa47cd0447478c238f6ff319550, type: 2}
+--- !u!114 &26935033662235227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7774153936240716589}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3062ff8c33aa514387ee0abdb469e00, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerUnitRegister
 --- !u!1 &7834810437445244640
 GameObject:
   m_ObjectHideFlags: 0

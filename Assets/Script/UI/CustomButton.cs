@@ -103,7 +103,11 @@ public class CustomButton : MonoBehaviour,
     /// ボタンの使用条件を設定する
     /// </summary>
     /// <param name="eva"></param>
-    public void SetCondition(Func<bool> eva) => _condition = eva;
+    public void SetCondition(Func<bool> eva)
+    {
+        _condition = eva;
+        Refresh();
+    }
 
     /// <summary>
     /// ボタンの使用条件を無くす
@@ -143,13 +147,15 @@ public class CustomButton : MonoBehaviour,
     public void OnPointerDown(PointerEventData e) => Evaluate(e, ButtonEventType.Down);
     #endregion
 
-    private void OnEnable()
+    private void Awake()
     {
-        ServiceLocator.Resolve<CustomButtonManager>().AddButton(this);
+        lastCanInteract = CanInteract;
+
+        //ServiceLocator.Resolve<CustomButtonManager>()?.AddButton(this);
     }
 
-    private void OnDisable()
+    private void OnDestroy()
     {
-        ServiceLocator.Resolve<CustomButtonManager>().RemoveButton(this);
+        //ServiceLocator.Resolve<CustomButtonManager>()?.RemoveButton(this);
     }
 }

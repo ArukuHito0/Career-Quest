@@ -16,6 +16,15 @@ public class TitleUIManager : MonoBehaviour
         CustomButtonSubscriber.Subscribe("CloseAudioSettingsButton", ButtonEventType.Click, CloseAudioSettings);
     }
 
+    private void OnDisable()
+    {
+        CustomButtonSubscriber.Unsubscribe("ContinueButton", ButtonEventType.Click, LobbyLoad);
+        CustomButtonSubscriber.Unsubscribe("StartButton", ButtonEventType.Click, LobbyLoad);
+        CustomButtonSubscriber.Unsubscribe("SettingsButton", ButtonEventType.Click, OpenAudioSettings);
+        CustomButtonSubscriber.Unsubscribe("QuitButton", ButtonEventType.Click, QuitGame);
+        CustomButtonSubscriber.Unsubscribe("CloseAudioSettingsButton", ButtonEventType.Click, CloseAudioSettings);
+    }
+
     private void LobbyLoad()
     {
         ServiceLocator.Resolve<SceneLoader>().Load(SceneType.Lobby);

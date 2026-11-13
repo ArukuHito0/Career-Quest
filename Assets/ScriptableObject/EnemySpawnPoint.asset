@@ -13,8 +13,68 @@ MonoBehaviour:
   m_Name: EnemySpawnPoint
   m_EditorClassIdentifier: Assembly-CSharp::CareerQuest.Enemy.EnemySpawnPos
   SpawnPoints:
-  - Position: {x: 7.755211, y: 11.418784, z: -62.603523}
-    SpawnInterval: 0.8
+  - Position: {x: 40.572235, y: 11.418784, z: -58.615177}
+    SpawnInterval: 5
+    Candidates:
+    - EnemyID: 1
+      Percent: 0.01
+  - Position: {x: 12.456668, y: 11.418784, z: -15.209827}
+    SpawnInterval: 5
+    Candidates:
+    - EnemyID: 1
+      Percent: 0.01
+  - Position: {x: -5.514106, y: 11.418784, z: -8.126293}
+    SpawnInterval: 5
+    Candidates:
+    - EnemyID: 1
+      Percent: 0.01
+  - Position: {x: -42.561916, y: 8.499095, z: -52.872265}
+    SpawnInterval: 5
+    Candidates:
+    - EnemyID: 1
+      Percent: 0.01
+  - Position: {x: -54.093147, y: 9.63467, z: -26.730938}
+    SpawnInterval: 5
+    Candidates:
+    - EnemyID: 1
+      Percent: 0.01
+  - Position: {x: -68.55683, y: 8.703185, z: -47.076775}
+    SpawnInterval: 5
+    Candidates:
+    - EnemyID: 1
+      Percent: 0.01
+  - Position: {x: -60.656796, y: 9.435691, z: 1.4459255}
+    SpawnInterval: 5
+    Candidates:
+    - EnemyID: 1
+      Percent: 0.01
+  - Position: {x: -59.44763, y: 11.418784, z: 30.328228}
+    SpawnInterval: 5
+    Candidates:
+    - EnemyID: 1
+      Percent: 0.01
+  - Position: {x: -69.33278, y: 14.0641165, z: 71.79128}
+    SpawnInterval: 5
+    Candidates:
+    - EnemyID: 1
+      Percent: 0.01
+  - Position: {x: 20.090124, y: 25.83864, z: 38.31099}
+    SpawnInterval: 5
+    Candidates:
+    - EnemyID: 1
+      Percent: 0.01
+  - Position: {x: -46.115437, y: 17.962648, z: 30.821457}
+    SpawnInterval: 5
+    Candidates:
+    - EnemyID: 1
+      Percent: 0.01
+  - Position: {x: 53.43217, y: 10.15147, z: 28.804018}
+    SpawnInterval: 5
+    Candidates:
+    - EnemyID: 1
+      Percent: 0.01
+  - Position: {x: 67.24221, y: 10.15147, z: -21.583143}
+    SpawnInterval: 5
     Candidates:
     - EnemyID: 1
       Percent: 0.01

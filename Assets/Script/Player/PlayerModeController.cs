@@ -7,9 +7,6 @@ public class PlayerModeController : MonoBehaviour
     // モード変更範囲
     [SerializeField] private float changeRange = 5f;
 
-    // プレイヤー一覧
-    [SerializeField] private PlayerMove[] players;
-
     // 範囲を表示するオブジェクト
     [SerializeField] private Transform rangeMarker;
 
@@ -18,6 +15,9 @@ public class PlayerModeController : MonoBehaviour
 
     // 地面として扱うLayer
     [SerializeField] private LayerMask groundLayer;
+
+    // プレイヤー一覧
+    private PlayerMove[] players;
 
     // 現在範囲表示中か
     private bool isSelecting;
@@ -35,6 +35,8 @@ public class PlayerModeController : MonoBehaviour
 
         if (rangeMarker != null)
             rangeMarker.gameObject.SetActive(false);
+
+        players = PlayerUnitRegistry.GetAllPlayerMoves();
     }
 
     private void Update()

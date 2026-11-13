@@ -10,14 +10,14 @@ public class ClickMoveController : MonoBehaviour
     // メインカメラ
     [SerializeField] private Camera mainCamera;
 
-    // プレイヤー一覧
-    [SerializeField] private PlayerMove[] players;
-
     // お宝
     [SerializeField] private CarryObject carryObject;
 
     // クリック位置を表示するマーカー
     [SerializeField] private Transform clickMarker;
+
+    // プレイヤー一覧
+    private PlayerMove[] players;
 
     // UI判定用のリスト
     private readonly List<RaycastResult> uiResults = new();
@@ -26,6 +26,8 @@ public class ClickMoveController : MonoBehaviour
     {
         if (mainCamera == null)
             mainCamera = Camera.main;
+
+        players = PlayerUnitRegistry.GetAllPlayerMoves();
     }
 
     private void Update()

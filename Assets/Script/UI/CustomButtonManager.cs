@@ -44,6 +44,11 @@ public class CustomButtonManager : MonoBehaviour
     {
         if(customButtons.TryGetValue(name, out var button))
             return button;
+
+        var target = GameObject.Find(name).GetComponent<CustomButton>();
+        if(target != null)
+            return target;
+
         return null;
     }
 }

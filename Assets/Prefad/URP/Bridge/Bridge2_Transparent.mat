@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Hasi3
-  m_Shader: {fileID: -6465566751694194690, guid: 08afd1d7fe10e9f42b957ba73f1e1a32, type: 3}
+  m_Name: Bridge2_Transparent
+  m_Shader: {fileID: -6465566751694194690, guid: f9b24c5fb50db414690ba0a495ea5c46, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -43,7 +43,7 @@ Material:
     m_Colors: []
   m_BuildTextureStacks: []
   m_AllowLocking: 1
---- !u!114 &4081581350544784208
+--- !u!114 &3209324935330071959
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}

@@ -1,55 +1,64 @@
-using System.Collections.Generic;
-using Unity.Collections;
-using UnityEngine;
-using CareerQuest.Core;
+//using System.Collections.Generic;
+//using Unity.Collections;
+//using UnityEngine;
+//using CareerQuest.Core;
 
-namespace CareerQuest.Player
-{
-    [DisallowMultipleComponent]
-    [DefaultExecutionOrder(-10)]
-    //  íeä«óùÉNÉâÉX
-    public sealed class BulletManager : MonoBehaviour
-    {
-        public static readonly List<IBullet> ActiveBullets = new List<IBullet>();
+//namespace CareerQuest.Player
+//{
+//    [DisallowMultipleComponent]
+//    [DefaultExecutionOrder(-20)]
+//    //  íeä«óùÉNÉâÉX
+//    public sealed class BulletManager : MonoBehaviour
+//    {
+//        public static List<IBullet> ActiveBullets = new List<IBullet>();
 
-        readonly int _maxBullets = 500; // ç≈ëÂíeêî
-        NativeArray<BulletData> _bulletBuffer;
+//        readonly int _maxBullets = 500; // ç≈ëÂíeêî
+//        NativeArray<BulletData> _bulletBuffer;
 
-        public int ActiveCount => Mathf.Min(ActiveBullets.Count, _maxBullets);
-        public NativeArray<BulletData> BulletBuffer => _bulletBuffer;
+//        public int ActiveCount => Mathf.Min(ActiveBullets.Count, _maxBullets);
+//        public NativeArray<BulletData> BulletBuffer => _bulletBuffer;
 
-        void Awake()
-        {
-            _bulletBuffer = new NativeArray<BulletData>(_maxBullets, Allocator.Persistent);
+//        void Awake()
+//        {
+//            _bulletBuffer = new NativeArray<BulletData>(_maxBullets, Allocator.Persistent);
 
-            ServiceLocator.Register(this);
-        }
+//            ServiceLocator.Register(this);
+//        }
 
-        void Update()
-        {
-            int count = ActiveCount;
+//        void Update()
+//        {
+//            int count = ActiveCount;
 
-            for (int i = 0; i < count; i++)
-            {
-                var bullet = ActiveBullets[i];
-                _bulletBuffer[i] = new BulletData
-                {
-                    Position = bullet.Position,
-                    Radius = bullet.Tickness,
-                    Damage = bullet.Damage,
-                    IsActive = bullet.IsActive
-                };
-            }
-        }
+//            for (int i = 0; i < count; i++)
+//            {
+//                var bullet = ActiveBullets[i] as Bullet;
+//                if (bullet != null && bullet.IsActive)
+//                {
+//                    bullet.Tick(Time.deltaTime);
+//                }
+//            }
 
-        void OnDestroy()
-        {
-            if (_bulletBuffer.IsCreated)
-            {
-                _bulletBuffer.Dispose();
-            }
+//            for (int i = 0; i < count; i++)
+//            {
+//                var bullet = ActiveBullets[i];
+//                _bulletBuffer[i] = new BulletData
+//                {
+//                    Position = bullet.Position,
+//                    Radius = bullet.Tickness,
+//                    Damage = bullet.Damage,
+//                    IsActive = bullet.IsActive
+//                };
+//            }
+//        }
 
-            ServiceLocator.Unregister(this);
-        }
-    }
-}
+//        void OnDestroy()
+//        {
+//            if (_bulletBuffer.IsCreated)
+//            {
+//                _bulletBuffer.Dispose();
+//            }
+
+//            ServiceLocator.Unregister(this);
+//        }
+//    }
+//}

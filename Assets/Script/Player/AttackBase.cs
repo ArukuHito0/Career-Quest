@@ -1,14 +1,21 @@
-using CareerQuest.Core;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public abstract class AttackBase : MonoBehaviour
 {
     // 攻撃間隔
-    [SerializeField] protected float attackInterval = 1f;
+    [SerializeField] protected float attackInterval = 0.2f;
 
     // 最後に攻撃してからの経過時間
     protected float attackTimer;
 
+    // ユニットのクラス設定を取得する
+    private UnitStats unitStats;
+
+    protected virtual void Start()
+    {
+        unitStats = GetComponent<UnitStats>();
+    }
 
     protected virtual void Update()
     {
@@ -16,11 +23,23 @@ public abstract class AttackBase : MonoBehaviour
         attackTimer += Time.deltaTime;
     }
 
+    // 実際に使用する攻撃間隔を取得する
+    protected float GetAttackInterval()
+    {
+        // クラスデータがある場合は、クラスデータの攻撃間隔を使用する
+        if (unitStats != null && unitStats.ClassData != null)
+        {
+            return unitStats.ClassData.attackInterval;
+        }
+
+        // クラスデータがない場合はInspecterの設定値を使用する
+        return attackInterval;
+    }
 
     // 現在攻撃可能か
     public bool CanAttack()
     {
-        return attackTimer >= attackInterval;
+        return attackTimer >= GetAttackInterval();
     }
 
 

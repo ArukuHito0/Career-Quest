@@ -2,25 +2,30 @@ using UnityEngine;
 using UnityEngine.AI;
 using UAssert = UnityEngine.Assertions.Assert;
 using CareerQuest.Core;
+using CareerQuest.Player;
 
 namespace CareerQuest.Enemy
 {
     //  EnemyMgrでしにくい所をするクラス
     [DisallowMultipleComponent]
     [RequireComponent(typeof(NavMeshAgent))]
+    [RequireComponent(typeof(NavMeshAgent))]
     public sealed class EnemyController : MonoBehaviour, ISpatialEntity
     {
         NavMeshAgent _navAgent;
 
-        EnemyHashManager _hashManager;
-        
+        EnemyHashManager _hashMgr;
+        EnemyManagerBase _enemyMgr;
+
         [SerializeField] EnemyID _id = EnemyID.Golem;
         public EnemyData EnemyData;
         ISpatialEntity _target;
 
+        public NavMeshAgent NavAgent { get => _navAgent; private set => _navAgent = value; }
+        public EnemyManagerBase EnemyMgrBase { private get => _enemyMgr; set => _enemyMgr = value; }
+
         public int index;
         public EnemyID ID { get => _id; }
-        
         public int Index { get => index; set => index = value; }  // 敵番号
         public float Tickness { get; set; }  // オブジェクトの厚さ
 
@@ -29,7 +34,7 @@ namespace CareerQuest.Enemy
 
         void Awake()
         {
-            _hashManager = ServiceLocator.Resolve<EnemyHashManager>();
+            _hashMgr = ServiceLocator.Resolve<EnemyHashManager>();
 
             _navAgent = GetComponent<NavMeshAgent>();
             UAssert.IsNotNull(_navAgent, "NavMeshAgentの参照がありません");
@@ -37,7 +42,7 @@ namespace CareerQuest.Enemy
 
         public void Regist()
         {
-            _hashManager.Register(this);
+            _hashMgr.Register(this);
         }
 
         public void SetTarget(Vector3 targetPos)
@@ -78,6 +83,20 @@ namespace CareerQuest.Enemy
             MyLogger.Log("プレイヤー攻撃開始");
             PlayerHealth playerHelth = _target as PlayerHealth;
             playerHelth?.TakeDamage(EnemyData.AttackPower);
+        }
+
+        void OnTriggerEnter(Collider other)
+        {
+            if (other.CompareTag("Bullet"))
+            {
+                if (other.TryGetComponent<IBullet>(out var bullet))
+                {
+                    if (_enemyMgr != null)
+                    {
+                        _enemyMgr.EnqueueDamage(index, bullet.Damage);
+                    }
+                }
+            }
         }
     }
 }

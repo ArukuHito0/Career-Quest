@@ -12,7 +12,7 @@ public class RangedAttack : AttackBase
     // 遠距離攻撃
     protected override bool Attack(Transform target)
     {
-        MyLogger.Log("プレイヤー遠距離攻撃");
+        //MyLogger.Log("プレイヤー遠距離攻撃");
 
         if (target == null || firePoint == null)
             return false;

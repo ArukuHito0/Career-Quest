@@ -2,7 +2,7 @@
 using UnityEditor;
 using UnityEditorInternal;
 
-namespace CareerQuest.Enemy.Edit
+namespace CareerQuest.Enemy
 {
     //  スポーンデータのSOをGUIで操作できるようにするクラス
     [CustomEditor(typeof(EnemySpawnData))]

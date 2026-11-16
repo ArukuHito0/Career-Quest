@@ -17,7 +17,8 @@ namespace CareerQuest.Enemy
         public struct SpawnPoint
         {
             public Vector3 Position;  // スポーン座標
-            [Min(0.1f)] public float SpawnInterval;
+            [Min(0)] public byte StartSpawnCnt;  // 出現回数
+            [Min(0)] public byte TresuareTriggerSpawnCnt;  // お宝取得時出現回数
             public EnemySpawnCandidate[] Candidates;  // この座標で湧く可能性がある敵たち
         }
 
@@ -30,9 +31,13 @@ namespace CareerQuest.Enemy
 
             for (int i = 0; i < SpawnPoints.Length; i++)
             {
-                if (SpawnPoints[i].SpawnInterval < 0.1f)
+                if (SpawnPoints[i].StartSpawnCnt < 0)
                 {
-                    SpawnPoints[i].SpawnInterval = 0.1f;
+                    SpawnPoints[i].StartSpawnCnt = 0;
+                }
+                if (SpawnPoints[i].TresuareTriggerSpawnCnt < 0)
+                {
+                    SpawnPoints[i].TresuareTriggerSpawnCnt = 0;
                 }
 
                 if (SpawnPoints[i].Candidates != null)
@@ -55,8 +60,8 @@ namespace CareerQuest.Enemy
     public struct RuntimeSpawnPoint
     {
         public Vector3 Position;
-        public float CurrentTimer;
-        public float SpawnInterval;
+        public byte StartSpawnCnt;
+        public byte TresureTriggerSpwanCnt;
         public EnemySpawnData.EnemySpawnCandidate[] Candidates;
     }
 }

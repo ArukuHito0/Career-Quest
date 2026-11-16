@@ -87,15 +87,19 @@ namespace CareerQuest.Enemy
             {
                 foreach (var point in spawnPos.SpawnPoints)
                 {
-                    if (point.Candidates == null || point.Candidates.Length == 0) continue;
-
-                    float interval = point.SpawnInterval;
+                     if(
+                        point.Candidates == null
+                        || point.Candidates.Length == 0
+                        || point.StartSpawnCnt == 0
+                        || point.TresuareTriggerSpawnCnt == 0
+                        )
+                        continue;
 
                     runtimeSpawnPoints.Add(new RuntimeSpawnPoint
                     {
                         Position = point.Position,
-                        CurrentTimer = 0f,
-                        SpawnInterval = interval,
+                        StartSpawnCnt = point.StartSpawnCnt,
+                        TresureTriggerSpwanCnt = point.TresuareTriggerSpawnCnt,
                         Candidates = point.Candidates
                     });
                 }
@@ -106,7 +110,7 @@ namespace CareerQuest.Enemy
 
             foreach (EnemyID id in System.Enum.GetValues(typeof(EnemyID)))
             {
-                var stat = _enemyStatHolder.GetStat(id);
+                var stat = _enemyStatHolder.GetStat(id);  // 一旦の仮ステータスキャッシュ
                 int index = (int)id;
 
                 _statCache[index] = new EnemyData
@@ -154,61 +158,84 @@ namespace CareerQuest.Enemy
         }
 
         //  生成
-        public void SpawnEnemy(Vector3 position, EnemyID id)
+        public void SpawnEnemy(GameState state)
         {
-            if (!_pools.TryGetValue(id, out var targetPool))
-                return;
-
-            int volume = _statCache[(int)id].GroupVolume;
-            if (volume <= 0)
-            { volume = 1; }
-            
-            if (activeEnemyEntities.Count + volume > maxEnemyCount)
+            for (int i = 0; i < runtimeSpawnPoints.Count; i++)
             {
-                return;
-            }
-            EnsureBufferSize(activeEnemyEntities.Count + volume);
+                var pointData = runtimeSpawnPoints[i];
+                Vector3 pos = pointData.Position;
+                EnemyID selectedID = LotteryEnemy(pointData.Candidates);
 
-            if (UnityEngine.AI.NavMesh.SamplePosition(position, out var hit, 10f, UnityEngine.AI.NavMesh.AllAreas))
-            {
-                position = hit.position;
-            }
+                int volume = _statCache[(int)selectedID].GroupVolume;
+                if (volume <= 0)
+                { volume = 1; }
 
-            for (int cnt = 0; cnt < volume; cnt++)
-            {
-                var enemy = targetPool.Get();
+                if (activeEnemyEntities.Count > maxEnemyCount)  // 消してよさそう
+                { return; }
+                if (activeEnemyEntities.Count + volume > maxEnemyCount)
+                {
+                    return;
+                }
+
+                EnsureBufferSize(activeEnemyEntities.Count + volume);
+                if (UnityEngine.AI.NavMesh.SamplePosition(pos, out var hit, 10f, UnityEngine.AI.NavMesh.AllAreas))
+                {
+                    pos = hit.position;
+                }
                 
-                var agent = enemy.GetComponent<UnityEngine.AI.NavMeshAgent>();
-                if (agent != null)
-                {
-                    agent.enabled = false;
-                    enemy.transform.position = position;
-                    agent.enabled = true;
-                    agent.Warp(position);
-                }
-                else
-                {
-                    enemy.transform.position = position;
-                }
+                if (!_pools.TryGetValue(selectedID, out var targetPool))
+                { continue; }
 
-                int newIndex = activeEnemyEntities.Count - 1;
-                if (newIndex < 0)
-                {
-                    newIndex = 0;
-                }
+                byte spawnLimit = 0;
+                if(state == GameState.DontGetTreasure)
+                { spawnLimit = pointData.StartSpawnCnt; }
+                else if (state == GameState.GetTreasure)
+                { spawnLimit = pointData.TresureTriggerSpwanCnt; }
+                
+                if(spawnLimit >= 0)
+                { return; }
 
-                var enemyData = CreateInitialEnemyData(enemy);
-                enemyData.IsLeader = (cnt == 0) ? (byte)1 : (byte)0;
-                enemy.EnemyData = enemyData;
-                enemy.NavAgent.speed = enemyData.MoveSpd;
+                for (byte spawnCnt = 0; spawnCnt > spawnLimit;)
+                {
+                    for (int cnt = 0; cnt < volume; cnt++)
+                    {
+                        var enemy = targetPool.Get();
 
-                if (isUsingBufferA)
-                {
-                    bufferA[newIndex] = enemyData;
-                }
-                else
-                {
-                    bufferB[newIndex] = enemyData;
+                        var agent = enemy.GetComponent<UnityEngine.AI.NavMeshAgent>();
+                        if (agent != null)
+                        {
+                            agent.enabled = false;
+                            enemy.transform.position = pos;
+                            agent.enabled = true;
+                            agent.Warp(pos);
+                        }
+                        else
+                        {
+                            enemy.transform.position = pos;
+                        }
+
+                        int newIndex = activeEnemyEntities.Count - 1;
+                        if (newIndex < 0)
+                        {
+                            newIndex = 0;
+                        }
+
+                        var enemyData = CreateInitialEnemyData(enemy);
+                        enemyData.IsLeader = (cnt == 0) ? (byte)1 : (byte)0;
+                        enemy.EnemyData = enemyData;
+                        enemy.NavAgent.speed = enemyData.MoveSpd;
+
+                        if (isUsingBufferA)
+                        {
+                            bufferA[newIndex] = enemyData;
+                        }
+                        else
+                        {
+                            bufferB[newIndex] = enemyData;
+                        }
+
+                        runtimeSpawnPoints[i] = pointData;
+                    }
                 }
             }
         }

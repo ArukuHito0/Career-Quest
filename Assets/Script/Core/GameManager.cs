@@ -4,7 +4,6 @@ using CareerQuest.Core;
 using CareerQuest.Enemy;
 
 [DisallowMultipleComponent]   // 二重アタッチ状態防止
-[DefaultExecutionOrder(-30)]  // 実行順を早くする
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
@@ -29,9 +28,10 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        _enemyMgr = ServiceLocator.Resolve<EnemyManagerBase>();
-
         Instance = this;
+        Debug.Log(Instance);
+
+        _enemyMgr = ServiceLocator.Resolve<EnemyManagerBase>();
     }
 
     void Start()

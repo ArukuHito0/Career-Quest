@@ -1,14 +1,11 @@
+
 using System.Collections;
 using UnityEngine;
 using CareerQuest.Core;
-using CareerQuest.Enemy;
 
-[DisallowMultipleComponent]   // 二重アタッチ状態防止
-[DefaultExecutionOrder(-30)]  // 実行順を早くする
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
-    EnemyManagerBase _enemyMgr;
 
     [Tooltip("ゲーム終了表示からリザルトシーンへ移るまでの秒数")]
     [SerializeField] private float resultSceneDelay = 1.5f;
@@ -29,19 +26,7 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        _enemyMgr = ServiceLocator.Resolve<EnemyManagerBase>();
-
         Instance = this;
-    }
-
-    void Start()
-    {
-        GameStart();
-    }
-
-    public void GameStart()
-    {
-        _enemyMgr.SpawnEnemy(GameState.DontGetTreasure);
     }
 
     public void GameOver()

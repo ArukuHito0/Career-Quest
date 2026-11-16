@@ -20,6 +20,24 @@ namespace CareerQuest.Enemy
         
         void Update()
         {
+            float deltaTime = Time.deltaTime;
+            for (int i = 0; i < runtimeSpawnPoints.Count; i++)
+            {
+                var pointData = runtimeSpawnPoints[i];
+                pointData.CurrentTimer += deltaTime;
+
+                if (pointData.CurrentTimer >= pointData.SpawnInterval)
+                {
+                    pointData.CurrentTimer = 0f;
+
+                    if (activeEnemyEntities.Count < maxEnemyCount)
+                    {
+                        EnemyID selectedID = LotteryEnemy(pointData.Candidates);
+                        SpawnEnemy(pointData.Position, selectedID);
+                    }
+                }
+                runtimeSpawnPoints[i] = pointData;
+            }
             if(CheckActiveCount())
             {
                 return;

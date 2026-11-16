@@ -5,12 +5,17 @@ using UnityEngine.Events;
 public class TitleUIManager : MonoBehaviour
 {
     [SerializeField] private Canvas titleUICanvas;
-    [SerializeField] private Canvas audioSettingsCanvas;
+    private Canvas audioSettingsCanvas;
 
     private void Start()
     {
-        CustomButtonSubscriber.Subscribe("ContinueButton", ButtonEventType.Click, LobbyLoad);
-        CustomButtonSubscriber.Subscribe("StartButton", ButtonEventType.Click, LobbyLoad);
+        audioSettingsCanvas = AudioUIManager.Instance.GetComponent<Canvas>();
+    }
+
+    private void OnEnable()
+    {
+        CustomButtonSubscriber.Subscribe("ContinueButton", ButtonEventType.Click, LoadLobby);
+        CustomButtonSubscriber.Subscribe("StartButton", ButtonEventType.Click, LoadLobby);
         CustomButtonSubscriber.Subscribe("SettingsButton", ButtonEventType.Click, OpenAudioSettings);
         CustomButtonSubscriber.Subscribe("QuitButton", ButtonEventType.Click, QuitGame);
         CustomButtonSubscriber.Subscribe("CloseAudioSettingsButton", ButtonEventType.Click, CloseAudioSettings);
@@ -18,16 +23,16 @@ public class TitleUIManager : MonoBehaviour
 
     private void OnDisable()
     {
-        CustomButtonSubscriber.Unsubscribe("ContinueButton", ButtonEventType.Click, LobbyLoad);
-        CustomButtonSubscriber.Unsubscribe("StartButton", ButtonEventType.Click, LobbyLoad);
+        CustomButtonSubscriber.Unsubscribe("ContinueButton", ButtonEventType.Click, LoadLobby);
+        CustomButtonSubscriber.Unsubscribe("StartButton", ButtonEventType.Click, LoadLobby);
         CustomButtonSubscriber.Unsubscribe("SettingsButton", ButtonEventType.Click, OpenAudioSettings);
         CustomButtonSubscriber.Unsubscribe("QuitButton", ButtonEventType.Click, QuitGame);
         CustomButtonSubscriber.Unsubscribe("CloseAudioSettingsButton", ButtonEventType.Click, CloseAudioSettings);
     }
 
-    private void LobbyLoad()
+    private void LoadLobby()
     {
-        ServiceLocator.Resolve<SceneLoader>().Load(SceneType.Lobby);
+        ServiceLocator.Resolve<SceneLoader>()?.Load(SceneType.Stage);
     }
 
     private void OpenAudioSettings()

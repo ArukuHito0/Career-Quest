@@ -9,6 +9,7 @@ public enum SceneType
 {
     Title,
     Lobby,
+    Stage,
     Result,
     Shop
 }

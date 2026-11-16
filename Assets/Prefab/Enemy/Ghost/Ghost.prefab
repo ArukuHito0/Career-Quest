@@ -454,6 +454,7 @@ GameObject:
   - component: {fileID: 3982231481318408611}
   - component: {fileID: 8282915996120785281}
   - component: {fileID: 6041449917840969190}
+  - component: {fileID: 6768455356004830124}
   m_Layer: 0
   m_Name: Ghost
   m_TagString: Untagged
@@ -526,7 +527,7 @@ MeshCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 5
   m_Convex: 1
   m_CookingOptions: 30
@@ -586,6 +587,27 @@ MonoBehaviour:
   - {fileID: 8904814698260599260}
   - {fileID: 6015385109707106542}
   - {fileID: 8630780191877831052}
+--- !u!65 &6768455356004830124
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 677342841734888832}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.6119352, y: 1.2857319, z: 0.40452355}
+  m_Center: {x: 0.022712419, y: 0.63188183, z: 0.00046432015}
 --- !u!1 &834586208311634268
 GameObject:
   m_ObjectHideFlags: 0
@@ -1174,7 +1196,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &3915406690197023342
 Transform:
   m_ObjectHideFlags: 0

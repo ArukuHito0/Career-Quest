@@ -28,3 +28,8 @@ MonoBehaviour:
   - sceneType: 4
     scene: {fileID: 0}
     sceneName: 
+  registeredScenePaths:
+  - Assets/Scenes/Lobby.unity
+  - Assets/Scenes/Result.unity
+  - Assets/Scenes/Title.unity
+  - Assets/Umeda/TestScene.unity

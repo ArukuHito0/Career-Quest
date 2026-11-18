@@ -41,7 +41,8 @@ public class GameManager : MonoBehaviour
 
     public void GameStart()
     {
-        _enemyMgr.SpawnEnemy(GameState.DontGetTreasure);
+        MyLogger.Log("ゲーム開始");
+        _enemyMgr?.SpawnEnemy(GameState.DontGetTreasure);
     }
 
     public void GameOver()

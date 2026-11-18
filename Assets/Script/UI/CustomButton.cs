@@ -150,12 +150,5 @@ public class CustomButton : MonoBehaviour,
     private void Awake()
     {
         lastCanInteract = CanInteract;
-
-        //ServiceLocator.Resolve<CustomButtonManager>()?.AddButton(this);
-    }
-
-    private void OnDestroy()
-    {
-        //ServiceLocator.Resolve<CustomButtonManager>()?.RemoveButton(this);
     }
 }

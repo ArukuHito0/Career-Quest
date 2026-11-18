@@ -88,10 +88,8 @@ namespace CareerQuest.Enemy
                 foreach (var point in spawnPos.SpawnPoints)
                 {
                     if (
-                       point.Candidates == null
-                       || point.Candidates.Length == 0
-                       || point.StartSpawnCnt == 0
-                       || point.TresuareTriggerSpawnCnt == 0
+                       (point.Candidates == null || point.Candidates.Length == 0) 
+                       ||(point.StartSpawnCnt == 0 && point.TresuareTriggerSpawnCnt == 0)
                        )
                         continue;
 
@@ -170,10 +168,9 @@ namespace CareerQuest.Enemy
                 if (volume <= 0)
                 { volume = 1; }
 
-                if (activeEnemyEntities.Count > maxEnemyCount)  // 消してよさそう
-                { return; }
                 if (activeEnemyEntities.Count + volume > maxEnemyCount)
                 {
+                    MyLogger.WarningLog("敵の最大数を超えているため、生成をしません");
                     return;
                 }
 
@@ -192,11 +189,17 @@ namespace CareerQuest.Enemy
                 else if (state == GameState.GetTreasure)
                 { spawnLimit = pointData.TresureTriggerSpwanCnt; }
 
-                if (spawnLimit >= 0)
-                { return; }
-
-                for (byte spawnCnt = 0; spawnCnt > spawnLimit;)
+                if (spawnLimit <= 0)
                 {
+                    MyLogger.ErrorLog($"{i} : 生成数が0以下なので生成しません。");
+                    return; 
+                }
+
+                MyLogger.Log("敵生成開始");
+
+                for (byte spawnCnt = 0; spawnCnt < spawnLimit; spawnCnt++)
+                {
+                    MyLogger.Log("Draemon");
                     for (int cnt = 0; cnt < volume; cnt++)
                     {
                         var enemy = targetPool.Get();

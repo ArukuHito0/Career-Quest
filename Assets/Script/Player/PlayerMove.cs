@@ -1,6 +1,7 @@
 using CareerQuest.Core;
 using CareerQuest.Enemy;
 using System.Collections.Generic;
+using UnityEditor.AdaptivePerformance.Editor;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -15,6 +16,11 @@ public class PlayerMove : MonoBehaviour
     // 移動先が設定されているか
     private bool hasTargetPosition;
 
+    // 現在移動中か
+    private bool isMoving;
+
+    // 到着判定距離
+    private float arrivalDistance = 1.5f;
     public int Index { get; set; }
     public float Tickness { get; set; }
 
@@ -29,6 +35,34 @@ public class PlayerMove : MonoBehaviour
         // プレイヤーの状態管理を取得
         stateManager = GetComponent<PlayerStateManager>();
 
+        if (agent != null)
+        {
+            agent.stoppingDistance = arrivalDistance;
+        }
+    }
+
+    private void Update()
+    {
+        // 移動中でなければ何もしない
+        if (!isMoving)
+            return;
+
+        if (agent == null || !agent.enabled || !agent.isOnNavMesh)
+            return;
+
+        // 経路計算中は待機
+        if (agent.pathPending)
+            return;
+
+        // 経路が存在しない場合
+        if (!agent.hasPath)
+            return;
+
+        // 目的地までの距離を確認
+        if (agent.remainingDistance <= arrivalDistance + 0.1f)
+        {
+            StopAtDestination();
+        }
     }
 
     // 指定した場所を目的地として設定
@@ -60,15 +94,17 @@ public class PlayerMove : MonoBehaviour
         }
 
         // NavMeshAgentが無効なら何もしない
-        if (!agent.enabled)
+        if (!agent.enabled || !agent.isOnNavMesh)
             return;
 
-        // NavMesh上にいない場合は何もしない
-        if (!agent.isOnNavMesh)
-            return;
+        // 新しい移動指示なので移動を再開
+        agent.isStopped = false;
 
         // 指定した場所へ移動
-        agent.SetDestination(position);
+        if (agent.SetDestination(position))
+        {
+            isMoving = true;
+        }
     }
 
     // 保存している目的地へ再び移動
@@ -93,33 +129,55 @@ public class PlayerMove : MonoBehaviour
         }
 
         // NavMeshAgentが無効なら何もしない
-        if (!agent.enabled)
+        if (!agent.enabled || !agent.isOnNavMesh)
             return;
 
-        // NavMesh上にいない場合は何もしない
-        if (!agent.isOnNavMesh)
+        // すでに目的地に到着している場合は再移動しない
+        if (Vector3.Distance(transform.position, lastTargetPosition) <= arrivalDistance)
+        {
+            StopAtDestination();
+            return;
+        }
+    }
+
+    // 目的地に到着したときの停止処理
+    private void StopAtDestination()
+    {
+        isMoving = false;
+
+        if (agent == null || !agent.enabled || !agent.isOnNavMesh)
             return;
 
-        // 保存していた最後の目的地へ移動
-        agent.SetDestination(lastTargetPosition);
+        // NavMeshAgentを停止
+        agent.isStopped = true;
+
+        // 移動経路を削除
+        agent.ResetPath();
+
+        // 速度をゼロにする
+        agent.velocity = Vector3.zero;
     }
 
     // プレイヤーの移動を停止
     public void StopMovement()
     {
+        isMoving = false;
+
         // NavMeshAgentがない場合
-        if (agent == null)
+        if (agent == null || !agent.enabled)
             return;
 
-        // NavMeshAgentが無効の場合
-        if (!agent.enabled)
-            return;
+        // NavMeshAgentを停止
+        agent.isStopped = true;
 
-        // 現在の移動経路を削除
-        agent.ResetPath();
+        if (agent.isOnNavMesh)
+        {
+            // 現在の移動経路を削除
+            agent.ResetPath();
 
-        // 現在の速度を0にする
-        agent.velocity = Vector3.zero;
+            // 現在の速度を0にする
+            agent.velocity = Vector3.zero;
+        }
     }
 
     // 現在保存している目的地を取得

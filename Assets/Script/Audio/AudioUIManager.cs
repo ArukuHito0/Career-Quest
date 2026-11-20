@@ -8,6 +8,8 @@ using UnityEngine.UI;
 /// </summary>
 public class AudioUIManager : MonoBehaviour
 {
+    public static AudioUIManager Instance { get; private set; }
+
     [SerializeField] private AudioVolumeSlider masterVolumeSlider;
     [SerializeField] private AudioVolumeSlider bgmVolumeSlider;
     [SerializeField] private AudioVolumeSlider seVolumeSlider;
@@ -15,6 +17,18 @@ public class AudioUIManager : MonoBehaviour
     public AudioVolumeSlider MasterVolumeSlider => masterVolumeSlider;
     public AudioVolumeSlider BGMVolumeSlider => bgmVolumeSlider;
     public AudioVolumeSlider SEVolumeSlider => seVolumeSlider;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     private void Start()
     {

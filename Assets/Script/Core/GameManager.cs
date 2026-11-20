@@ -1,16 +1,18 @@
-
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 using CareerQuest.Core;
+using CareerQuest.Enemy;
 
+[DisallowMultipleComponent]   // äºŒé‡ã‚¢ã‚¿ãƒƒãƒçŠ¶æ…‹é˜²æ­¢
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
+    EnemyManagerBase _enemyMgr;
 
-    [Tooltip("ƒQ[ƒ€I—¹•\¦‚©‚çƒŠƒUƒ‹ƒgƒV[ƒ“‚ÖˆÚ‚é‚Ü‚Å‚Ì•b”")]
+    [Tooltip("ã‚²ãƒ¼ãƒ çµ‚äº†è¡¨ç¤ºã‹ã‚‰ãƒªã‚¶ãƒ«ãƒˆã‚·ãƒ¼ãƒ³ã¸ç§»ã‚‹ã¾ã§ã®ç§’æ•°")]
     [SerializeField] private float resultSceneDelay = 1.5f;
 
-    [Header("UIİ’è")]
+    [Header("UIè¨­å®š")]
     [SerializeField] private GameOverUI gameOverUI;
 
     public bool IsGameClear { get; private set; }
@@ -27,6 +29,25 @@ public class GameManager : MonoBehaviour
         }
 
         Instance = this;
+        Debug.Log(Instance);
+
+        _enemyMgr = ServiceLocator.Resolve<EnemyManagerBase>();
+    }
+
+    void Start()
+    {
+        GameStart();
+    }
+
+    void GameStart()
+    {
+        MyLogger.Log("ã‚²ãƒ¼ãƒ é–‹å§‹");
+        _enemyMgr?.SpawnEnemy(GameState.DontGetTreasure);
+    }
+
+    public void GetTresuare()
+    {
+        _enemyMgr?.SpawnEnemy(GameState.GetTreasure);
     }
 
     public void GameOver()
@@ -49,7 +70,7 @@ public class GameManager : MonoBehaviour
 
         IsGameClear = true;
 
-        Debug.Log("ƒQ[ƒ€ƒNƒŠƒA");
+        Debug.Log("ã‚²ãƒ¼ãƒ ã‚¯ãƒªã‚¢");
 
         if (gameOverUI != null)
         {
@@ -61,24 +82,24 @@ public class GameManager : MonoBehaviour
 
     private void EndGame()
     {
-        // ƒQ[ƒ€“à‚ÌŠÔ‚ğ’â~
+        // ã‚²ãƒ¼ãƒ å†…ã®æ™‚é–“ã‚’åœæ­¢
         Time.timeScale = 0f;
 
-        // ƒŠƒUƒ‹ƒgƒV[ƒ“‚Ö‚Ì‘JˆÚ‚ğŠJn
+        // ãƒªã‚¶ãƒ«ãƒˆã‚·ãƒ¼ãƒ³ã¸ã®é·ç§»ã‚’é–‹å§‹
         StartCoroutine(LoadResultSceneAfterDelay());
     }
 
     private IEnumerator LoadResultSceneAfterDelay()
     {
-        // timeScale = 0 ‚Å‚à‘Ò‹@‚·‚é
+        // timeScale = 0 ã§ã‚‚å¾…æ©Ÿã™ã‚‹
         yield return new WaitForSecondsRealtime(
             Mathf.Max(0f, resultSceneDelay)
         );
 
-        // ƒV[ƒ“‘JˆÚ‘O‚ÉŠÔ‚ğ–ß‚·
+        // ã‚·ãƒ¼ãƒ³é·ç§»å‰ã«æ™‚é–“ã‚’æˆ»ã™
         Time.timeScale = 1f;
 
-        // SceneLoaderŒo—R‚ÅƒŠƒUƒ‹ƒgƒV[ƒ“‚Ö
+        // SceneLoaderçµŒç”±ã§ãƒªã‚¶ãƒ«ãƒˆã‚·ãƒ¼ãƒ³ã¸
         SceneLoader loader;
 
         try
@@ -87,7 +108,7 @@ public class GameManager : MonoBehaviour
         }
         catch (System.InvalidOperationException e)
         {
-            Debug.LogError($"ƒŠƒUƒ‹ƒgƒV[ƒ“‚Ö‘JˆÚ‚Å‚«‚Ü‚¹‚ñ‚Å‚µ‚½: {e.Message}");
+            Debug.LogError($"ãƒªã‚¶ãƒ«ãƒˆã‚·ãƒ¼ãƒ³ã¸é·ç§»ã§ãã¾ã›ã‚“ã§ã—ãŸ: {e.Message}");
             yield break;
         }
 

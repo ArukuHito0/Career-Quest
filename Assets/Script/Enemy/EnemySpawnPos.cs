@@ -61,7 +61,7 @@ namespace CareerQuest.Enemy
     {
         public Vector3 Position;
         public byte StartSpawnCnt;
-        public byte TresureTriggerSpwanCnt;
+        public byte TreasureTriggerSpwanCnt;
         public EnemySpawnData.EnemySpawnCandidate[] Candidates;
     }
 }

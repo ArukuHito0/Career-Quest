@@ -42,7 +42,7 @@ public class GameManager : MonoBehaviour
     void GameStart()
     {
         MyLogger.Log("ゲーム開始");
-        _enemyMgr?.SpawnEnemy(GameState.DontGetTreasure);
+        StartCoroutine(_enemyMgr?.SpawnEnemy(GameState.DontGetTreasure));
     }
 
     public void GetTresuare()

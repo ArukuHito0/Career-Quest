@@ -1,7 +1,8 @@
+using System.Collections;
+using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Pool;
-using System.Collections.Generic;
 using CareerQuest.Core;
 
 namespace CareerQuest.Enemy
@@ -18,6 +19,11 @@ namespace CareerQuest.Enemy
         protected List<EnemyController> activeEnemyEntities = new List<EnemyController>();
         protected NativeArray<Vector3> wallPositions;
 
+
+        //[SerializeField] EnemyStatHolder _enemyStatHolder;  // ステータス保持SO
+        [SerializeField] EnemyStatsDatabase _statsDb;  // ステータス保持Dd
+        NativeArray<EnemyData> _statCache;
+
         [SerializeField] EnemySpawnData spawnPos;
         [SerializeField] EnemyController _golemPrefab;
         [SerializeField] EnemyController _ghostPrefab;
@@ -29,13 +35,10 @@ namespace CareerQuest.Enemy
         protected NativeArray<EnemyData> bufferB;
         protected bool isUsingBufferA = true;
 
-        //protected BulletManager bulletManager; Unityの当たり判定を使うためCO
-
-        [SerializeField] EnemyStatHolder _enemyStatHolder;  // ステータス保持SO
-        NativeArray<EnemyData> _statCache;
-
         protected readonly List<pendingInfo> pendingInfo = new List<pendingInfo>(128);
         protected List<RuntimeSpawnPoint> runtimeSpawnPoints = new List<RuntimeSpawnPoint>();
+
+        readonly float spawnInterval = 0.2f;
 
         protected virtual void Awake()
         {
@@ -97,7 +100,7 @@ namespace CareerQuest.Enemy
                     {
                         Position = point.Position,
                         StartSpawnCnt = point.StartSpawnCnt,
-                        TresureTriggerSpwanCnt = point.TresuareTriggerSpawnCnt,
+                        TreasureTriggerSpwanCnt = point.TresuareTriggerSpawnCnt,
                         Candidates = point.Candidates
                     });
                 }
@@ -108,7 +111,7 @@ namespace CareerQuest.Enemy
 
             foreach (EnemyID id in System.Enum.GetValues(typeof(EnemyID)))
             {
-                var stat = _enemyStatHolder.GetStat(id);  // 一旦の仮ステータスキャッシュ
+                var stat = _statsDb.GetStat(id);
                 int index = (int)id;
 
                 _statCache[index] = new EnemyData
@@ -119,14 +122,14 @@ namespace CareerQuest.Enemy
                     GroupVolume = stat.GroupVolume,
 
                     Hp = stat.HP,
-                    MoveSpd = stat.MoveSpeed,
+                    MoveSpd = stat.MoveSpd,
                     AttackPower = stat.AttackPower,
-                    AttackRange = stat.AtackRange,
-                    AttackCoolDown = stat.AtackCoolDown,
+                    AttackRange = stat.AttackRange,
+                    AttackCoolDown = stat.AttackCooldown,
 
                     TargetIndex = -1,
                     SearchRadius = stat.SearchRadius,
-                    BodyTickness = stat.BodyTickness,
+                    //BodyTickness = stat.BodyTickness,
                 };
             }
         }
@@ -155,26 +158,23 @@ namespace CareerQuest.Enemy
             ServiceLocator.Unregister(this);
         }
 
-        //  生成
-        public void SpawnEnemy(GameState state)
+        public IEnumerator SpawnEnemy(GameState state)
         {
             for (int i = 0; i < runtimeSpawnPoints.Count; i++)
             {
                 var pointData = runtimeSpawnPoints[i];
                 Vector3 pos = pointData.Position;
                 EnemyID selectedID = LotteryEnemy(pointData.Candidates);
-
-                int volume = _statCache[(int)selectedID].GroupVolume;
-                if (volume <= 0)
-                { volume = 1; }
+                int volume = Mathf.Max(1, _statCache[(int)selectedID].GroupVolume);
 
                 if (activeEnemyEntities.Count + volume > maxEnemyCount)
                 {
-                    MyLogger.WarningLog("敵の最大数を超えているため、生成をしません");
-                    return;
+                    MyLogger.WarningLog("敵の最大数を超過するため、生成をしません");
+                    continue;
                 }
 
                 EnsureBufferSize(activeEnemyEntities.Count + volume);
+
                 if (UnityEngine.AI.NavMesh.SamplePosition(pos, out var hit, 10f, UnityEngine.AI.NavMesh.AllAreas))
                 {
                     pos = hit.position;
@@ -183,23 +183,22 @@ namespace CareerQuest.Enemy
                 if (!_pools.TryGetValue(selectedID, out var targetPool))
                 { continue; }
 
-                byte spawnLimit = 0;
-                if (state == GameState.DontGetTreasure)
-                { spawnLimit = pointData.StartSpawnCnt; }
-                else if (state == GameState.GetTreasure)
-                { spawnLimit = pointData.TresureTriggerSpwanCnt; }
+                byte spawnLimit = state switch
+                {
+                    GameState.DontGetTreasure => pointData.StartSpawnCnt,
+                    GameState.GetTreasure => pointData.TreasureTriggerSpwanCnt,
+                    _ => 0
+                };
 
                 if (spawnLimit <= 0)
                 {
                     MyLogger.ErrorLog($"{i} : 生成数が0以下なので生成しません。");
-                    return; 
+                    continue;
                 }
 
                 MyLogger.Log("敵生成開始");
-
                 for (byte spawnCnt = 0; spawnCnt < spawnLimit; spawnCnt++)
                 {
-                    MyLogger.Log("Draemon");
                     for (int cnt = 0; cnt < volume; cnt++)
                     {
                         var enemy = targetPool.Get();
@@ -238,10 +237,96 @@ namespace CareerQuest.Enemy
                         }
 
                         runtimeSpawnPoints[i] = pointData;
+                        yield return new WaitForSeconds(spawnInterval);
                     }
                 }
             }
+            yield return null;
         }
+        ////  生成
+        //public void SpawnEnemy(GameState state)
+        //{
+        //    for (int i = 0; i < runtimeSpawnPoints.Count; i++)
+        //    {
+        //        var pointData = runtimeSpawnPoints[i];
+        //        Vector3 pos = pointData.Position;
+        //        EnemyID selectedID = LotteryEnemy(pointData.Candidates);
+        //        int volume = Mathf.Max(1, _statCache[(int)selectedID].GroupVolume);
+
+        //        if (activeEnemyEntities.Count + volume > maxEnemyCount)
+        //        {
+        //            MyLogger.WarningLog("敵の最大数を超過するため、生成をしません");
+        //            return;
+        //        }
+
+        //        EnsureBufferSize(activeEnemyEntities.Count + volume);
+                
+        //        if (UnityEngine.AI.NavMesh.SamplePosition(pos, out var hit, 10f, UnityEngine.AI.NavMesh.AllAreas))
+        //        {
+        //            pos = hit.position;
+        //        }
+
+        //        if (!_pools.TryGetValue(selectedID, out var targetPool))
+        //        { continue; }
+
+        //        byte spawnLimit = state switch
+        //        {
+        //            GameState.DontGetTreasure => pointData.StartSpawnCnt,
+        //            GameState.GetTreasure => pointData.TreasureTriggerSpwanCnt,
+        //            _ => 0
+        //        };
+
+        //        if (spawnLimit <= 0)
+        //        {
+        //            MyLogger.ErrorLog($"{i} : 生成数が0以下なので生成しません。");
+        //            return; 
+        //        }
+
+        //        MyLogger.Log("敵生成開始");
+        //        for (byte spawnCnt = 0; spawnCnt < spawnLimit; spawnCnt++)
+        //        {
+        //            for (int cnt = 0; cnt < volume; cnt++)
+        //            {
+        //                var enemy = targetPool.Get();
+
+        //                var agent = enemy.GetComponent<UnityEngine.AI.NavMeshAgent>();
+        //                if (agent != null)
+        //                {
+        //                    agent.enabled = false;
+        //                    enemy.transform.position = pos;
+        //                    agent.enabled = true;
+        //                    agent.Warp(pos);
+        //                }
+        //                else
+        //                {
+        //                    enemy.transform.position = pos;
+        //                }
+
+        //                int newIndex = activeEnemyEntities.Count - 1;
+        //                if (newIndex < 0)
+        //                {
+        //                    newIndex = 0;
+        //                }
+
+        //                var enemyData = CreateInitialEnemyData(enemy);
+        //                enemyData.IsLeader = (cnt == 0) ? (byte)1 : (byte)0;
+        //                enemy.EnemyData = enemyData;
+        //                enemy.NavAgent.speed = enemyData.MoveSpd;
+
+        //                if (isUsingBufferA)
+        //                {
+        //                    bufferA[newIndex] = enemyData;
+        //                }
+        //                else
+        //                {
+        //                    bufferB[newIndex] = enemyData;
+        //                }
+
+        //                runtimeSpawnPoints[i] = pointData;
+        //            }
+        //        }
+        //    }
+        //}
 
         //  受けたダメージを記録(処理競合防止)
         public void EnqueueDamage(int index, byte dmg)

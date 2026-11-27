@@ -21,6 +21,8 @@ namespace CareerQuest.Enemy
         public EnemyData EnemyData;
         ISpatialEntity _target;
 
+        public int target;
+
         public NavMeshAgent NavAgent { get => _navAgent; private set => _navAgent = value; }
         public EnemyManagerBase EnemyMgrBase { private get => _enemyMgr; set => _enemyMgr = value; }
 
@@ -40,6 +42,10 @@ namespace CareerQuest.Enemy
             UAssert.IsNotNull(_navAgent, "NavMeshAgent‚ÌQÆ‚ª‚ ‚è‚Ü‚¹‚ñ");
         }
 
+        void Update()
+        {
+            target = EnemyData.TargetIndex;
+        }
         public void Regist()
         {
             _hashMgr.Register(this);
